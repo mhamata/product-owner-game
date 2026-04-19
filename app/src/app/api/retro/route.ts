@@ -36,6 +36,10 @@ export async function POST(request: Request) {
     (e) => `Iter ${e.iteration} · ${e.eventId} · chose ${e.optionId} → ${e.summary}`,
   );
 
+  const methodsInvoked = body.state.methodTags.map(
+    (t) => `Iter ${t.iteration} · ${t.context} · claimed method: ${t.methodId} (context: ${t.contextId})`,
+  );
+
   const summary = {
     scenario: scenario.name,
     iterations: body.state.totalIterations,
@@ -53,6 +57,7 @@ export async function POST(request: Request) {
       trust: s.trust,
     })),
     decisions: log,
+    methods_invoked: methodsInvoked,
     score: body.score,
   };
 
@@ -63,8 +68,9 @@ Generate a structured retrospective with:
 2. STRENGTHS — 3 specific moments with iteration number + decision + outcome
 3. GROWTH EDGES — 3 specific moments where a senior PM would have made a different call
 4. ALTERNATE HISTORY — one specific "what if you had done X in iteration Y" replay
-5. TECHNIQUE UNLOCKED — one PM method the player demonstrated readiness for (RICE, WSJF, Kano, JTBD, etc.)
-6. INTERVIEW STORY — one STAR-formatted story from this game they could use in the Moomoo interview
+5. METHODS CLAIMED — if the player tagged methods via the in-game picker, cite them by name and evaluate whether the claim fits the decision (e.g., "You claimed RICE for commit iter 3; this fits because you were weighing multiple features — but a senior PM would have paired it with Cost of Delay given the CIRO deadline.")
+6. TECHNIQUE UNLOCKED — one PM method the player demonstrated readiness for beyond what they claimed
+7. INTERVIEW STORY — one STAR-formatted story from this game they could use in the Moomoo interview
 
 Tone: constructive, specific, never shaming. Cite evidence from the decisions log. Under 700 words.`;
 

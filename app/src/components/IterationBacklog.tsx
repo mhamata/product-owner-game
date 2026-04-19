@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Action, GameState } from '@/engine/types';
 import type { CapacityRange } from '@/engine/capacity';
 import { PBICard } from './PBICard';
+import { MethodTagPicker } from './MethodTagPicker';
 
 export function IterationBacklog({
   state,
@@ -17,6 +18,7 @@ export function IterationBacklog({
   committed: number;
 }) {
   const [sprintGoal, setSprintGoal] = useState(state.sprintGoal ?? '');
+  const [prioritizationMethod, setPrioritizationMethod] = useState<string | null>(null);
   const hasReleaseCard = state.iterationBacklog.some((p) => p.kind === 'release-card');
   const canEdit = state.phase === 'planning';
 
@@ -93,16 +95,26 @@ export function IterationBacklog({
         )}
 
         {state.phase === 'planning' && (
-          <button
-            onClick={() => {
-              dispatch({ type: 'set-sprint-goal', goal: sprintGoal });
-              dispatch({ type: 'commit-iteration' });
-            }}
-            disabled={state.iterationBacklog.length === 0}
-            className="w-full py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Commit Iteration
-          </button>
+          <>
+            <MethodTagPicker
+              value={prioritizationMethod}
+              onChange={setPrioritizationMethod}
+              context="planning"
+            />
+            <button
+              onClick={() => {
+                dispatch({ type: 'set-sprint-goal', goal: sprintGoal });
+                dispatch({
+                  type: 'commit-iteration',
+                  methodId: prioritizationMethod ?? undefined,
+                });
+              }}
+              disabled={state.iterationBacklog.length === 0}
+              className="w-full py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Commit Iteration
+            </button>
+          </>
         )}
 
         {state.phase === 'committed' && (

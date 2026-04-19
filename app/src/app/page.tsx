@@ -12,11 +12,19 @@ export default function Home() {
 
   return (
     <main className="flex-1 max-w-4xl mx-auto px-6 py-12">
-      <header className="mb-10">
-        <h1 className="text-4xl font-bold tracking-tight">PRAXIS</h1>
-        <p className="text-lg text-gray-600 mt-2">
-          Product-management simulation — rehearse PM decisions before the interview.
-        </p>
+      <header className="mb-10 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight">PRAXIS</h1>
+          <p className="text-lg text-gray-600 mt-2">
+            Product-management simulation — rehearse PM decisions before the interview.
+          </p>
+        </div>
+        <Link
+          href="/methods"
+          className="px-4 py-2 bg-white border border-gray-300 rounded hover:border-blue-400 hover:shadow-sm text-sm font-medium"
+        >
+          📚 Methods Library
+        </Link>
       </header>
 
       {hydrated && state && scenarioId && (

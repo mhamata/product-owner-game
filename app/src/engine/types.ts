@@ -130,6 +130,17 @@ export interface GameState {
   // IDs of PBIs added to the backlog at the start of the current iteration.
   // Reset each time the player advances. UI badges these as NEW.
   newlyDiscoveredIds: string[];
+
+  // PM methods the player claimed to have used on decisions. Surfaced in
+  // the AI retrospective as "you invoked RICE here — interview angle: ..."
+  methodTags: MethodTag[];
+}
+
+export interface MethodTag {
+  iteration: number;
+  context: 'commit-iteration' | 'event-response';
+  contextId: string; // sprint goal text for commit, eventId for event
+  methodId: string;
 }
 
 export interface IterationOutcome {
@@ -208,7 +219,7 @@ export type Action =
   | { type: 'reorder-iteration'; fromIndex: number; toIndex: number }
   | { type: 'place-release-card'; index: number | null }
   | { type: 'set-sprint-goal'; goal: string }
-  | { type: 'commit-iteration' }
+  | { type: 'commit-iteration'; methodId?: string }
   | { type: 'execute-iteration' }
   | { type: 'advance-iteration' }
-  | { type: 'respond-to-event'; eventId: string; optionId: string };
+  | { type: 'respond-to-event'; eventId: string; optionId: string; methodId?: string };

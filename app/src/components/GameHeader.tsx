@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import type { GameState, Scenario } from '@/engine/types';
 import type { CapacityRange } from '@/engine/capacity';
 import { cn } from '@/lib/cn';
+import { MethodReferenceModal } from './MethodReferenceModal';
 
 const phaseLabel: Record<GameState['phase'], string> = {
   planning: 'Planning',
@@ -24,6 +26,7 @@ export function GameHeader({
   capacityRange: CapacityRange;
   committed: number;
 }) {
+  const [methodsOpen, setMethodsOpen] = useState(false);
   const fillPct = Math.min(
     100,
     (committed / Math.max(capacityRange.upper, 1)) * 100,
@@ -50,6 +53,13 @@ export function GameHeader({
             <span className="font-medium text-gray-700">{phaseLabel[state.phase]}</span>
           </p>
         </div>
+        <button
+          onClick={() => setMethodsOpen(true)}
+          className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
+          title="Browse PM methods (M)"
+        >
+          📚 Methods
+        </button>
         <div className="flex gap-4 text-xs">
           <Stat label="Morale" value={`${state.team.morale}/10`} />
           <Stat
@@ -69,6 +79,8 @@ export function GameHeader({
           />
         </div>
       </div>
+
+      {methodsOpen && <MethodReferenceModal onClose={() => setMethodsOpen(false)} />}
 
       <div className="px-4 pb-3">
         <div className="flex justify-between text-xs text-gray-600 mb-1">

@@ -33,6 +33,7 @@ export function createGame(scenario: Scenario, seed: string): GameState {
     lastOutcome: null,
     pendingEvents: [],
     newlyDiscoveredIds: [],
+    methodTags: [],
   };
 }
 
@@ -106,7 +107,18 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
       return { ...state, sprintGoal: action.goal };
     case 'commit-iteration': {
       if (state.phase !== 'planning') return state;
-      return { ...state, phase: 'committed' };
+      const methodTags = action.methodId
+        ? [
+            ...state.methodTags,
+            {
+              iteration: state.iterationNumber,
+              context: 'commit-iteration' as const,
+              contextId: state.sprintGoal ?? `iter-${state.iterationNumber}`,
+              methodId: action.methodId,
+            },
+          ]
+        : state.methodTags;
+      return { ...state, phase: 'committed', methodTags };
     }
     case 'execute-iteration': {
       if (state.phase !== 'committed') return state;
@@ -156,11 +168,23 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
       const addedIds = option.effects
         .filter((e): e is Extract<typeof e, { kind: 'add-pbi' }> => e.kind === 'add-pbi')
         .map((e) => e.pbi.id);
+      const methodTags = action.methodId
+        ? [
+            ...afterEffects.methodTags,
+            {
+              iteration: state.iterationNumber,
+              context: 'event-response' as const,
+              contextId: card.id,
+              methodId: action.methodId,
+            },
+          ]
+        : afterEffects.methodTags;
       return {
         ...afterEffects,
         eventLog: log,
         pendingEvents: pending,
         newlyDiscoveredIds: [...state.newlyDiscoveredIds, ...addedIds],
+        methodTags,
       };
     }
   }

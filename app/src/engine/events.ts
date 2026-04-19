@@ -55,6 +55,7 @@ export function applyEventEffects(state: GameState, effects: EventEffect[]): Gam
     customers: { ...state.customers },
     stakeholders: { ...state.stakeholders },
     activePatterns: [...state.activePatterns],
+    methodTags: [...state.methodTags],
   };
 
   for (const eff of effects) {

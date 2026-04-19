@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import type { Action, EventCard } from '@/engine/types';
+import { MethodTagPicker } from './MethodTagPicker';
 
 export function EventModal({
   event,
@@ -9,6 +11,8 @@ export function EventModal({
   event: EventCard;
   dispatch: (a: Action) => void;
 }) {
+  const [method, setMethod] = useState<string | null>(null);
+
   return (
     <div
       className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
@@ -25,7 +29,10 @@ export function EventModal({
         <div className="px-5 py-4 overflow-y-auto">
           <p className="text-sm text-gray-800 leading-relaxed">{event.narrative}</p>
         </div>
-        <div className="px-5 pb-5 space-y-2">
+        <div className="px-5 pb-3 border-t bg-gray-50 py-3">
+          <MethodTagPicker value={method} onChange={setMethod} context="event" />
+        </div>
+        <div className="px-5 pb-5 pt-3 space-y-2">
           {event.options.map((opt) => (
             <button
               key={opt.id}
@@ -34,6 +41,7 @@ export function EventModal({
                   type: 'respond-to-event',
                   eventId: event.id,
                   optionId: opt.id,
+                  methodId: method ?? undefined,
                 })
               }
               className="w-full text-left p-3 border border-gray-200 rounded hover:border-blue-400 hover:bg-blue-50 transition-colors"

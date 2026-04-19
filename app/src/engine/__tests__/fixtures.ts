@@ -79,6 +79,7 @@ export function makeState(overrides: Partial<GameState> = {}): GameState {
     lastOutcome: null,
     pendingEvents: [],
     newlyDiscoveredIds: [],
+    methodTags: [],
     ...overrides,
   };
 }
