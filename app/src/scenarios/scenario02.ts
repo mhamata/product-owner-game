@@ -1,0 +1,627 @@
+import type { Scenario } from '@/engine/types';
+
+// Scenario 02 — The Clearing Pipeline (Moomoo). Platform/internal PM.
+// Customers here are internal user-groups (Ops, Risk, Compliance, Treasury).
+// "Revenue" is a proxy for operational value delivered.
+
+export const scenario02: Scenario = {
+  id: '02-clearing-pipeline',
+  name: 'The Clearing Pipeline — Moomoo',
+  summary:
+    "Senior PM for Moomoo Canada's clearing & settlement platform. Reduce breaks by 50%, pass the CIRO audit, don't break anything.",
+  totalIterations: 6,
+  targetRevenue: 2000, // proxy for operational value delivered this quarter
+
+  customers: [
+    {
+      id: 'ops',
+      name: 'Darnell (Ops)',
+      archetype: 'power-user',
+      engagementState: 'active',
+      happiness: 4,
+      ltv: 500,
+      lastFullRelease: null,
+      consecutivePartial: 0,
+      consecutiveNothing: 0,
+    },
+    {
+      id: 'compliance',
+      name: 'Aisha (Compliance)',
+      archetype: 'enterprise',
+      engagementState: 'active',
+      happiness: 5,
+      ltv: 600,
+      lastFullRelease: null,
+      consecutivePartial: 0,
+      consecutiveNothing: 0,
+    },
+    {
+      id: 'risk',
+      name: 'Ravi (Risk)',
+      archetype: 'skeptic',
+      engagementState: 'active',
+      happiness: 3,
+      ltv: 400,
+      lastFullRelease: null,
+      consecutivePartial: 0,
+      consecutiveNothing: 0,
+    },
+    {
+      id: 'treasury',
+      name: 'Sophie (Treasury)',
+      archetype: 'mainstream',
+      engagementState: 'dormant',
+      happiness: 4,
+      ltv: 350,
+      lastFullRelease: null,
+      consecutivePartial: 0,
+      consecutiveNothing: 0,
+    },
+  ],
+
+  stakeholders: [
+    { id: 'hq', name: 'Wei (HQ Platform VP)', role: 'Leadership', trust: 6, lastInteraction: 0 },
+    { id: 'tech-lead', name: 'Max (Tech Lead)', role: 'Engineering', trust: 7, lastInteraction: 0 },
+    { id: 'vendors', name: 'OCC/DTCC/CDS', role: 'External vendors', trust: 6, lastInteraction: 0 },
+  ],
+
+  team: {
+    morale: 5,
+    headcount: 5,
+    onboarding: 0,
+    sickOrVacation: 0,
+    burnoutFlag: false,
+  },
+
+  tech: {
+    releaseCost: 3,
+    capacityBaseline: 15,
+    capacityVariance: 3,
+    techDebt: 45, // platform inherited with patches
+    reliability: 5,
+    cycleTime: 1.0,
+    investmentsDone: [],
+    lastTechInvestmentIter: null,
+  },
+
+  economy: {
+    revenue: 0,
+    interestAccrued: 0,
+    budgetRemaining: 1_000_000,
+    interestRate: 0,
+  },
+
+  initialBacklog: [
+    // Ops
+    {
+      id: 'auto-break-resolution',
+      title: 'Auto-Break Resolution Engine (Phase 1)',
+      kind: 'customer',
+      effort: 10,
+      effortRevealed: null,
+      effortUncertain: true,
+      value: 600,
+      satisfies: ['ops'],
+      requires: [],
+      productId: 'auto-break-resolution',
+    },
+    {
+      id: 'occ-automation',
+      title: 'OCC Exercise/Assignment Automation',
+      kind: 'customer',
+      effort: 12,
+      effortRevealed: null,
+      effortUncertain: true,
+      value: 700,
+      satisfies: ['ops', 'risk'],
+      requires: [],
+      productId: 'occ-automation',
+    },
+    {
+      id: 'break-dashboard',
+      title: 'Settlement Break Dashboard',
+      kind: 'customer',
+      effort: 6,
+      effortRevealed: 6,
+      value: 400,
+      satisfies: ['ops'],
+      requires: [],
+      productId: 'break-dashboard',
+    },
+    {
+      id: 'corp-actions',
+      title: 'Corporate Actions Workflow Integration',
+      kind: 'customer',
+      effort: 14,
+      effortRevealed: null,
+      effortUncertain: true,
+      value: 500,
+      satisfies: ['ops', 'risk'],
+      requires: [],
+      productId: 'corp-actions',
+    },
+    {
+      id: 'broadridge-automation',
+      title: 'Broadridge Reconciliation Automation',
+      kind: 'customer',
+      effort: 7,
+      effortRevealed: 7,
+      value: 400,
+      satisfies: ['ops'],
+      requires: [],
+      productId: 'broadridge-automation',
+    },
+    {
+      id: 'root-cause-tagging',
+      title: 'Trade Break Root-Cause Tagging',
+      kind: 'customer',
+      effort: 3,
+      effortRevealed: 3,
+      value: 200,
+      satisfies: ['ops'],
+      requires: [],
+      productId: 'root-cause-tagging',
+    },
+
+    // Risk & compliance
+    {
+      id: 'ciro-audit-prep',
+      title: 'CIRO Audit Preparation — Trade Surveillance',
+      kind: 'regulatory',
+      effort: 11,
+      effortRevealed: 11,
+      value: 800,
+      satisfies: ['compliance'],
+      requires: [],
+      productId: 'ciro-audit-prep',
+    },
+    {
+      id: 'cto-enforcement',
+      title: 'CTO Enforcement Pipeline',
+      kind: 'regulatory',
+      effort: 8,
+      effortRevealed: 8,
+      value: 400,
+      satisfies: ['compliance', 'ops'],
+      requires: [],
+      productId: 'cto-enforcement',
+    },
+    {
+      id: 'regulatory-reporting',
+      title: 'Regulatory Reporting Automation',
+      kind: 'regulatory',
+      effort: 10,
+      effortRevealed: 10,
+      value: 500,
+      satisfies: ['compliance'],
+      requires: [],
+      productId: 'regulatory-reporting',
+    },
+    {
+      id: 'margin-call',
+      title: 'Margin Call Automation',
+      kind: 'customer',
+      effort: 9,
+      effortRevealed: 9,
+      value: 500,
+      satisfies: ['risk', 'ops'],
+      requires: [],
+      productId: 'margin-call',
+    },
+    {
+      id: 'realtime-exposure',
+      title: 'Real-time Exposure Feed',
+      kind: 'customer',
+      effort: 5,
+      effortRevealed: 5,
+      value: 450,
+      satisfies: ['risk'],
+      requires: [],
+      productId: 'realtime-exposure',
+    },
+
+    // Treasury
+    {
+      id: 'collateral-optimizer',
+      title: 'Auto Collateral Optimizer',
+      kind: 'customer',
+      effort: 8,
+      effortRevealed: 8,
+      value: 500,
+      satisfies: ['treasury'],
+      requires: [],
+      productId: 'collateral-optimizer',
+    },
+    {
+      id: 'fx-reconciliation',
+      title: 'FX Reconciliation Module',
+      kind: 'customer',
+      effort: 5,
+      effortRevealed: 5,
+      value: 300,
+      satisfies: ['treasury'],
+      requires: [],
+      productId: 'fx-reconciliation',
+    },
+
+    // Tech
+    {
+      id: 'event-driven-arch',
+      title: 'Event-Driven Settlement Architecture',
+      kind: 'tech',
+      effort: 15,
+      effortRevealed: null,
+      effortUncertain: true,
+      value: 0,
+      satisfies: [],
+      requires: [],
+      productId: 'event-driven-arch',
+    },
+    {
+      id: 'hq-platform-api',
+      title: 'HQ Platform API Contract',
+      kind: 'tech',
+      effort: 6,
+      effortRevealed: 6,
+      value: 0,
+      satisfies: [],
+      requires: [],
+      productId: 'hq-platform-api',
+    },
+    {
+      id: 'observability',
+      title: 'Observability Platform for Post-Trade',
+      kind: 'tech',
+      effort: 4,
+      effortRevealed: 4,
+      value: 0,
+      satisfies: [],
+      requires: [],
+      productId: 'observability',
+    },
+    {
+      id: 'data-quality',
+      title: 'Data Quality Monitoring',
+      kind: 'tech',
+      effort: 3,
+      effortRevealed: 3,
+      value: 0,
+      satisfies: [],
+      requires: [],
+      productId: 'data-quality',
+    },
+    {
+      id: 'dr-runbook',
+      title: 'Disaster Recovery Runbook + Drill',
+      kind: 'tech',
+      effort: 4,
+      effortRevealed: 4,
+      value: 0,
+      satisfies: [],
+      requires: [],
+      productId: 'dr-runbook',
+    },
+    {
+      id: 'automated-tests',
+      title: 'Automated Test Suite',
+      kind: 'tech',
+      effort: 5,
+      effortRevealed: 5,
+      value: 0,
+      satisfies: [],
+      requires: [],
+      productId: 'automated-tests',
+    },
+  ],
+
+  eventDeck: [
+    {
+      id: 'rajesh-notice',
+      category: 'team',
+      baseWeight: 0,
+      trigger: 'forced',
+      forcedAtIteration: 1,
+      narrative:
+        'Rajesh tells you Monday: "4 weeks notice. Accepted a role at RBC Capital Markets." He owns the OCC integration — nobody else understands it.',
+      options: [
+        {
+          id: 'pair-with-max',
+          label: 'Pair him with Max for knowledge transfer',
+          visibleConsequence: 'Velocity −3 this iter, but OCC knowledge survives.',
+          effects: [
+            { kind: 'capacity-baseline', delta: -3 },
+            { kind: 'morale', delta: 1 },
+          ],
+        },
+        {
+          id: 'ship-last-big',
+          label: 'Get him to ship one last big thing',
+          visibleConsequence: 'Velocity intact; OCC becomes a black box after he leaves.',
+          effects: [
+            { kind: 'tech-debt', delta: 15 },
+            { kind: 'add-pattern', tag: 'hero_dependency' },
+          ],
+        },
+        {
+          id: 'counter-offer',
+          label: 'Try to counter-offer (needs Wei approval)',
+          visibleConsequence: 'Rarely works; political cost with HQ.',
+          effects: [{ kind: 'trust', stakeholderId: 'hq', delta: -1 }],
+        },
+      ],
+    },
+    {
+      id: 'wei-align',
+      category: 'stakeholder',
+      baseWeight: 0,
+      trigger: 'forced',
+      forcedAtIteration: 2,
+      narrative:
+        'Wei (HQ): "Why does Canada need a separate break-resolution engine? Use ours from HK." Problem: HK engine does not understand DTCC or OCC clearing cycles.',
+      options: [
+        {
+          id: 'accept-fork',
+          label: 'Accept HQ engine and plan patches',
+          visibleConsequence: 'HQ trust +2. +20 tech debt from patches later.',
+          effects: [
+            { kind: 'trust', stakeholderId: 'hq', delta: 2 },
+            { kind: 'tech-debt', delta: 20 },
+          ],
+        },
+        {
+          id: 'parallel-with-interfaces',
+          label: 'Propose parallel development with shared interfaces',
+          visibleConsequence: 'HQ trust neutral; Max morale +1.',
+          effects: [{ kind: 'morale', delta: 1 }],
+        },
+        {
+          id: 'escalate-ceo',
+          label: 'Escalate to your CEO',
+          visibleConsequence: 'Nuclear. HQ trust −3; possible autonomy win.',
+          effects: [{ kind: 'trust', stakeholderId: 'hq', delta: -3 }],
+        },
+      ],
+    },
+    {
+      id: 'occ-protocol-update',
+      category: 'vendor',
+      baseWeight: 4,
+      trigger: 'random',
+      narrative:
+        'OCC announces a required protocol update: 45-day window. Affects exercise/assignment flow. Non-optional.',
+      options: [
+        {
+          id: 'prioritize',
+          label: 'Prioritize immediately — absorb 6 pts next iter',
+          visibleConsequence: 'Painful but safe.',
+          effects: [
+            { kind: 'capacity-baseline', delta: -2 },
+            { kind: 'trust', stakeholderId: 'vendors', delta: 1 },
+          ],
+        },
+        {
+          id: 'request-extension',
+          label: 'Request extension from OCC',
+          visibleConsequence: 'OCC rarely grants. Risk.',
+          effects: [{ kind: 'trust', stakeholderId: 'vendors', delta: -1 }],
+        },
+        {
+          id: 'manual-workaround',
+          label: 'Ops manual workaround to buy time',
+          visibleConsequence: 'Morale drops on Ops.',
+          effects: [
+            { kind: 'happiness', customerId: 'ops', delta: -2 },
+            { kind: 'tech-debt', delta: 5 },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'darnell-ops-weekly',
+      category: 'stakeholder',
+      baseWeight: 3,
+      trigger: 'weighted',
+      narrative:
+        'Darnell invites you to the Ops Monday 7am standing meeting. "If you are really serious about ops tooling."',
+      options: [
+        {
+          id: 'attend-weekly',
+          label: 'Attend weekly for the quarter',
+          visibleConsequence: 'Time cost, but Darnell trust +3. Ops insight compounds.',
+          effects: [{ kind: 'happiness', customerId: 'ops', delta: 2 }],
+        },
+        {
+          id: 'attend-monthly',
+          label: 'Attend monthly + send deputy',
+          visibleConsequence: 'Symbolic. Darnell trust +1.',
+          effects: [{ kind: 'happiness', customerId: 'ops', delta: 1 }],
+        },
+        {
+          id: 'decline',
+          label: 'Decline politely, schedule 1:1s instead',
+          visibleConsequence: 'Misses the in-flight signal. Darnell trust −1.',
+          effects: [{ kind: 'happiness', customerId: 'ops', delta: -1 }],
+        },
+      ],
+    },
+    {
+      id: 'dtcc-settlement-fail',
+      category: 'tech',
+      baseWeight: 3,
+      trigger: 'weighted',
+      narrative:
+        'DTCC fail notice: Moomoo failed to settle $2.3M of trades on T+1. 3× per quarter triggers penalties.',
+      options: [
+        {
+          id: 'post-mortem',
+          label: 'Immediate post-mortem + root cause fix',
+          visibleConsequence: 'Dedicate 1 sprint. Tech debt −10. Features stall.',
+          effects: [
+            { kind: 'tech-debt', delta: -10 },
+            { kind: 'trust', stakeholderId: 'vendors', delta: 1 },
+          ],
+        },
+        {
+          id: 'quick-patch',
+          label: 'Quick patch + disclose to CIRO',
+          visibleConsequence: 'Keeps velocity but risks repeat.',
+          effects: [{ kind: 'tech-debt', delta: 5 }],
+        },
+        {
+          id: 'silent-patch',
+          label: 'Patch silently',
+          visibleConsequence: 'Non-disclosure risk. High-risk move.',
+          effects: [
+            { kind: 'happiness', customerId: 'compliance', delta: -3 },
+            { kind: 'tech-debt', delta: 10 },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'options-expiry-incident',
+      category: 'tech',
+      baseWeight: 2,
+      trigger: 'weighted',
+      narrative:
+        'Options expiry Friday: 60+ OCC exercise breaks. Ops pulls an all-nighter. Clients wake up Saturday confused. Darnell is furious.',
+      options: [
+        {
+          id: 'take-command',
+          label: 'Take command of the incident',
+          visibleConsequence: 'Lead comms across ops/risk/eng. Morale +2.',
+          effects: [
+            { kind: 'morale', delta: 2 },
+            { kind: 'happiness', customerId: 'ops', delta: 2 },
+          ],
+        },
+        {
+          id: 'delegate-max',
+          label: 'Delegate to Max; you own stakeholder comms',
+          visibleConsequence: 'Split the load. Trust preserved.',
+          effects: [{ kind: 'happiness', customerId: 'ops', delta: 1 }],
+        },
+        {
+          id: 'stay-out',
+          label: 'Stay out; let ops handle',
+          visibleConsequence: 'Darnell trust −2.',
+          effects: [{ kind: 'happiness', customerId: 'ops', delta: -2 }],
+        },
+      ],
+    },
+    {
+      id: 'sophie-intro',
+      category: 'stakeholder',
+      baseWeight: 2,
+      trigger: 'random',
+      narrative:
+        "Sophie (Treasury): 'I don't think you have Treasury on your roadmap. I'd like to understand your vision.' First signal from a dormant stakeholder.",
+      options: [
+        {
+          id: 'deep-discovery',
+          label: 'Schedule 2-hour deep discovery',
+          visibleConsequence: 'Investment that pays back. Sophie: DORMANT → INTERESTED.',
+          effects: [{ kind: 'happiness', customerId: 'treasury', delta: 2 }],
+        },
+        {
+          id: 'defer',
+          label: 'Defer to iteration 4',
+          visibleConsequence: 'She feels deprioritized.',
+          effects: [{ kind: 'happiness', customerId: 'treasury', delta: -1 }],
+        },
+        {
+          id: 'guess-backlog',
+          label: 'Add Treasury items to backlog without talking',
+          visibleConsequence: 'Guesses at what she wants. Medium risk.',
+          effects: [{ kind: 'happiness', customerId: 'treasury', delta: -1 }],
+        },
+      ],
+    },
+    {
+      id: 'ciro-pre-assessment',
+      category: 'regulatory',
+      baseWeight: 0,
+      trigger: 'forced',
+      forcedAtIteration: 5,
+      narrative:
+        'Two CIRO auditors arrive for a scoping visit. They review your state of readiness for Q3 audit.',
+      options: [
+        {
+          id: 'show-progress',
+          label: 'Show them what you have shipped',
+          visibleConsequence:
+            'If you shipped trade surveillance, they are satisfied. If not, additional deficiencies.',
+          effects: [{ kind: 'happiness', customerId: 'compliance', delta: 1 }],
+        },
+        {
+          id: 'promise-next-qtr',
+          label: 'Promise next-quarter delivery',
+          visibleConsequence: 'Audit risk persists.',
+          effects: [{ kind: 'happiness', customerId: 'compliance', delta: -2 }],
+        },
+      ],
+    },
+    {
+      id: 'ceo-vision',
+      category: 'strategic',
+      baseWeight: 2,
+      trigger: 'random',
+      narrative:
+        "Moomoo Canada CEO: 'Paint me the 12-month platform vision. Your answer shapes next year's budget.'",
+      options: [
+        {
+          id: 'ambitious',
+          label: 'Ambitious vision (event-driven rebuild) — ask $3M',
+          visibleConsequence: 'High risk, high reward.',
+          effects: [
+            { kind: 'trust', stakeholderId: 'hq', delta: 1 },
+            { kind: 'morale', delta: 1 },
+          ],
+        },
+        {
+          id: 'pragmatic',
+          label: 'Pragmatic vision (incremental) — ask $1M',
+          visibleConsequence: 'Safer. Budget for audit compliance.',
+          effects: [{ kind: 'revenue', delta: 100 }],
+        },
+        {
+          id: 'buy-time',
+          label: 'Ask for 2 weeks to prepare with data',
+          visibleConsequence: 'Risk: CEO loses patience.',
+          effects: [{ kind: 'trust', stakeholderId: 'hq', delta: -1 }],
+        },
+      ],
+    },
+    {
+      id: 'max-rebuild-pitch',
+      category: 'team',
+      baseWeight: 2,
+      trigger: 'weighted',
+      narrative:
+        'Max pitches the major event-driven rebuild: batch → event-driven. Two quarters of work. Risky.',
+      options: [
+        {
+          id: 'spike',
+          label: 'Green-light a 2-week spike',
+          visibleConsequence: 'Safe learning.',
+          effects: [{ kind: 'morale', delta: 1 }],
+        },
+        {
+          id: 'commit-phased',
+          label: 'Commit to phased rebuild',
+          visibleConsequence: 'Max gets dream project; customer work slows.',
+          effects: [
+            { kind: 'morale', delta: 2 },
+            { kind: 'capacity-baseline', delta: -2 },
+          ],
+        },
+        {
+          id: 'defer-pragmatic',
+          label: 'Defer; focus on incremental wins',
+          visibleConsequence: 'Max morale −1; pragmatic.',
+          effects: [{ kind: 'morale', delta: -1 }],
+        },
+      ],
+    },
+  ],
+};
