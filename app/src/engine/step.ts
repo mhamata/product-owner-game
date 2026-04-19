@@ -1,6 +1,7 @@
 import type { Action, GameState, PBI, Scenario } from './types';
 import { resolveIteration } from './execution';
 import { applyEventEffects, findOption } from './events';
+import { runDiscovery } from './discovery';
 
 export function createGame(scenario: Scenario, seed: string): GameState {
   const customers: Record<string, GameState['customers'][string]> = {};
@@ -14,7 +15,11 @@ export function createGame(scenario: Scenario, seed: string): GameState {
     iterationNumber: 1,
     seed,
     phase: 'planning',
-    productBacklog: [...scenario.initialBacklog],
+    productBacklog: scenario.initialBacklog.map((p) => ({
+      ...p,
+      source: p.source ?? 'initial',
+      discoveredInIteration: p.discoveredInIteration ?? null,
+    })),
     iterationBacklog: [],
     releaseCardPosition: null,
     sprintGoal: null,
@@ -27,6 +32,7 @@ export function createGame(scenario: Scenario, seed: string): GameState {
     activePatterns: [],
     lastOutcome: null,
     pendingEvents: [],
+    newlyDiscoveredIds: [],
   };
 }
 
@@ -114,12 +120,20 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
       if (next > state.totalIterations) {
         return { ...state, phase: 'complete' };
       }
-      return {
+      const advanced: GameState = {
         ...state,
         iterationNumber: next,
         phase: 'planning',
         sprintGoal: null,
         pendingEvents: [],
+        newlyDiscoveredIds: [],
+      };
+      // Discovery: reveal new PBI(s) for this iteration.
+      const { newBacklog, newlyDiscoveredIds } = runDiscovery(advanced, scenario);
+      return {
+        ...advanced,
+        productBacklog: newBacklog,
+        newlyDiscoveredIds,
       };
     }
     case 'respond-to-event': {
@@ -139,7 +153,15 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
         },
       ];
       const pending = afterEffects.pendingEvents.filter((id) => id !== card.id);
-      return { ...afterEffects, eventLog: log, pendingEvents: pending };
+      const addedIds = option.effects
+        .filter((e): e is Extract<typeof e, { kind: 'add-pbi' }> => e.kind === 'add-pbi')
+        .map((e) => e.pbi.id);
+      return {
+        ...afterEffects,
+        eventLog: log,
+        pendingEvents: pending,
+        newlyDiscoveredIds: [...state.newlyDiscoveredIds, ...addedIds],
+      };
     }
   }
   return state;

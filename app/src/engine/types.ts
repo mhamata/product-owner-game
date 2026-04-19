@@ -16,6 +16,10 @@ export interface PBI {
   requires: string[];
   bundleWith?: string[];
   productId?: string;
+  // Iteration in which this PBI first entered the backlog. Null for initial.
+  discoveredInIteration?: number | null;
+  // 'initial' | 'discovery' | 'event' — source tag for UI and analytics.
+  source?: 'initial' | 'discovery' | 'event';
 }
 
 export type CustomerArchetype =
@@ -122,6 +126,10 @@ export interface GameState {
 
   // Pending events to be surfaced in review (rules-based)
   pendingEvents: string[];
+
+  // IDs of PBIs added to the backlog at the start of the current iteration.
+  // Reset each time the player advances. UI badges these as NEW.
+  newlyDiscoveredIds: string[];
 }
 
 export interface IterationOutcome {
@@ -154,7 +162,8 @@ export type EventEffect =
   | { kind: 'revenue'; delta: number }
   | { kind: 'capacity-baseline'; delta: number }
   | { kind: 'headcount'; delta: number }
-  | { kind: 'add-pattern'; tag: string };
+  | { kind: 'add-pattern'; tag: string }
+  | { kind: 'add-pbi'; pbi: PBI };
 
 export interface EventCard {
   id: string;
@@ -181,6 +190,10 @@ export interface Scenario {
   totalIterations: number;
   targetRevenue: number;
   initialBacklog: PBI[];
+  // Optional pool of items discoverable over the course of the game.
+  // At the start of each iteration (except the first) the engine reveals 1
+  // item from this pool, selected via seeded PRNG.
+  discoveryPool?: PBI[];
   customers: CustomerState[];
   stakeholders: StakeholderState[];
   team: TeamState;

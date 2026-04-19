@@ -48,6 +48,7 @@ function weightedSample<T>(
 export function applyEventEffects(state: GameState, effects: EventEffect[]): GameState {
   let next: GameState = {
     ...state,
+    productBacklog: [...state.productBacklog],
     team: { ...state.team },
     tech: { ...state.tech, investmentsDone: [...state.tech.investmentsDone] },
     economy: { ...state.economy },
@@ -103,6 +104,20 @@ export function applyEventEffects(state: GameState, effects: EventEffect[]): Gam
           evidence: 'event-driven',
         });
         break;
+      case 'add-pbi': {
+        const exists = next.productBacklog.some((p) => p.id === eff.pbi.id);
+        if (!exists) {
+          next.productBacklog = [
+            {
+              ...eff.pbi,
+              discoveredInIteration: next.iterationNumber,
+              source: 'event',
+            },
+            ...next.productBacklog,
+          ];
+        }
+        break;
+      }
     }
   }
   return next;

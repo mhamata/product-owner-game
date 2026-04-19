@@ -314,6 +314,64 @@ export const scenario02: Scenario = {
     },
   ],
 
+  discoveryPool: [
+    {
+      id: 'discovery-intraday-liquidity',
+      title: 'Intraday liquidity dashboard (Sophie request)',
+      kind: 'customer',
+      effort: 4,
+      effortRevealed: 4,
+      value: 300,
+      satisfies: ['treasury'],
+      requires: [],
+      productId: 'discovery-intraday-liquidity',
+    },
+    {
+      id: 'discovery-hft-fraud-alerts',
+      title: 'HFT fraud alerting rules (Ravi discovered)',
+      kind: 'customer',
+      effort: 6,
+      effortRevealed: 6,
+      value: 400,
+      satisfies: ['risk'],
+      requires: [],
+      productId: 'discovery-hft-fraud-alerts',
+    },
+    {
+      id: 'discovery-corp-actions-notice',
+      title: 'Corp-actions customer complaint log review',
+      kind: 'customer',
+      effort: 3,
+      effortRevealed: 3,
+      value: 200,
+      satisfies: ['ops'],
+      requires: [],
+      productId: 'discovery-corp-actions-notice',
+    },
+    {
+      id: 'discovery-new-ciro-rule',
+      title: 'New CIRO Rule 3300 guidance — reporting change',
+      kind: 'regulatory',
+      effort: 5,
+      effortRevealed: 5,
+      value: 450,
+      satisfies: ['compliance'],
+      requires: [],
+      productId: 'discovery-new-ciro-rule',
+    },
+    {
+      id: 'discovery-vendor-slo',
+      title: 'Broadridge SLO renegotiation window',
+      kind: 'tech',
+      effort: 3,
+      effortRevealed: 3,
+      value: 0,
+      satisfies: [],
+      requires: [],
+      productId: 'discovery-vendor-slo',
+    },
+  ],
+
   eventDeck: [
     {
       id: 'rajesh-notice',
@@ -362,10 +420,24 @@ export const scenario02: Scenario = {
         {
           id: 'accept-fork',
           label: 'Accept HQ engine and plan patches',
-          visibleConsequence: 'HQ trust +2. +20 tech debt from patches later.',
+          visibleConsequence: 'HQ trust +2. +15 tech debt. New patch PBI added.',
           effects: [
             { kind: 'trust', stakeholderId: 'hq', delta: 2 },
-            { kind: 'tech-debt', delta: 20 },
+            { kind: 'tech-debt', delta: 15 },
+            {
+              kind: 'add-pbi',
+              pbi: {
+                id: 'event-hq-engine-dtcc-patch',
+                title: 'DTCC/OCC patches on HQ break-resolution engine',
+                kind: 'tech',
+                effort: 8,
+                effortRevealed: 8,
+                value: 0,
+                satisfies: [],
+                requires: [],
+                productId: 'event-hq-engine-dtcc-patch',
+              },
+            },
           ],
         },
         {
@@ -392,11 +464,24 @@ export const scenario02: Scenario = {
       options: [
         {
           id: 'prioritize',
-          label: 'Prioritize immediately — absorb 6 pts next iter',
-          visibleConsequence: 'Painful but safe.',
+          label: 'Prioritize immediately — injects 6-pt forced item into backlog',
+          visibleConsequence: 'Painful but safe. New PBI added.',
           effects: [
-            { kind: 'capacity-baseline', delta: -2 },
             { kind: 'trust', stakeholderId: 'vendors', delta: 1 },
+            {
+              kind: 'add-pbi',
+              pbi: {
+                id: 'event-occ-protocol-v2',
+                title: 'OCC protocol v2 upgrade (45-day deadline)',
+                kind: 'regulatory',
+                effort: 6,
+                effortRevealed: 6,
+                value: 500,
+                satisfies: ['ops', 'risk'],
+                requires: [],
+                productId: 'event-occ-protocol-v2',
+              },
+            },
           ],
         },
         {
@@ -408,7 +493,7 @@ export const scenario02: Scenario = {
         {
           id: 'manual-workaround',
           label: 'Ops manual workaround to buy time',
-          visibleConsequence: 'Morale drops on Ops.',
+          visibleConsequence: 'Morale drops on Ops; tech debt up.',
           effects: [
             { kind: 'happiness', customerId: 'ops', delta: -2 },
             { kind: 'tech-debt', delta: 5 },
