@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PRAXIS Scenario 01 — The Canadian Launch (Moomoo)</title>
+<style>
+  @page { size: Letter; margin: 0.55in; }
+  body {
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: #1a1a1a; line-height: 1.5; font-size: 10.5pt; margin: 0;
+  }
+  .cover { page-break-after: always; padding-top: 1.2in; }
+  h1.title { font-size: 36pt; margin: 0 0 6px; letter-spacing: -0.5px; }
+  h1.sub { font-size: 13pt; font-weight: 400; color: #666; margin: 0 0 30px; }
+  h2 { font-size: 16pt; margin: 30px 0 10px; padding-top: 8px; border-top: 2px solid #111; }
+  h3 { font-size: 12pt; color: #0b4f8a; margin: 18px 0 5px; }
+  h4 { font-size: 11pt; margin: 12px 0 3px; color: #333; }
+  p { margin: 5px 0; }
+  ul, ol { margin: 5px 0 8px 22px; padding: 0; }
+  li { margin-bottom: 2px; }
+  table { border-collapse: collapse; width: 100%; font-size: 9.5pt; margin: 8px 0; }
+  th, td { border: 1px solid #ccc; padding: 4px 7px; vertical-align: top; text-align: left; }
+  th { background: #eef2f7; font-weight: 600; }
+  .callout { background: #fff6d9; border-left: 3px solid #c78c00; padding: 8px 12px; margin: 10px 0; }
+  .note { background: #eef5ff; border-left: 3px solid #0b4f8a; padding: 8px 12px; margin: 10px 0; }
+  .persona { border: 1px solid #ddd; padding: 10px 14px; margin: 10px 0; background: #fafbfc; border-radius: 4px; }
+  .persona h4 { margin-top: 0; }
+  .pbi { border: 1px solid #e0e3e8; padding: 8px 12px; margin: 6px 0; background: #ffffff; border-left: 4px solid #999; font-size: 10pt; }
+  .pbi.tech { border-left-color: #6b2fa5; }
+  .pbi.customer { border-left-color: #0b4f8a; }
+  .pbi .title { font-weight: 600; }
+  .pbi .meta { font-size: 9pt; color: #666; margin-top: 2px; }
+  .event { border: 1px solid #e0e3e8; background: #fffaf0; border-left: 4px solid #c78c00; padding: 10px 14px; margin: 8px 0; font-size: 10pt; }
+  .event .label { font-size: 8.5pt; font-weight: 600; color: #a66; letter-spacing: 1px; }
+  .event .title { font-weight: 600; margin: 3px 0 4px; }
+  .event .choices { margin-top: 6px; padding-left: 16px; }
+  .event .choices li { margin-bottom: 4px; }
+  .pill { display: inline-block; background: #eef2f7; padding: 1px 7px; border-radius: 10px; font-size: 8.5pt; margin-right: 3px; }
+  .green { background: #ecf7ee; border-left: 3px solid #107a3a; padding: 8px 12px; margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <h1 class="title">Scenario 01</h1>
+  <h1 class="sub">The Canadian Launch — Moomoo</h1>
+  <div style="border-top: 4px solid #111; width: 60px; margin: 20px 0;"></div>
+  <p style="font-size: 11pt; margin-top: 30px;">
+    <strong>Role:</strong> Senior Product Manager, Moomoo Canada<br>
+    <strong>Product:</strong> Moomoo Canadian mobile trading app<br>
+    <strong>Timeframe:</strong> 6 iterations (simulated 6-week quarter)<br>
+    <strong>Difficulty:</strong> Intermediate–Advanced<br>
+    <strong>Target skills:</strong> Regulated fintech PM · mobile product · international expansion · stakeholder navigation · social features · brokerage ops
+  </p>
+  <div style="margin-top: 50px; font-size: 10pt; color: #555;">
+    Authored: 2026-04-19 · For PRAXIS interview-prep build · Mike Hamata / Moomoo Senior PM interview
+  </div>
+</section>
+
+<!-- SETUP -->
+<h2>1. Setup &amp; Premise</h2>
+
+<p><strong>You've just joined Moomoo Canada as Senior PM, 8 weeks in.</strong> Moomoo is a fast-growing, Hong Kong–listed mobile trading platform (parent: Futu Holdings) known for low-cost US equity access and strong social-investing features. You're responsible for the Canadian app experience, shipped to market 6 months ago. Canada is Moomoo's third international expansion after Singapore and Australia.</p>
+
+<p>You inherited a roadmap from a departed PM, a 6-person Canadian squad (3 devs, 1 designer, 1 QA, yourself), a Chinese parent company with aggressive growth targets, and a regulatory environment (CIRO, provincial commissions) you must respect but the Chinese parent doesn't fully understand.</p>
+
+<div class="callout">
+  <strong>Your quarter-ending ask from HQ:</strong> "Hit 100,000 active Canadian retail traders by end of quarter with at least 40% mobile DAU/MAU ratio. Show us Canada can scale."
+</div>
+
+<h3>Current state (what's true at iteration 1)</h3>
+<ul>
+  <li>~22,000 active Canadian users (need to 5× in 6 weeks — unrealistic but you must show progress)</li>
+  <li>Product-market fit unclear — retention is poor after day 14</li>
+  <li>Wealthsimple and Questrade dominate Canadian retail, with brand trust Moomoo lacks</li>
+  <li>Moomoo's Canadian app is a thin localization of the US/HK apps — some features feel foreign</li>
+  <li>Canadian users want TFSA/RRSP support (critical local feature) — not prioritized by HQ</li>
+  <li>Social feed is active but largely cross-posted from US users; Canadian voice is quiet</li>
+  <li>Market-data costs are eating the P&amp;L — Canadian users expect US data for free</li>
+  <li>Team morale is mixed after PM departure; devs feel whipsawed between HQ asks and local reality</li>
+</ul>
+
+<h3>Moomoo's structural constraints (these matter)</h3>
+<ul>
+  <li><strong>HQ decision speed is slow</strong> — platform changes need HK sign-off; local changes you can own</li>
+  <li><strong>Compliance is non-negotiable</strong> — CIRO enforcement is strict; a social-feed feature that works in HK can get you fined in Canada</li>
+  <li><strong>Mobile-first, always</strong> — 95% of Canadian sessions are mobile; desktop is an afterthought</li>
+  <li><strong>Parent company prizes growth metrics</strong> — DAU, signups, volume — less interest in retention or NPS</li>
+  <li><strong>"Pro trader" user archetype dominates HQ thinking</strong> — Canadian market is mostly beginners</li>
+</ul>
+
+<h2>2. Win / Lose Conditions</h2>
+
+<table>
+  <tr><th>Outcome</th><th>Condition</th></tr>
+  <tr><td>🏆 Strong win</td><td>End of quarter: &gt;60K active users · &gt;50% day-14 retention · Customer Happiness sum &gt;35 · Tech debt &lt;40 · HQ trust intact</td></tr>
+  <tr><td>✅ Acceptable win</td><td>&gt;40K active users · retention stable · no regulatory incident · HQ trust intact</td></tr>
+  <tr><td>⚠️ Mixed</td><td>Growth but tech debt &gt;60 OR HQ trust damaged OR regulatory warning issued</td></tr>
+  <tr><td>❌ Lose</td><td>&lt;30K users OR CIRO incident OR team member quits OR TFSA feature not shipped</td></tr>
+</table>
+
+<h2>3. Personas</h2>
+
+<div class="persona">
+  <h4>🇨🇦 Maya (New Canadian Investor)</h4>
+  <p><strong>Archetype:</strong> Mainstream · <strong>Starting state:</strong> INTERESTED · <strong>LTV:</strong> CA$850 · <strong>Voice:</strong> Quiet but refers friends</p>
+  <p>32, Toronto, marketing professional, first brokerage account. Wants TFSA support, low fees, and an app that doesn't terrify her. Comparing Moomoo to Wealthsimple.</p>
+  <p><strong>Wants:</strong> TFSA, beginner education, simple UI, tax-time summaries, CAD-priority display</p>
+</div>
+
+<div class="persona">
+  <h4>📊 Darren (Active Canadian Trader)</h4>
+  <p><strong>Archetype:</strong> Power user · <strong>Starting state:</strong> ACTIVE · <strong>LTV:</strong> CA$3,200 · <strong>Voice:</strong> Loud on social + Reddit</p>
+  <p>42, Calgary, day-trades US options part-time, currently uses Interactive Brokers. Tried Moomoo for Level 2 data. Will tweet.</p>
+  <p><strong>Wants:</strong> US options + Level 2, low commissions, fast execution, pre-market extended hours, chart quality</p>
+</div>
+
+<div class="persona">
+  <h4>🎓 Priya (Aspiring Investor)</h4>
+  <p><strong>Archetype:</strong> Innovator · <strong>Starting state:</strong> DORMANT · <strong>LTV:</strong> CA$400 · <strong>Voice:</strong> Talks to peers</p>
+  <p>24, Vancouver, recent grad, has $2K to invest. Hangs out in r/CanadianInvestor, follows finfluencers on TikTok. Looking for a brokerage that feels modern.</p>
+  <p><strong>Wants:</strong> Fractional shares, social feed with Canadian voices, educational content, TikTok/Instagram presence</p>
+</div>
+
+<div class="persona">
+  <h4>💼 Wei (HQ Growth VP — stakeholder persona)</h4>
+  <p><strong>Archetype:</strong> Enterprise stakeholder · <strong>Starting state:</strong> ACTIVE · <strong>Trust:</strong> 6/10 · <strong>Voice:</strong> Authoritative, slow</p>
+  <p>Moomoo VP of International Growth, based in HK. Reports to CEO. Measures you on weekly DAU numbers. Doesn't understand why Canada needs TFSA.</p>
+  <p><strong>Wants:</strong> Weekly growth slides, no regulatory incidents, fast execution of HQ strategy, loyalty</p>
+</div>
+
+<div class="persona">
+  <h4>⚖️ Aisha (CIRO Compliance Officer — stakeholder persona)</h4>
+  <p><strong>Archetype:</strong> Regulated · <strong>Starting state:</strong> ACTIVE · <strong>Trust:</strong> 8/10 · <strong>Voice:</strong> Formal, urgent when triggered</p>
+  <p>Internal compliance lead, based in Toronto. 15 years at CIRO/IIROC. Has veto on any user-facing feature. Relationship matters.</p>
+  <p><strong>Wants:</strong> Features reviewed before launch, social feed moderation, clear risk disclosures, KYC/AML integrity</p>
+</div>
+
+<h2>4. Product Backlog</h2>
+
+<p>Format: <span class="pill">effort</span> <span class="pill">value</span> <span class="pill">who benefits</span></p>
+
+<h3>Customer-facing features</h3>
+
+<div class="pbi customer">
+  <div class="title">TFSA Account Support</div>
+  <div class="meta"><span class="pill">effort: 10</span> <span class="pill">value: very high</span> <span class="pill">Maya · Priya</span> · Core Canadian expectation. HQ has not prioritized it. Without it, Maya likely churns by iteration 3.</div>
+</div>
+<div class="pbi customer">
+  <div class="title">RRSP Account Support</div>
+  <div class="meta"><span class="pill">effort: 12</span> <span class="pill">value: high</span> <span class="pill">Maya</span> · Second most-requested local feature. Regulatory + tax complexity.</div>
+</div>
+<div class="pbi customer">
+  <div class="title">Fractional Shares (US equities)</div>
+  <div class="meta"><span class="pill">effort: 6</span> <span class="pill">value: high</span> <span class="pill">Priya</span> · Critical for young investors with small balances.</div>
+</div>
+<div class="pbi customer">
+  <div class="title">Level 2 US Market Data (free tier)</div>
+  <div class="meta"><span class="pill">effort: 4</span> <span class="pill">value: high</span> <span class="pill">Darren</span> · Competitive hook. But burns ~$180K/quarter in market-data costs. P&amp;L impact.</div>
+</div>
+<div class="pbi customer">
+  <div class="title">US Options Trading (with Canadian tax reporting)</div>
+  <div class="meta"><span class="pill">effort: 14</span> <span class="pill">value: very high</span> <span class="pill">Darren</span> · Major differentiator vs Wealthsimple. Complex clearing (OCC) + tax integration.</div>
+</div>
+<div class="pbi customer">
+  <div class="title">Canadian Social Feed (localized)</div>
+  <div class="meta"><span class="pill">effort: 8</span> <span class="pill">value: medium</span> <span class="pill">Priya</span> · Canadian voices, Canadian stocks. Compliance must review: can users post "bullish" buttons without financial advice violations?</div>
+</div>
+<div class="pbi customer">
+  <div class="title">Pre-Market &amp; Extended Hours Trading</div>
+  <div class="meta"><span class="pill">effort: 7</span> <span class="pill">value: medium</span> <span class="pill">Darren</span> · Expected by active traders. Requires operational coverage changes.</div>
+</div>
+<div class="pbi customer">
+  <div class="title">CAD-Priority Display (native currency toggle)</div>
+  <div class="meta"><span class="pill">effort: 3</span> <span class="pill">value: medium</span> <span class="pill">Maya · Priya</span> · Quick UX win. Current UI defaults to USD — disorienting for Canadians.</div>
+</div>
+<div class="pbi customer">
+  <div class="title">Beginner Onboarding Flow (Canadian context)</div>
+  <div class="meta"><span class="pill">effort: 5</span> <span class="pill">value: high</span> <span class="pill">Maya · Priya</span> · Current onboarding is HK-flavored. Canadian-specific tutorials would lift activation 15%+.</div>
+</div>
+<div class="pbi customer">
+  <div class="title">Tax Reporting Export (T5008 / T5 support)</div>
+  <div class="meta"><span class="pill">effort: 6</span> <span class="pill">value: medium</span> <span class="pill">Maya · Darren</span> · Canadian tax-time necessity. Missing today means manual export workarounds.</div>
+</div>
+<div class="pbi customer">
+  <div class="title">Education Center (Canadian context)</div>
+  <div class="meta"><span class="pill">effort: 4</span> <span class="pill">value: medium</span> <span class="pill">Maya · Priya</span> · Content: TFSA vs RRSP, Canadian tax on US dividends, etc. Could be content-only.</div>
+</div>
+<div class="pbi customer">
+  <div class="title">Referral Program (CA$ bonus)</div>
+  <div class="meta"><span class="pill">effort: 5</span> <span class="pill">value: high</span> <span class="pill">all personas</span> · Viral growth lever. Legal review required for compensation structure.</div>
+</div>
+<div class="pbi customer">
+  <div class="title">Auto-Invest Feature (scheduled buys)</div>
+  <div class="meta"><span class="pill">effort: 7</span> <span class="pill">value: medium</span> <span class="pill">Maya · Priya</span> · Beginner-friendly. Wealthsimple has this.</div>
+</div>
+<div class="pbi customer">
+  <div class="title">Push Notification Improvements (Canadian market hours)</div>
+  <div class="meta"><span class="pill">effort: 2</span> <span class="pill">value: low-medium</span> <span class="pill">Darren</span> · Currently sends US-timed alerts at 3:30am ET. Easy fix.</div>
+</div>
+
+<h3>Tech / Platform backlog</h3>
+<div class="pbi tech">
+  <div class="title">Canadian KYC Pipeline Rebuild</div>
+  <div class="meta"><span class="pill">effort: 8</span> <span class="pill">benefit</span> · Reduces signup drop-off 20% · lowers CIRO risk · unlocks faster future onboarding iterations</div>
+</div>
+<div class="pbi tech">
+  <div class="title">Feature Flag Infrastructure (per-geo)</div>
+  <div class="meta"><span class="pill">effort: 4</span> <span class="pill">benefit</span> · Canada-specific rollouts no longer require HQ deploy window · 3pt release cost savings/iteration</div>
+</div>
+<div class="pbi tech">
+  <div class="title">Market Data Cost Optimization</div>
+  <div class="meta"><span class="pill">effort: 5</span> <span class="pill">benefit</span> · Smarter caching, user-tier gating · saves ~$80K/quarter</div>
+</div>
+<div class="pbi tech">
+  <div class="title">Compliance Review Automation (pre-launch checklist)</div>
+  <div class="meta"><span class="pill">effort: 3</span> <span class="pill">benefit</span> · Reduces CIRO event probability by 50% · better relationship with Aisha</div>
+</div>
+<div class="pbi tech">
+  <div class="title">Analytics Pipeline Fix (Canadian events are mis-tagged)</div>
+  <div class="meta"><span class="pill">effort: 4</span> <span class="pill">benefit</span> · Unlocks retention/activation measurement · required before any experiment</div>
+</div>
+
+<h2>5. Event Deck (25 cards)</h2>
+
+<p>Events fire between or during iterations. Each offers 2–3 response options. Some events are seeded (forced to fire). Others are weighted by your prior decisions.</p>
+
+<h3>Stakeholder events (HQ / compliance / internal)</h3>
+
+<div class="event">
+  <div class="label">STAKEHOLDER · FORCED ITER 2</div>
+  <div class="title">Wei (HQ) Demands: "Launch a crypto tab by month-end"</div>
+  <p>Email lands Monday morning. HQ noticed competitor brokerages offering crypto; wants Moomoo CA to match. Your team has zero crypto expertise. Provincial regulations vary wildly.</p>
+  <ul class="choices">
+    <li><strong>Accept and commit</strong> — devote 2 devs for 3 iterations; drops TFSA. HQ trust +2, team morale −3, tech debt +15, CIRO risk event probability +20%.</li>
+    <li><strong>Propose a trade-off in writing</strong> — "We can do crypto OR TFSA, not both. Here's the math." HQ trust −1 short-term, +2 long-term if delivery is solid.</li>
+    <li><strong>Defer with a plan</strong> — "Here's our phased approach; Q3 exploration." HQ trust −2, team morale +2, schedule preserved.</li>
+  </ul>
+</div>
+
+<div class="event">
+  <div class="label">COMPLIANCE · WEIGHTED</div>
+  <div class="title">Aisha flags the Social Feed: "Some posts look like unlicensed advice"</div>
+  <p>CIRO just updated guidance on "finfluencer" content. Aisha pauses the social feature build and wants a moderation framework before launch.</p>
+  <ul class="choices">
+    <li><strong>Full pause + compliance redesign</strong> — Social feed delayed 2 iterations. Priya engagement drops. Aisha trust +2.</li>
+    <li><strong>Ship with a simple disclaimer</strong> — Risk: 30% chance of CIRO warning event. If fires: public, reputationally damaging.</li>
+    <li><strong>Build moderation pipeline in parallel</strong> — +5 tech effort, launch in 1 iteration. Aisha trust +1. Feasibility requires engineering bandwidth.</li>
+  </ul>
+</div>
+
+<div class="event">
+  <div class="label">COMPLIANCE · RANDOM</div>
+  <div class="title">CIRO Inquiry: "We'd like to review your margin disclosures"</div>
+  <p>Routine inquiry, but timing is bad. Aisha needs 3 days of dev time + PM time to respond.</p>
+  <ul class="choices">
+    <li><strong>Drop everything to respond</strong> — Sprint derailed. Next iteration velocity −5. Long-term Aisha trust +1.</li>
+    <li><strong>Partial response, request extension</strong> — Velocity −2, some risk.</li>
+    <li><strong>Delegate to Aisha + junior dev</strong> — You protect your time, but Aisha feels unsupported.</li>
+  </ul>
+</div>
+
+<div class="event">
+  <div class="label">STAKEHOLDER · RANDOM</div>
+  <div class="title">HQ Engineer comes to your team directly</div>
+  <p>Chen, a senior engineer from HK, messages your devs directly on WeChat asking them to help fix an HQ bug "while they have capacity." Your devs are flattered and confused.</p>
+  <ul class="choices">
+    <li><strong>Ignore</strong> — Boundary unclear. If repeats 2×, sprint velocity erodes silently.</li>
+    <li><strong>Tell devs politely "route through me"</strong> — Establishes boundary. Chen is mildly offended.</li>
+    <li><strong>Escalate to Wei</strong> — Nuclear option. Wei sides with Chen. Your position weakens.</li>
+  </ul>
+</div>
+
+<h3>Customer events</h3>
+
+<div class="event">
+  <div class="label">CUSTOMER · WEIGHTED</div>
+  <div class="title">Darren goes public on r/CanadianInvestor</div>
+  <p>Reddit post: "I switched from Moomoo back to IBKR — here's why." 1,200 upvotes. Topics: no TFSA, missing options, US options tax is a mess, app freezes during opens.</p>
+  <ul class="choices">
+    <li><strong>Respond publicly with roadmap</strong> — Promises carry risk if not delivered. Priya engagement +1.</li>
+    <li><strong>Reach out to Darren privately</strong> — Low public signal. Humanizes the response. Small chance of winning him back.</li>
+    <li><strong>Internal review + no public response</strong> — Narrative drifts away from your control.</li>
+  </ul>
+</div>
+
+<div class="event">
+  <div class="label">CUSTOMER · RANDOM</div>
+  <div class="title">Priya brings 14 friends</div>
+  <p>If Priya's state reaches ADVOCATE, she becomes a campus club rep at UBC. 14 signups this iteration. Activation quality depends on onboarding UX.</p>
+  <ul class="choices">
+    <li><strong>Engage personally</strong> — Offer Priya a $200 Amazon card + spotlight her. Community-building signal.</li>
+    <li><strong>Roll with it, normalize</strong> — Track activations but no special outreach.</li>
+  </ul>
+</div>
+
+<div class="event">
+  <div class="label">CUSTOMER · WEIGHTED</div>
+  <div class="title">Maya considers Wealthsimple</div>
+  <p>If TFSA hasn't shipped by iteration 3, Maya's customer messages mention Wealthsimple by name. If nothing changes, she churns by iter 4.</p>
+</div>
+
+<h3>Team events</h3>
+
+<div class="event">
+  <div class="label">TEAM · WEIGHTED</div>
+  <div class="title">Your tech lead asks for a 1:1</div>
+  <p>Max (tech lead) wants to talk. He's frustrated about "whiplash" priorities. Hasn't said "quitting" but you recognize the signals.</p>
+  <ul class="choices">
+    <li><strong>Hear him out, commit to fewer mid-sprint changes</strong> — Morale +2. Constrains your HQ-response flexibility.</li>
+    <li><strong>Explain HQ pressure, ask for patience</strong> — Morale unchanged. Short-term. Long-term risk.</li>
+    <li><strong>Involve him in roadmap decisions</strong> — Morale +3; you may spend more time in meetings.</li>
+  </ul>
+</div>
+
+<div class="event">
+  <div class="label">TEAM · RANDOM</div>
+  <div class="title">Designer proposes a total app redesign</div>
+  <p>Your designer wants to overhaul the whole UI to feel Canadian-native. 8 weeks of work. "It'll fix half our problems."</p>
+  <ul class="choices">
+    <li><strong>Full commit</strong> — 80% of quarter on redesign. HQ trust tanks. Might leapfrog the competition.</li>
+    <li><strong>Partial — "Canadian theme" layer</strong> — 2 iterations of UI work; accept technical scaffolding later.</li>
+    <li><strong>Reject with explanation</strong> — Designer morale −2 unless you frame it well.</li>
+  </ul>
+</div>
+
+<h3>Market events</h3>
+
+<div class="event">
+  <div class="label">MARKET · FORCED ITER 4</div>
+  <div class="title">Wealthsimple launches US options</div>
+  <p>Press release: Wealthsimple adds US options trading with Canadian tax integration. Darren's last differentiator for Moomoo is gone.</p>
+  <ul class="choices">
+    <li><strong>Accelerate your own options launch</strong> — Risk quality; 40% chance of compliance issue if rushed.</li>
+    <li><strong>Pivot narrative to community/social</strong> — Lean into Moomoo's HK strength.</li>
+    <li><strong>Retention focus</strong> — Double-down on Canadian-only features Wealthsimple can't easily match.</li>
+  </ul>
+</div>
+
+<div class="event">
+  <div class="label">MARKET · RANDOM</div>
+  <div class="title">Market volatility spike</div>
+  <p>S&amp;P down 6% in two days. Trading volume up 300%. Your infrastructure wobbles during peak hours.</p>
+  <ul class="choices">
+    <li><strong>All-hands infra response</strong> — Iteration paused. Customer-facing work stalls. Reliability saved.</li>
+    <li><strong>Targeted fixes, keep features moving</strong> — Risk: 25% chance of outage event next iteration.</li>
+    <li><strong>Full iteration detour to reliability</strong> — Saves the platform; HQ grumbles.</li>
+  </ul>
+</div>
+
+<h3>Tech events (triggered by behaviour)</h3>
+
+<div class="event">
+  <div class="label">TECH · DEBT &gt; 40</div>
+  <div class="title">"The KYC pipeline broke overnight"</div>
+  <p>Signups dropped 60%. Root cause: technical debt in the pipeline you never fixed. Hot-patch needed immediately.</p>
+</div>
+
+<div class="event">
+  <div class="label">TECH · NO REFINEMENT 2× IN ROW</div>
+  <div class="title">"Fractional shares was more complex than we estimated"</div>
+  <p>What you thought was 6 pts turns out to be 10 pts. Mid-sprint.</p>
+</div>
+
+<div class="event">
+  <div class="label">TECH · REFACTOR DEFERRED 3×</div>
+  <div class="title">Senior dev announces they're leaving</div>
+  <p>"Citing tech debt and lack of investment in our platform." 4-week notice.</p>
+</div>
+
+<h2>6. Scenario Narrative Beats</h2>
+
+<p>Each iteration has a narrative framing shown before planning:</p>
+
+<table>
+  <tr><th>Iter</th><th>Framing text (shown to player)</th></tr>
+  <tr><td>1</td><td>"Week 1 of the quarter. HQ sent a Slack message over the weekend reminding you of the 100K target. Aisha scheduled a compliance review for Thursday. Your designer dropped a Figma file for a Canadian-theme redesign. Choose what ships."</td></tr>
+  <tr><td>2</td><td>"Week 2. Signup numbers are flat. A Reddit thread about Moomoo is gaining traction. Wei (HQ) emailed at 2am HK time asking for 'the plan.'"</td></tr>
+  <tr><td>3</td><td>"Week 3. Maya's feedback is getting sharper. Some team members are pushing to deprioritize HQ's latest ask. The quarterly business review is in 3 weeks."</td></tr>
+  <tr><td>4</td><td>"Week 4 — midpoint. You're behind on user targets. Wealthsimple just announced options trading. The next two iterations will define the quarter."</td></tr>
+  <tr><td>5</td><td>"Week 5. Whatever's not shipping by end of iteration 6 is not shipping. Compliance wants final sign-offs. Team is watching how you close."</td></tr>
+  <tr><td>6</td><td>"Week 6 — final sprint. Quarterly review is Monday. Your team needs a win. Decide what ships, what's banked, and what gets cut."</td></tr>
+</table>
+
+<h2>7. Learning Goals for Mike (Senior PM interview prep)</h2>
+
+<div class="note">
+  <p>This scenario is specifically designed to rehearse skills Moomoo's interview will test. Moomoo is a fast-moving, Chinese-parent mobile brokerage expanding internationally. Senior PM candidates will face questions on:</p>
+  <ul>
+    <li><strong>Stakeholder navigation</strong> — how do you manage HQ pressure while protecting local product quality?</li>
+    <li><strong>Regulatory judgment</strong> — CIRO/compliance is non-negotiable; show you understand when to push back</li>
+    <li><strong>Growth vs retention</strong> — HQ wants DAU; PMF needs retention; which do you pick and why?</li>
+    <li><strong>Prioritization</strong> — with 14 customer asks and 5 tech investments and unlimited demand, what ships?</li>
+    <li><strong>Team leadership</strong> — you're likely managing a local team with a global parent — boundary work</li>
+    <li><strong>Product decisions under ambiguity</strong> — no playbook; write your own</li>
+  </ul>
+  <p>Running this scenario 3× with different strategies (growth-first / compliance-first / retention-first) gives you three defendable narratives for behavioral questions like "Tell me about a time you had to push back on leadership."</p>
+</div>
+
+<h2>8. Rehearsal Plan</h2>
+
+<ol>
+  <li><strong>Playthrough 1: "The HQ Loyalist"</strong> — Accept every HQ ask. Observe what breaks. Document in retro.</li>
+  <li><strong>Playthrough 2: "The Local Product Leader"</strong> — Ship TFSA in iter 1. Push back on crypto. See how HQ trust evolves.</li>
+  <li><strong>Playthrough 3: "The Compliance-First PM"</strong> — Invest heavily in the compliance automation tech item first. Ship nothing customer-facing until iter 2.</li>
+  <li><strong>Review all 3 AI retrospectives side-by-side.</strong> Notice which patterns emerge. Write your 3 best-defendable decisions down as interview stories.</li>
+  <li><strong>Day-of: pick the strategy that best matches how Moomoo signals in the interview.</strong> If they love growth, emphasize playthrough 1. If they emphasize compliance, emphasize playthrough 3. Adapt.</li>
+</ol>
+
+<div class="green">
+  <p><strong>Bottom line:</strong> this scenario is calibrated to the actual pressures a Senior PM at Moomoo Canada faces — rooted in your Questrade domain knowledge (CIRO, TFSA/RRSP, US options clearing, customer acquisition in Canada) and built to surface the specific tensions that make for strong interview narratives.</p>
+</div>
+
+</body>
+</html>

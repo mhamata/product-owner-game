@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PRAXIS — PM Methods &amp; Tools Reference</title>
+<style>
+  @page { size: Letter; margin: 0.55in; }
+  body { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: #1a1a1a; line-height: 1.5; font-size: 10.5pt; margin: 0; }
+  .cover { page-break-after: always; padding-top: 1.2in; }
+  h1.title { font-size: 36pt; margin: 0 0 6px; letter-spacing: -0.5px; }
+  h1.sub { font-size: 13pt; font-weight: 400; color: #666; margin: 0 0 30px; }
+  h2 { font-size: 17pt; margin: 34px 0 10px; padding-top: 8px; border-top: 2px solid #111; }
+  h3 { font-size: 12.5pt; color: #0b4f8a; margin: 18px 0 5px; }
+  h4 { font-size: 11pt; margin: 12px 0 3px; color: #333; }
+  p { margin: 5px 0; }
+  ul, ol { margin: 5px 0 8px 22px; padding: 0; }
+  li { margin-bottom: 2px; }
+  table { border-collapse: collapse; width: 100%; font-size: 9.5pt; margin: 8px 0; }
+  th, td { border: 1px solid #ccc; padding: 5px 7px; vertical-align: top; text-align: left; }
+  th { background: #eef2f7; font-weight: 600; }
+  .callout { background: #fff6d9; border-left: 3px solid #c78c00; padding: 8px 12px; margin: 10px 0; }
+  .note { background: #eef5ff; border-left: 3px solid #0b4f8a; padding: 8px 12px; margin: 10px 0; }
+  .green { background: #ecf7ee; border-left: 3px solid #107a3a; padding: 8px 12px; margin: 10px 0; }
+  .method { border: 1px solid #ddd; padding: 12px 16px; margin: 10px 0; background: #fafbfc; border-radius: 4px; }
+  .method h3 { margin-top: 0; }
+  .formula { background: #f4f6f9; padding: 8px 12px; font-family: "JetBrains Mono", "SF Mono", monospace; font-size: 10pt; border-radius: 4px; margin: 6px 0; }
+  .when { color: #107a3a; font-weight: 600; font-size: 9.5pt; }
+  .when-not { color: #a62121; font-weight: 600; font-size: 9.5pt; }
+  .pill { display: inline-block; background: #eef2f7; padding: 1px 7px; border-radius: 10px; font-size: 8.5pt; margin-right: 3px; }
+  code { background: #f4f6f9; padding: 1px 5px; border-radius: 3px; font-family: "JetBrains Mono", "SF Mono", monospace; font-size: 9.5pt; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <h1 class="title">PM Methods Reference</h1>
+  <h1 class="sub">Prioritization · Estimation · Discovery · Decision-Making</h1>
+  <div style="border-top: 4px solid #111; width: 60px; margin: 20px 0;"></div>
+  <p style="font-size: 11pt; margin-top: 30px;">A canonical reference for product-manager tools, frameworks, and decision methods — integrated into PRAXIS gameplay as unlockable techniques and grading rubrics.</p>
+  <div style="margin-top: 30px;" class="note">
+    <strong>How this doc is used:</strong> Each method below should appear in PRAXIS in two forms: (1) an in-game tool the player can apply to backlog items (e.g., score each item with RICE), and (2) a technique unlocked in the retrospective ("You demonstrated readiness for WSJF — unlocked!").
+  </div>
+</section>
+
+<h2>Navigation</h2>
+<p><strong>Section 1 — Prioritization methods:</strong> RICE, ICE, WSJF, MoSCoW, Kano, Value vs Effort, Opportunity Scoring, Cost of Delay</p>
+<p><strong>Section 2 — Estimation methods:</strong> T-shirt sizing, Story Points, Planning Poker, Three-point estimates, #NoEstimates</p>
+<p><strong>Section 3 — Discovery methods:</strong> Jobs-to-be-Done, User Interviews, Opportunity Solution Tree, 5 Whys, Pre-mortem, Customer Journey Mapping</p>
+<p><strong>Section 4 — Strategic frameworks:</strong> North Star Metric, OKRs, HEART, Pirate Metrics, RICE-North Star, Product Vision Board, Lean Canvas</p>
+<p><strong>Section 5 — Decision methods:</strong> DACI, RACI, RAPID, Disagree-and-commit, One-way vs Two-way doors, Pre-mortem, Cost of Inaction</p>
+<p><strong>Section 6 — Design &amp; testing:</strong> Hypothesis cards, Fake-door tests, Wizard of Oz, Concierge MVP, Minimum Lovable Product, Shape Up</p>
+
+<h2>1. Prioritization Methods</h2>
+
+<div class="method">
+  <h3>RICE Scoring</h3>
+  <p class="formula">RICE = (Reach × Impact × Confidence) / Effort</p>
+  <p>Intercom's framework. Each factor scored on defined scales:</p>
+  <ul>
+    <li><strong>Reach:</strong> # users/customers affected per time period (quarterly is standard)</li>
+    <li><strong>Impact:</strong> Massive=3, High=2, Medium=1, Low=0.5, Minimal=0.25</li>
+    <li><strong>Confidence:</strong> 100%, 80%, 50% — how sure are you about the other numbers?</li>
+    <li><strong>Effort:</strong> person-months</li>
+  </ul>
+  <p class="when">Use when: you have several features competing for a single team's time, and can estimate reach + impact with data</p>
+  <p class="when-not">Don't use when: items are strategically non-negotiable (compliance, platform migration), or at early-stage ideation</p>
+  <p><strong>PRAXIS integration:</strong> Player can open a "RICE panel" on any backlog item. AI grades their scoring in the retrospective: "Your RICE score on item X was 12; senior PMs would have weighted confidence lower given the discovery gap."</p>
+</div>
+
+<div class="method">
+  <h3>ICE Scoring</h3>
+  <p class="formula">ICE = Impact × Confidence × Ease</p>
+  <p>Sean Ellis's simpler version of RICE. Each factor 1–10. Used for idea triage and growth experiments.</p>
+  <p class="when">Use when: volume of ideas is high, data is thin, speed matters (growth teams, hackathon ideation)</p>
+  <p class="when-not">Don't use when: items require precise effort estimation or involve cross-team dependencies</p>
+  <p><strong>Covered in workbook exercise:</strong> p.32 — DentinFlow feature ranking. Also shows up in PRAXIS as the "quick triage" tool for customer inbox items.</p>
+</div>
+
+<div class="method">
+  <h3>WSJF — Weighted Shortest Job First</h3>
+  <p class="formula">WSJF = Cost of Delay / Job Size</p>
+  <p>SAFe framework. Cost of Delay = (User/Business Value + Time Criticality + Risk Reduction/Opportunity Enablement). Each factor scored 1–10 using Fibonacci.</p>
+  <p>Tiny items with high value bubble to the top. The argument during scoring is where value is created.</p>
+  <p class="when">Use when: urgency / time-sensitivity varies across the backlog — regulatory items, seasonal features, competitive windows</p>
+  <p class="when-not">Don't use when: the team is new to scoring (too many variables); risk of false precision</p>
+  <p><strong>PRAXIS integration:</strong> WSJF is unlocked after completing a "regulatory-heavy" scenario like Clearing Pipeline.</p>
+</div>
+
+<div class="method">
+  <h3>MoSCoW Method</h3>
+  <p>Buckets items into four tiers:</p>
+  <table>
+    <tr><th>Tier</th><th>Meaning</th></tr>
+    <tr><td><strong>M — Must have</strong></td><td>Launch blocker. Without it, release fails.</td></tr>
+    <tr><td><strong>S — Should have</strong></td><td>Important but not blocking. Ship without it if needed.</td></tr>
+    <tr><td><strong>C — Could have</strong></td><td>Nice to have. Clear upside but low urgency.</td></tr>
+    <tr><td><strong>W — Won't have (this time)</strong></td><td>Explicitly out of scope for this release.</td></tr>
+  </table>
+  <p class="when">Use when: scoping a release with stakeholders who want to say "everything's a must"</p>
+  <p><strong>Key discipline:</strong> the total MoSCoW "Must" items should fit in ~60% of capacity, leaving room for the inevitable surprises. If 100% of capacity is "Must," something is wrong.</p>
+</div>
+
+<div class="method">
+  <h3>Kano Model</h3>
+  <p>Classifies features by how user satisfaction changes with investment:</p>
+  <ul>
+    <li><strong>Mandatory / Basic</strong> — missing = angry; present = neutral. Cost of entry.</li>
+    <li><strong>Linear / Performance</strong> — more is better, satisfaction tracks linearly.</li>
+    <li><strong>Exciter / Delighter</strong> — absence goes unnoticed; presence creates surprise.</li>
+    <li><strong>Indifferent</strong> — nobody cares.</li>
+    <li><strong>Reverse</strong> — users hate it (e.g., carrier bloatware).</li>
+  </ul>
+  <p><strong>The temporal truth:</strong> Exciters → Linear → Mandatory over time. Dark mode 2016 → 2024. Plan for this decay.</p>
+  <p class="when">Use when: designing differentiation strategy, positioning against competitors</p>
+  <p><strong>Covered in workbook exercises:</strong> p.29–31.</p>
+</div>
+
+<div class="method">
+  <h3>Value vs Effort Matrix (2×2)</h3>
+  <p>Simplest prioritization tool. Four quadrants:</p>
+  <table>
+    <tr><th></th><th>Low Effort</th><th>High Effort</th></tr>
+    <tr><th>High Value</th><td><strong>Quick Wins</strong> — do first</td><td><strong>Big Bets</strong> — plan carefully</td></tr>
+    <tr><th>Low Value</th><td><strong>Fill-ins</strong> — if capacity allows</td><td><strong>Time Sinks</strong> — avoid</td></tr>
+  </table>
+  <p class="when">Use when: communicating prioritization to non-PM stakeholders; drawing on a whiteboard</p>
+  <p><strong>PRAXIS integration:</strong> the default tool for Tutorial scenarios; unlocked first.</p>
+</div>
+
+<div class="method">
+  <h3>Opportunity Scoring</h3>
+  <p class="formula">Opportunity = Importance + max(Importance − Satisfaction, 0)</p>
+  <p>Tony Ulwick's method (Jobs-to-be-Done). Survey users on "how important is outcome X" and "how satisfied are you with current solutions." Gaps = opportunities.</p>
+  <p class="when">Use when: entering an existing market and need to find the unmet-need wedge</p>
+</div>
+
+<div class="method">
+  <h3>Cost of Delay (CoD)</h3>
+  <p>Asks: "If we ship this one sprint later, what does it cost?" Four patterns:</p>
+  <ul>
+    <li><strong>Urgency-sensitive:</strong> cost climbs steeply (regulatory deadline, market event)</li>
+    <li><strong>Time-decaying:</strong> value erodes (seasonal, competitive window)</li>
+    <li><strong>Fixed-date:</strong> cliff at a date (expiry day, audit)</li>
+    <li><strong>Standard:</strong> minor delay cost</li>
+  </ul>
+  <p class="when">Use when: comparing feature priority with stakeholders who speak business value; especially powerful for regulated/operational work</p>
+  <p><strong>Applied at Questrade:</strong> options sellout automation is urgency-sensitive + fixed-date (monthly expiry). Every missed expiry = quantifiable exposure. Stronger than "high priority."</p>
+</div>
+
+<h2>2. Estimation Methods</h2>
+
+<div class="method">
+  <h3>T-Shirt Sizing</h3>
+  <p>Abstract sizing: XS / S / M / L / XL / XXL. Relative, not absolute. Best for early-stage estimation where precision is false.</p>
+  <p>Rough conversion: XS ≈ 1 day · S ≈ 2–3 days · M ≈ 1 sprint · L ≈ 2 sprints · XL ≈ 1 quarter · XXL ≈ "break this down"</p>
+  <p class="when">Use when: roadmap planning, epic-level items, stakeholder conversations</p>
+  <p class="when-not">Don't use when: sprint-level planning (use story points or days instead)</p>
+  <p><strong>PRAXIS integration:</strong> bigger-than-sprint backlog items are displayed as T-shirt sizes. Player must break them down (unlocked technique: "Story Decomposition") before adding to a sprint.</p>
+</div>
+
+<div class="method">
+  <h3>Story Points (Fibonacci)</h3>
+  <p>Relative effort: 1, 2, 3, 5, 8, 13, 21. Captures complexity, risk, and effort combined — not just time.</p>
+  <p class="when">Use when: the team has a consistent membership and is calibrated on relative sizing</p>
+  <p class="when-not">Don't use when: team is newly formed (no relative baseline), or stakeholders try to convert points → hours (they aren't)</p>
+</div>
+
+<div class="method">
+  <h3>Planning Poker</h3>
+  <p>Team estimates together using cards. Each dev reveals their estimate simultaneously; biggest difference explains their reasoning; team converges.</p>
+  <p>The <em>conversation</em> around divergent estimates is where value is created — it surfaces hidden assumptions.</p>
+  <p class="when">Use when: complex stories, new team, or when surprises keep happening mid-sprint</p>
+</div>
+
+<div class="method">
+  <h3>Three-Point Estimates (PERT)</h3>
+  <p class="formula">Expected = (Optimistic + 4×Most Likely + Pessimistic) / 6</p>
+  <p>Forces you to name the range. Useful for roadmap commitments when a single-point estimate would be misleading.</p>
+  <p class="when">Use when: roadmap/milestone commitments; communicating uncertainty to executives</p>
+</div>
+
+<div class="method">
+  <h3>#NoEstimates</h3>
+  <p>Alternative movement: stop estimating individual stories; instead measure throughput (stories per week) and forecast completion via Monte Carlo simulation.</p>
+  <p class="when">Use when: team has good flow discipline and stable story sizes</p>
+  <p class="when-not">Don't use when: stakeholders require roadmap commitments with dates</p>
+</div>
+
+<h2>3. Discovery Methods</h2>
+
+<div class="method">
+  <h3>Jobs-to-be-Done (JTBD)</h3>
+  <p>Framework: users "hire" products to do a "job." The job is a functional, social, and emotional goal they have in a context.</p>
+  <p class="formula">When [situation], I want to [motivation], so I can [expected outcome].</p>
+  <p>Classic example: the milkshake (hired for the morning commute, not for breakfast flavor).</p>
+  <p class="when">Use when: entering a new market, repositioning, or feeling that personas feel shallow</p>
+</div>
+
+<div class="method">
+  <h3>User Interviews (Mom Test)</h3>
+  <p>Rob Fitzpatrick's rules from <em>The Mom Test</em>:</p>
+  <ul>
+    <li>Talk about their life, not your idea</li>
+    <li>Ask about specific past behavior, not hypothetical futures</li>
+    <li>Talk less, listen more</li>
+    <li>Avoid compliments; they're politeness, not signal</li>
+  </ul>
+  <p class="when">Use when: exploring problem space, validating pain; before writing PRDs</p>
+  <p><strong>PRAXIS integration:</strong> in-game "Discovery" actions where player interviews customers. Text inputs are graded for Mom Test compliance.</p>
+</div>
+
+<div class="method">
+  <h3>Opportunity Solution Tree (Teresa Torres)</h3>
+  <p>Hierarchical tree:</p>
+  <p class="formula">Desired Outcome → Opportunities → Solutions → Experiments</p>
+  <p>Forces you to link every solution back to an opportunity (a real pain or need) and every opportunity back to a measurable outcome. No orphan features.</p>
+  <p class="when">Use when: continuous discovery practice; keeping the team focused on outcomes over outputs</p>
+</div>
+
+<div class="method">
+  <h3>5 Whys</h3>
+  <p>Ask "why" five times to drill from symptom to root cause. Attributed to Toyota. Best used in post-mortems and problem-framing.</p>
+  <p class="when">Use when: investigating bugs, churn reasons, team dysfunction</p>
+  <p class="when-not">Don't use when: the problem is truly ambiguous with multiple parallel causes (then use fishbone)</p>
+</div>
+
+<div class="method">
+  <h3>Pre-mortem</h3>
+  <p>Before building, write the post-mortem for "we shipped it and it failed." The failure modes that surface are usually the assumptions that were unexamined.</p>
+  <p class="when">Use when: big strategic bets, major launches, high-stakes product decisions</p>
+  <p><strong>PRAXIS integration:</strong> scenarios with "Big Bet" decisions offer pre-mortem as an unlockable technique.</p>
+</div>
+
+<div class="method">
+  <h3>Customer Journey Mapping</h3>
+  <p>Map every step of the customer's experience: their actions, thoughts, emotions, and pain points at each stage. Reveals friction invisible from within a single feature.</p>
+  <p class="when">Use when: end-to-end product design, identifying activation or retention gaps</p>
+</div>
+
+<h2>4. Strategic Frameworks</h2>
+
+<div class="method">
+  <h3>North Star Metric</h3>
+  <p>One number that captures the product's core value delivery. Examples: Airbnb = nights booked. Facebook = daily active users. Spotify = time spent listening.</p>
+  <p>Rules: it should (a) capture customer value, (b) correlate with long-term revenue, (c) be measurable, (d) be leading not lagging.</p>
+  <p class="when">Use when: aligning a team around a shared outcome; filtering noise from dashboards</p>
+</div>
+
+<div class="method">
+  <h3>OKRs (Objectives + Key Results)</h3>
+  <p>Andy Grove / John Doerr. Quarterly framework.</p>
+  <ul>
+    <li><strong>Objective:</strong> qualitative, aspirational, motivating ("Make checkout feel effortless")</li>
+    <li><strong>Key Results:</strong> 3–5 measurable outcomes that indicate objective is met</li>
+  </ul>
+  <p class="when">Use when: aligning cross-functional teams; quarterly planning</p>
+  <p class="when-not">Don't use when: team is under 8 people; OKRs become bureaucracy for the sake of process</p>
+</div>
+
+<div class="method">
+  <h3>HEART Framework (Google)</h3>
+  <p>For measuring UX quality:</p>
+  <ul>
+    <li><strong>H</strong>appiness — user satisfaction, NPS</li>
+    <li><strong>E</strong>ngagement — frequency, depth of use</li>
+    <li><strong>A</strong>doption — new users, new feature uptake</li>
+    <li><strong>R</strong>etention — coming back</li>
+    <li><strong>T</strong>ask success — completion rates</li>
+  </ul>
+</div>
+
+<div class="method">
+  <h3>Pirate Metrics (AARRR)</h3>
+  <p>Dave McClure: Acquisition → Activation → Retention → Revenue → Referral. A funnel model for startup growth diagnostics.</p>
+  <p class="when">Use when: early-stage consumer growth work</p>
+</div>
+
+<div class="method">
+  <h3>Product Vision Board (Roman Pichler)</h3>
+  <p>One-page tool with four quadrants:</p>
+  <table>
+    <tr><th>Target Group</th><th>Needs</th></tr>
+    <tr><th>Product</th><th>Business Goals</th></tr>
+  </table>
+  <p>Revisited quarterly. Lives on the wall. Covered in Scenario 01 exercises.</p>
+</div>
+
+<div class="method">
+  <h3>Lean Canvas (Ash Maurya)</h3>
+  <p>One-page business model. Nine blocks covering problem, solution, key metrics, value proposition, unfair advantage, channels, customer segments, cost structure, revenue streams.</p>
+  <p class="when">Use when: early-stage startup validation; forcing yourself to consider economics alongside product</p>
+</div>
+
+<div class="method">
+  <h3>Amazon Working Backwards (PR-FAQ)</h3>
+  <p>Before writing code, write the press release for the finished product. Add an FAQ for expected questions (internal + external). Amazon won't fund a project without one.</p>
+  <p class="when">Use when: forcing clarity of vision before any implementation</p>
+  <p><strong>PRAXIS integration:</strong> "Write a PR-FAQ" is a technique unlocked after completing a "Strategic No" or "Strategic Pivot" scenario.</p>
+</div>
+
+<h2>5. Decision-Making Methods</h2>
+
+<div class="method">
+  <h3>DACI Framework</h3>
+  <p>Clarifies roles on any decision:</p>
+  <ul>
+    <li><strong>D — Driver:</strong> the one person who gets it done</li>
+    <li><strong>A — Approver:</strong> ultimate authority (often exec)</li>
+    <li><strong>C — Contributors:</strong> provide expertise, input</li>
+    <li><strong>I — Informed:</strong> need to know outcome</li>
+  </ul>
+  <p class="when">Use when: decisions keep getting muddy because nobody knows who decides</p>
+</div>
+
+<div class="method">
+  <h3>RACI (similar)</h3>
+  <p>Responsible · Accountable · Consulted · Informed. More focused on execution than decision. Common in ops + project management.</p>
+</div>
+
+<div class="method">
+  <h3>Disagree and Commit (Amazon)</h3>
+  <p>When a decision must be made and the team doesn't fully agree: voice disagreement openly, then commit fully to the chosen path.</p>
+  <p><strong>Rule:</strong> if you disagree, do so in the meeting. Not after, not silently. And once decided, don't undermine.</p>
+</div>
+
+<div class="method">
+  <h3>One-Way vs Two-Way Doors (Bezos)</h3>
+  <p>Two types of decisions:</p>
+  <ul>
+    <li><strong>Two-way doors</strong> — reversible. Make them quickly. Don't need consensus.</li>
+    <li><strong>One-way doors</strong> — irreversible. Deliberate carefully. Need more review.</li>
+  </ul>
+  <p><strong>Common PM mistake:</strong> treating two-way doors like one-way doors. Kills velocity.</p>
+</div>
+
+<div class="method">
+  <h3>Cost of Inaction</h3>
+  <p>Standard PM thinking asks "what does doing X cost?" Better thinking also asks "what does not doing X cost?" — especially for infrastructure, tech debt, and discovery investments.</p>
+  <p class="when">Use when: making case for platform investment, team health, or compliance work that's hard to quantify</p>
+</div>
+
+<h2>6. Design &amp; Testing</h2>
+
+<div class="method">
+  <h3>Hypothesis Cards</h3>
+  <p class="formula">We believe [persona] will [behavior] because [reason]. We'll know it worked when [metric].</p>
+  <p>Forces you to name a prediction and a falsification. If you can't, you don't understand the value yet.</p>
+</div>
+
+<div class="method">
+  <h3>Fake-Door Test</h3>
+  <p>Put a button or landing page for a feature that doesn't exist yet. Measure clicks. Apologize to clickers ("coming soon") while learning demand.</p>
+  <p class="when">Use when: validating demand before investing effort</p>
+</div>
+
+<div class="method">
+  <h3>Wizard of Oz</h3>
+  <p>The user sees a "working" feature but it's actually humans behind the curtain. Test UX before building automation.</p>
+  <p class="when">Use when: proving demand for automation-heavy features (AI, matching algorithms)</p>
+</div>
+
+<div class="method">
+  <h3>Concierge MVP</h3>
+  <p>Deliver the service manually for the first 10 customers. Understand the workflow deeply, then automate what's worth automating.</p>
+  <p class="when">Use when: early-stage service-heavy products (DentinFlow-style)</p>
+</div>
+
+<div class="method">
+  <h3>Minimum Lovable Product</h3>
+  <p>Counter to MVP. Ship something small but that users actually love, not something minimum that they tolerate. Often the better bet in competitive markets.</p>
+</div>
+
+<div class="method">
+  <h3>Shape Up (Basecamp)</h3>
+  <p>6-week cycles, not sprints. Upfront "shaping" (PM + senior engineer) produces a "pitch" with rough scope. Cross-functional team "betting" on what to work on. Appetite-driven scope (how much time we're willing to invest).</p>
+  <p class="when">Use when: small company, trust in senior ICs, bias toward larger pieces of work</p>
+</div>
+
+<h2>7. How PRAXIS Integrates These Methods</h2>
+
+<div class="green">
+  <p><strong>Three integration points:</strong></p>
+  <ol>
+    <li><strong>In-game tools</strong> — player can open a panel ("Apply RICE," "Classify as Kano," "Write PR-FAQ") on any backlog item. Using methods correctly earns XP toward that method's mastery.</li>
+    <li><strong>Retrospective evidence</strong> — AI mentor cites methods by name: "You applied ICE to triage iter 2 backlog — good move given data thinness. Senior PM would also have applied Kano to the top 3 to check for 'exciter' opportunities."</li>
+    <li><strong>Unlockable techniques</strong> — each scenario has 1–2 techniques it can unlock. Completing a regulatory scenario (Clearing Pipeline) well can unlock WSJF and Cost of Delay. Completing a consumer scenario can unlock Kano and Pirate Metrics.</li>
+  </ol>
+</div>
+
+<h3>Method-to-scenario matrix (which methods each scenario teaches)</h3>
+<table>
+  <tr><th>Scenario</th><th>Methods exercised</th></tr>
+  <tr><td>01 · Canadian Launch</td><td>Kano · RICE · Value vs Effort · JTBD · Customer Journey</td></tr>
+  <tr><td>02 · Clearing Pipeline</td><td>WSJF · Cost of Delay · RACI/DACI · Cost of Inaction · Pre-mortem</td></tr>
+  <tr><td>03 · Churn Cliff</td><td>Opportunity Scoring · AARRR · 5 Whys · Hypothesis Cards</td></tr>
+  <tr><td>05 · Scope Creep City</td><td>MoSCoW · Disagree and Commit · One-way vs Two-way doors</td></tr>
+  <tr><td>08 · Post-Launch</td><td>North Star · HEART · Fake-door tests · Three-point estimates</td></tr>
+  <tr><td>10 · Interview Scenario</td><td>All (player chooses which to apply under time pressure)</td></tr>
+</table>
+
+<div class="note">
+  <strong>Interview tip for Mike:</strong> Moomoo's interview will likely ask you to name and apply prioritization frameworks. Study RICE, WSJF, and Cost of Delay for the Clearing & Settlement role — they map directly to the regulatory-heavy, infrastructure-investment decisions that job requires. For consumer-side questions, have Kano and Pirate Metrics ready.
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PRAXIS — Product Requirements Document v1.0</title>
+<style>
+  @page { size: Letter; margin: 0.55in; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: #151515;
+    line-height: 1.5;
+    font-size: 10.5pt;
+    margin: 0;
+  }
+  .cover {
+    page-break-after: always;
+    padding-top: 1.5in;
+  }
+  h1.title { font-size: 42pt; margin: 0 0 8px; letter-spacing: -1px; }
+  .subtitle { font-size: 13pt; color: #666; margin: 0 0 40px; font-weight: 400; }
+  .cover-meta { margin-top: 60px; font-size: 10pt; color: #555; line-height: 1.7; }
+  .cover-meta .row { margin-bottom: 4px; }
+  .cover-meta strong { display: inline-block; min-width: 120px; color: #111; }
+
+  h2 {
+    font-size: 18pt;
+    margin: 36px 0 12px;
+    padding-top: 8px;
+    border-top: 2px solid #111;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 12.5pt;
+    margin: 22px 0 6px;
+    color: #0b4f8a;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-size: 11pt;
+    margin: 14px 0 4px;
+    color: #333;
+  }
+  p { margin: 6px 0; }
+  ul, ol { margin: 6px 0 10px 22px; padding: 0; }
+  li { margin-bottom: 3px; }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 9.5pt;
+    margin: 10px 0;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 5px 7px;
+    vertical-align: top;
+    text-align: left;
+  }
+  th { background: #eef2f7; font-weight: 600; }
+
+  code, pre {
+    font-family: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    font-size: 9pt;
+    background: #f4f6f9;
+    color: #1a1a1a;
+  }
+  code { padding: 1px 5px; border-radius: 3px; }
+  pre {
+    padding: 10px 12px;
+    border-radius: 5px;
+    overflow-x: auto;
+    line-height: 1.4;
+    border: 1px solid #e0e3e8;
+    white-space: pre-wrap;
+  }
+
+  .callout {
+    background: #fff6d9;
+    border-left: 3px solid #c78c00;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 10pt;
+  }
+  .note {
+    background: #eef5ff;
+    border-left: 3px solid #0b4f8a;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 10pt;
+  }
+  .warn {
+    background: #ffeeee;
+    border-left: 3px solid #a62121;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 10pt;
+  }
+  .green {
+    background: #ecf7ee;
+    border-left: 3px solid #107a3a;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 10pt;
+  }
+
+  .toc {
+    column-count: 2;
+    column-gap: 30px;
+    font-size: 10pt;
+  }
+  .toc ol { list-style: decimal; margin: 0 0 0 20px; }
+  .toc li { margin-bottom: 3px; break-inside: avoid; }
+
+  .section { page-break-before: avoid; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .card {
+    border: 1px solid #ddd;
+    background: #fafbfc;
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-size: 10pt;
+  }
+  .card h4 { margin-top: 0; color: #0b4f8a; }
+
+  .pill {
+    display: inline-block;
+    background: #eef2f7;
+    color: #333;
+    padding: 2px 9px;
+    border-radius: 10px;
+    font-size: 8.5pt;
+    margin: 0 3px 3px 0;
+  }
+  .metric {
+    display: inline-block;
+    font-size: 10pt;
+    font-weight: 600;
+    color: #107a3a;
+  }
+
+  .kpi-box {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .kpi-box .kpi {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    background: white;
+  }
+  .kpi .num { font-size: 18pt; font-weight: 700; color: #0b4f8a; }
+  .kpi .lbl { font-size: 9pt; color: #666; }
+
+  hr.soft { border: none; border-top: 1px dashed #ccc; margin: 18px 0; }
+
+  .ac {
+    font-size: 9.5pt;
+    background: #f6f8fb;
+    padding: 6px 10px;
+    margin: 4px 0;
+    border-left: 2px solid #888;
+  }
+  .ac .label { font-weight: 600; color: #555; margin-right: 6px; }
+
+  .story {
+    border: 1px solid #ddd;
+    padding: 8px 10px;
+    margin: 6px 0;
+    border-radius: 4px;
+    font-size: 9.5pt;
+  }
+  .story .title { font-weight: 600; color: #0b4f8a; margin-bottom: 3px; }
+
+  .schema {
+    font-size: 8.5pt;
+    background: #f4f6f9;
+    padding: 10px 12px;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    font-family: "JetBrains Mono", "SF Mono", Consolas, monospace;
+    line-height: 1.3;
+  }
+
+  .sig-block {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #ccc;
+    font-size: 9.5pt;
+    color: #666;
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<section class="cover">
+  <h1 class="title">PRAXIS</h1>
+  <p class="subtitle">The real-world flight simulator for product managers.<br>Product Requirements Document · v1.0</p>
+  <div style="border-top: 4px solid #111; width: 60px; margin: 24px 0;"></div>
+
+  <div class="cover-meta">
+    <div class="row"><strong>Author</strong> Mike Hamata — Founder</div>
+    <div class="row"><strong>Co-author</strong> Claude (Opus 4.7) — Technical PM</div>
+    <div class="row"><strong>Version</strong> 1.0 (MVP scope)</div>
+    <div class="row"><strong>Date</strong> 2026-04-18</div>
+    <div class="row"><strong>Status</strong> Draft — pending stakeholder review</div>
+    <div class="row"><strong>Working name</strong> PRAXIS (Greek: "practice"). Finalise with trademark check.</div>
+    <div class="row"><strong>Alternatives</strong> Decisionary · Sprintcraft · Keystone · North Star Sim</div>
+  </div>
+</section>
+
+<!-- TOC -->
+<section>
+  <h2>Table of Contents</h2>
+  <div class="toc">
+    <ol>
+      <li>Executive Summary</li>
+      <li>Problem &amp; Market Opportunity</li>
+      <li>Target Users &amp; Personas</li>
+      <li>Product Vision &amp; Strategy</li>
+      <li>Core Game Mechanics</li>
+      <li>Customer Engagement Model</li>
+      <li>Event Engine (Dice Replacement)</li>
+      <li>Scenario Framework</li>
+      <li>AI Mentor System</li>
+      <li>Multiplayer Architecture</li>
+      <li>Technical Architecture</li>
+      <li>Data Model</li>
+      <li>Feature Specifications (MVP)</li>
+      <li>UI / UX Design Principles</li>
+      <li>Analytics &amp; Instrumentation</li>
+      <li>Security, Privacy &amp; Compliance</li>
+      <li>Pricing &amp; Business Model</li>
+      <li>Go-to-Market Strategy</li>
+      <li>Cost Projections &amp; Financials</li>
+      <li>Roadmap &amp; Phasing</li>
+      <li>Success Metrics &amp; KPIs</li>
+      <li>Risks &amp; Mitigations</li>
+      <li>Team &amp; Resourcing</li>
+      <li>Next Steps</li>
+    </ol>
+  </div>
+</section>
+
+<!-- 1. EXECUTIVE SUMMARY -->
+<section class="section">
+  <h2>1. Executive Summary</h2>
+
+  <h3>Vision</h3>
+  <p><strong>PRAXIS is the real-world flight simulator for product managers.</strong> A browser-based multiplayer simulation where aspiring and working PMs practice decisions under uncertainty — with consequence-driven events, behavioural customer models, and AI-led retrospectives — until product judgment becomes a reflex.</p>
+
+  <h3>The problem</h3>
+  <p>Product management is learned by doing, but most people can't access the "doing." Books teach theory, Reforge charges $2,000/year for content consumption, CSPO workshops give 2 days of physical exercises that vanish when the whiteboards are wiped. Nobody offers what pilots and surgeons take for granted: <em>a simulator where you practice consequential decisions at speed, with instant feedback, as many times as it takes to internalise the skill</em>.</p>
+
+  <h3>The solution</h3>
+  <p>PRAXIS turns Zuzi Šochová's Business Value Game and the full CSPO curriculum into a web-native game engine that:</p>
+  <ul>
+    <li><strong>Removes all friction</strong> — zero spreadsheets, zero math. Players drag cards, commit decisions, see consequences</li>
+    <li><strong>Replaces random dice with consequence-driven events</strong> — skipped refinement three sprints ago causes scope surprises now</li>
+    <li><strong>Models customers as behavioural state machines</strong>, not happiness integers</li>
+    <li><strong>Generates AI-led retrospectives</strong> after every game with alternate-history replays</li>
+    <li><strong>Supports multiplayer Scrum roles</strong> — PO + SM + Developer co-op with role-specific views</li>
+    <li><strong>Ingests real backlogs</strong> — paste your Linear/Jira, simulate next sprint before running it</li>
+  </ul>
+
+  <h3>Target market (SOM year 1)</h3>
+  <div class="kpi-box">
+    <div class="kpi"><div class="num">200K+</div><div class="lbl">CSPO/CSM certifications/yr</div></div>
+    <div class="kpi"><div class="num">$400M</div><div class="lbl">PM bootcamp market</div></div>
+    <div class="kpi"><div class="num">50K+</div><div class="lbl">Reforge subscribers</div></div>
+    <div class="kpi"><div class="num">$1B+</div><div class="lbl">Corporate L&amp;D product training</div></div>
+  </div>
+
+  <h3>MVP scope &amp; timeline</h3>
+  <p><strong>6-week build.</strong> Solo mode, one scenario (SaaS / fintech), event engine with 20 cards, 3 customer archetypes, AI post-game retrospective. Targeted launch: <strong>Q3 2026</strong>.</p>
+
+  <h3>Business model</h3>
+  <p>Freemium with four paid tiers. Year-1 revenue target: <strong>$200–250K ARR</strong>. Path to $1M ARR by end of year 2 through Certified Scrum Trainer partnerships.</p>
+
+  <h3>Why this, why now, why Mike</h3>
+  <ul>
+    <li>AI is commoditising PM <em>output</em> (PRD writing, spec generation). The moat shifts to <strong>judgment</strong>. PRAXIS trains judgment.</li>
+    <li>CSPO/CSM is a $1,000-per-cert market with 200K+ attendees annually and no serious digital companion product.</li>
+    <li>Mike brings 13 years of operational product experience (Questrade), an active SaaS build (DentinFlow), and is in a live CSPO cohort — unique founder-market fit.</li>
+  </ul>
+</section>
+
+<!-- 2. PROBLEM & MARKET -->
+<section class="section">
+  <h2>2. Problem &amp; Market Opportunity</h2>
+
+  <h3>The learning gap</h3>
+  <p>Product managers are paid to make decisions under uncertainty. Nothing in existing training produces reps in this exact skill:</p>
+  <table>
+    <tr><th>Learning modality</th><th>What it teaches</th><th>What it doesn't</th></tr>
+    <tr><td>Books / podcasts (Lenny's, Inspired)</td><td>Frameworks, principles</td><td>Reps. No decisions made. No consequences.</td></tr>
+    <tr><td>Reforge / Pragmatic</td><td>Content consumption</td><td>Passive. Exam-style at best.</td></tr>
+    <tr><td>Case interviews (Exponent)</td><td>Interview performance</td><td>Transactional. Doesn't build real judgment.</td></tr>
+    <tr><td>CSPO / CSM workshops</td><td>Role clarity, theoretical grounding</td><td>Ephemeral. Physical. 2 days then gone.</td></tr>
+    <tr><td>GoPractice simulator</td><td>Growth/analytics PM</td><td>Individual-only. No Scrum/PO. No team.</td></tr>
+    <tr><td>Real on-the-job experience</td><td>Everything</td><td>Takes 5+ years. Unevenly distributed. No replay.</td></tr>
+  </table>
+
+  <h3>Market sizing</h3>
+  <div class="grid-2">
+    <div class="card">
+      <h4>TAM</h4>
+      <p><strong>$2B+</strong> global product education and training market (bootcamps, cohorts, enterprise L&amp;D, certifications).</p>
+    </div>
+    <div class="card">
+      <h4>SAM (serviceable)</h4>
+      <p><strong>$400M</strong> — working PMs + aspiring PMs + CSPO/CSM candidates + enterprise Scrum training.</p>
+    </div>
+    <div class="card">
+      <h4>SOM (year 3 target)</h4>
+      <p><strong>$10M ARR</strong> — 3% of SAM via individual subs, CST partnerships, enterprise deals.</p>
+    </div>
+    <div class="card">
+      <h4>Year 1 realistic</h4>
+      <p><strong>$200–250K ARR</strong> — 500 individual subs + 5 CST partners + 2 enterprise pilots.</p>
+    </div>
+  </div>
+
+  <h3>Competitive positioning (differentiation)</h3>
+  <table>
+    <tr><th>Competitor</th><th>Core value</th><th>Our differentiation</th></tr>
+    <tr><td>GoPractice</td><td>Growth PM via Amplitude</td><td>Scrum/PO focus · multiplayer · zero-friction UX · event causality</td></tr>
+    <tr><td>Reforge</td><td>Content from senior PMs</td><td>Practice over content · consequential decisions · lower price point</td></tr>
+    <tr><td>Pragmatic Institute</td><td>Certification</td><td>Dynamic scenarios · team play · modern UX · AI feedback</td></tr>
+    <tr><td>ITERATE (board game)</td><td>Physical agile sim</td><td>Digital · async · scalable · replay · AI mentor</td></tr>
+    <tr><td>Capsim</td><td>Generic business sim</td><td>PM-specific · Scrum-native · modern pricing · self-serve</td></tr>
+    <tr><td>Forage (EA PM sim)</td><td>Free entry-level job sim</td><td>Full product · career-long utility · certification path</td></tr>
+  </table>
+
+  <p><strong>Our wedge:</strong> multiplayer Scrum decision simulation with AI mentor. Nobody owns this intersection.</p>
+</section>
+
+<!-- 3. PERSONAS -->
+<section class="section">
+  <h2>3. Target Users &amp; Personas</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>🎯 Primary: Ascending Amir — Aspiring PM</h4>
+      <p><em>28, analyst at a fintech. Studying for CSPO next month. Wants to land first PM role in 6 months. Applying to 20 companies.</em></p>
+      <p><strong>Pain:</strong> interview prep is memorising frameworks; no way to show judgment. Can't articulate "why I'd order this backlog that way."</p>
+      <p><strong>Willingness to pay:</strong> $19–49/month personal · urgent because job search</p>
+      <p><strong>Key JTBD:</strong> "Help me demonstrate product judgment in an interview the way Leetcode demonstrates coding."</p>
+    </div>
+    <div class="card">
+      <h4>🎯 Primary: Promoted Priya — Working PM</h4>
+      <p><em>32, just promoted to Senior PM at a growth-stage SaaS. Manages a 6-person Scrum team. Never formally trained in product.</em></p>
+      <p><strong>Pain:</strong> team complains about unclear priorities. Stakeholders bypass her to devs. Knows something is broken but can't name it.</p>
+      <p><strong>Willingness to pay:</strong> $49/month personal or team plan via employer</p>
+      <p><strong>Key JTBD:</strong> "Help me rehearse decisions I might make wrong this week."</p>
+    </div>
+    <div class="card">
+      <h4>🎯 Secondary: Training Tara — CST / Educator</h4>
+      <p><em>48, Certified Scrum Trainer. Runs 2-day CSPO cohorts monthly. Uses Mural + physical exercises.</em></p>
+      <p><strong>Pain:</strong> students forget the game after class. No continuation. Hard to differentiate from other CSTs.</p>
+      <p><strong>Willingness to pay:</strong> revenue share per student (est. $20 per cohort participant)</p>
+      <p><strong>Key JTBD:</strong> "Give me a digital companion my students use during and after my workshop."</p>
+    </div>
+    <div class="card">
+      <h4>🎯 Secondary: Enterprise Eva — L&amp;D Lead</h4>
+      <p><em>45, leads People Ops at a 2,000-person company. Recently mandated Scrum for R&amp;D. Needs to train 40 managers.</em></p>
+      <p><strong>Pain:</strong> live workshops cost $80K+; retention poor; no way to measure learning outcomes.</p>
+      <p><strong>Willingness to pay:</strong> $10K–50K/year enterprise seats with reporting</p>
+      <p><strong>Key JTBD:</strong> "Certify 40 managers in product skills with measurable outcomes, for under $50K."</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4. VISION -->
+<section class="section">
+  <h2>4. Product Vision &amp; Strategy</h2>
+
+  <h3>North Star</h3>
+  <div class="callout"><strong>Every active user makes at least 5 consequential product decisions per week, with feedback loops under 60 seconds — for under $50/month.</strong></div>
+
+  <h3>Positioning statement (Moore template)</h3>
+  <p>
+    <strong>For</strong> aspiring and working product managers who need reps in decision-making under uncertainty,<br>
+    <strong>Who</strong> can't afford $2K/yr Reforge or $80K/yr live workshops and don't learn from books alone,<br>
+    <strong>PRAXIS</strong> is a multiplayer product-management simulation<br>
+    <strong>That</strong> lets them practice real Scrum/PO decisions with consequence-driven events and AI-led retrospectives,<br>
+    <strong>Unlike</strong> GoPractice (analytics-only), Reforge (content-only), or physical workshops (ephemeral),<br>
+    <strong>Our product</strong> turns every decision into an immediately-consequential moment — and every game into a portfolio artifact you can show a hiring manager.
+  </p>
+
+  <h3>Three-year vision</h3>
+  <table>
+    <tr><th>Year</th><th>Positioning</th><th>Scope</th><th>ARR target</th></tr>
+    <tr><td>Year 1 (2026)</td><td>"Flight simulator for PM interviews"</td><td>Solo, 10 scenarios, AI mentor</td><td>$250K</td></tr>
+    <tr><td>Year 2 (2027)</td><td>"The Scrum training platform for CSPO candidates"</td><td>Multiplayer, 40 scenarios, CST partnerships</td><td>$1M</td></tr>
+    <tr><td>Year 3 (2028)</td><td>"The standard in product judgment training"</td><td>Enterprise, credentials, MBA curriculum integration</td><td>$3M+</td></tr>
+  </table>
+
+  <h3>Strategic bets</h3>
+  <ul>
+    <li><strong>Bet 1: Practice beats content.</strong> The Reforge/Pragmatic era sells content. The next era sells reps. We bet the market is ready.</li>
+    <li><strong>Bet 2: CST partnership is the fastest distribution.</strong> Hundreds of CSTs train ~20K students/year. We license our engine to them, rev-share, reach students at the moment of peak learning demand.</li>
+    <li><strong>Bet 3: AI mentor is a moat, not a feature.</strong> Retrospective quality improves with every game played. Claude Opus 4.7 for depth; Haiku 4.5 for in-game events. Data compounds.</li>
+    <li><strong>Bet 4: Zero-friction UX is the unfair advantage.</strong> Every competitor has friction. We remove all of it. Drag, commit, learn.</li>
+  </ul>
+</section>
+
+<!-- 5. CORE GAME MECHANICS -->
+<section class="section">
+  <h2>5. Core Game Mechanics</h2>
+
+  <h3>Game structure</h3>
+  <p>A <strong>Scenario</strong> = 6–24 iterations (sprints) based on mode. Each iteration has 5 phases:</p>
+  <ol>
+    <li><strong>Discovery</strong> — review backlog, customer signals, prior retro notes</li>
+    <li><strong>Planning</strong> — order iteration backlog, set Sprint Goal (text), commit investments</li>
+    <li><strong>Commitment</strong> — lock the plan (like rolling the dice, but without dice)</li>
+    <li><strong>Execution</strong> — events unfold; player has 1–2 response moments</li>
+    <li><strong>Review + Retro</strong> — see results, customer reactions, AI feedback</li>
+  </ol>
+
+  <h3>Modes</h3>
+  <table>
+    <tr><th>Mode</th><th>Iterations</th><th>Focus</th><th>Time</th></tr>
+    <tr><td>Tutorial</td><td>3</td><td>Mechanics, ordering, release</td><td>20 min</td></tr>
+    <tr><td>Quick</td><td>6</td><td>Classic CSPO-style game</td><td>45 min</td></tr>
+    <tr><td>Quarter</td><td>12</td><td>Adds hiring, budget, OKRs</td><td>2 hrs</td></tr>
+    <tr><td>Year</td><td>24</td><td>Scaling, PMF crisis, competition</td><td>4 hrs (or async)</td></tr>
+    <tr><td>Interview</td><td>3</td><td>Single high-pressure scenario, scored</td><td>30 min</td></tr>
+  </table>
+
+  <h3>What the player manipulates (zero-friction UI)</h3>
+  <ul>
+    <li><strong>Drag to order</strong> — the iteration backlog is a list; player drags items into order</li>
+    <li><strong>Drop the release card</strong> — insert the release card anywhere in the ordered list; everything above it releases if done</li>
+    <li><strong>Click to commit</strong> — one button, locks the order, triggers execution</li>
+    <li><strong>Respond to events</strong> — when an event fires, a modal offers 2–3 choices</li>
+    <li><strong>Write a Sprint Goal</strong> — one sentence; graded by AI for clarity &amp; outcome-orientation</li>
+    <li><strong>Accept / decline customer asks</strong> — each incoming ask shows its effort cost; declining has relationship consequences</li>
+  </ul>
+  <div class="green">All math (velocity calculation, happiness deltas, interest accrual, release checks) is hidden. The player sees <em>consequences as stories</em>, not numbers.</div>
+
+  <h3>Commitment cap &amp; story cost (preserves the dice's "you can only do so much" lesson)</h3>
+  <p>Removing the dice must not remove the lesson that <em>velocity is a hard constraint</em>. PRAXIS handles this with three mechanics:</p>
+
+  <h4>Mechanic 1 — Every story carries an explicit effort cost</h4>
+  <ul>
+    <li>Effort (points) is visible as a badge on each card</li>
+    <li>Cards are visually scaled to their effort (5-pt card is physically larger than 2-pt card)</li>
+    <li>Some items carry "effort: 5?" — meaning true cost is only revealed during execution (teaches refinement risk)</li>
+    <li>Release card always costs a fixed amount (3 pt by default, reducible via tech investment)</li>
+  </ul>
+
+  <h4>Mechanic 2 — Capacity range indicator (not a single number)</h4>
+  <p>As the player drags cards into the iteration backlog, a capacity bar fills with zones:</p>
+  <table>
+    <tr><th>Zone</th><th>Visual</th><th>Meaning</th></tr>
+    <tr><td>0 → lower bound (e.g. 12)</td><td>🟢 Green</td><td>Safe — guaranteed to complete</td></tr>
+    <tr><td>Lower → expected (e.g. 15)</td><td>🟡 Yellow</td><td>Realistic — completes in most sprints</td></tr>
+    <tr><td>Expected → upper (e.g. 18)</td><td>🟠 Orange</td><td>Stretch — only completes on a good sprint</td></tr>
+    <tr><td>Above upper bound</td><td>🔴 Red + wiggle</td><td>Over-committed — tail items almost certainly drop</td></tr>
+  </table>
+  <p><strong>Critical design decision:</strong> PRAXIS does <em>not</em> block the player from over-committing. The visual warning is clear but the decision is theirs. Over-commitment is a muscle you unlearn through pain, not prevention. The execution phase shows what actually happened, and any items below the cutoff line fall back to the product backlog with a "didn't make it" animation.</p>
+
+  <h4>Mechanic 3 — Capacity range shifts based on state (replaces random dice)</h4>
+  <p>The range itself moves deterministically based on team state and prior decisions. No random roll.</p>
+  <table>
+    <tr><th>State condition</th><th>Effect on capacity range</th></tr>
+    <tr><td>Fresh team, refined backlog</td><td>Tightens: 14–16 pts (high predictability)</td></tr>
+    <tr><td>Engineer on vacation / sick</td><td>Shifts down: 10–14 pts</td></tr>
+    <tr><td>New hire ramping up</td><td>Widens: 10–17 pts (more variance)</td></tr>
+    <tr><td>Invested in DoD + automated tests</td><td>Tightens over time (variance reduces)</td></tr>
+    <tr><td>Scope surprise event mid-sprint</td><td>Narrows mid-execution: 12–14 pts</td></tr>
+    <tr><td>Team burnt out from context-switching</td><td>Shifts down AND widens: 9–15 pts</td></tr>
+  </table>
+
+  <h4>Customer asks as costed commitments (the "cost per ask" lesson)</h4>
+  <p>Every customer ask that lands in the inbox includes its effort cost upfront. The player chooses:</p>
+  <ul>
+    <li><strong>Add to backlog</strong> — locks the cost into future capacity planning</li>
+    <li><strong>Decline politely</strong> — costs relationship points with that customer</li>
+    <li><strong>Negotiate</strong> (v2) — smaller scope variant for less effort</li>
+  </ul>
+  <p>This is the mechanic that teaches <em>"saying yes to everything fills your backlog with items that consume velocity."</em> The PO skill of ordering + refusing is built here, not in the planning board alone.</p>
+
+  <h4>Execution resolution (what happens after commit)</h4>
+  <ol>
+    <li>Player commits an ordered iteration backlog (may be over capacity)</li>
+    <li>Events fire based on behaviour-weighted deck</li>
+    <li>Actual capacity resolves deterministically from state (no random dice)</li>
+    <li>Items execute top-to-bottom in the committed order</li>
+    <li>Items completing within capacity go to Done</li>
+    <li>Items below the cutoff line fall back to Product Backlog with visual feedback</li>
+    <li>If the release card is below the cutoff, nothing releases this sprint (expensive but instructive)</li>
+  </ol>
+
+  <div class="callout"><strong>Teaching goal preserved:</strong> players learn that velocity is a real constraint, that each story has a non-negotiable cost, and that over-committing produces worse outcomes than planning to the lower bound. This is exactly the dice's lesson — delivered through visible causality instead of random rolls.</div>
+
+  <h3>Hidden state exposed through signals</h3>
+  <table>
+    <tr><th>Hidden state</th><th>What player sees</th></tr>
+    <tr><td>Customer happiness score</td><td>Message from customer: <em>"Priya: 'I'm starting to wonder if you heard my last ask'"</em></td></tr>
+    <tr><td>Velocity modifier</td><td>Team vibe signal: <em>"The team is in flow this sprint"</em> or <em>"Two devs are out sick"</em></td></tr>
+    <tr><td>Tech debt accumulation</td><td>Warning banner: <em>"Item X will take 50% longer — hidden complexity"</em></td></tr>
+    <tr><td>Stakeholder trust</td><td>Exec reaction: <em>"The CFO nods thoughtfully"</em> vs <em>"The CFO leaves the review early"</em></td></tr>
+  </table>
+
+  <h3>Scoring (end-game)</h3>
+  <p>Not a single dollar number. A multi-axis radar chart:</p>
+  <ul>
+    <li><strong>Value delivered</strong> — revenue + strategic wins</li>
+    <li><strong>Customer loyalty</strong> — happiness retention, referrals</li>
+    <li><strong>Team health</strong> — morale, sustainable pace, no burnout</li>
+    <li><strong>Stakeholder trust</strong> — alignment across functions</li>
+    <li><strong>Product integrity</strong> — tech debt managed, DoD respected</li>
+    <li><strong>Personal growth</strong> — new techniques unlocked, mistakes avoided vs prior games</li>
+  </ul>
+</section>
+
+<!-- 6. CUSTOMER ENGAGEMENT MODEL -->
+<section class="section">
+  <h2>6. Customer Engagement Model</h2>
+
+  <p>Real customers don't have a single "happiness" number. They have <strong>engagement states</strong> that transition based on product behaviour and triggers.</p>
+
+  <h3>Customer states (state machine)</h3>
+  <pre>DORMANT → INTERESTED → ACTIVE → ADVOCATE → CHAMPION
+                ↓            ↓        ↓           ↓
+            DISENGAGED ← CHURNED (one-way from any state)</pre>
+
+  <h3>Customer archetypes</h3>
+  <table>
+    <tr><th>Archetype</th><th>Feedback frequency</th><th>Patience</th><th>LTV</th><th>Voice</th></tr>
+    <tr><td><strong>Innovator</strong></td><td>High — unsolicited ideas</td><td>Very high (tolerates breakage)</td><td>Low-medium</td><td>Quiet</td></tr>
+    <tr><td><strong>Mainstream</strong></td><td>Medium — responds when asked</td><td>Medium</td><td>High</td><td>Average</td></tr>
+    <tr><td><strong>Enterprise</strong></td><td>Low — quarterly reviews</td><td>Very low for SLAs</td><td>Very high</td><td>Loud when unhappy</td></tr>
+    <tr><td><strong>Skeptic</strong></td><td>Medium — mostly negative</td><td>Low</td><td>Medium</td><td>Loud</td></tr>
+    <tr><td><strong>Power user</strong></td><td>Very high — detailed</td><td>Medium</td><td>Medium</td><td>Influential to peers</td></tr>
+    <tr><td><strong>Lurker</strong></td><td>Almost none</td><td>Unknown</td><td>Unknown</td><td>Silent</td></tr>
+  </table>
+
+  <h3>What causes engagement transitions (teachable causality)</h3>
+  <table>
+    <tr><th>Trigger</th><th>Effect</th></tr>
+    <tr><td>Release addresses customer's explicit ask</td><td>+1 engagement state; 20% chance to unlock referral</td></tr>
+    <tr><td>Release for someone else, customer ignored</td><td>−0 first time, −1 if repeated 2× in row</td></tr>
+    <tr><td>Bug/regression in a feature they used</td><td>−1; possible vocal complaint event</td></tr>
+    <tr><td>Response to their feedback within 1 sprint</td><td>+1; unlocks "Power user" path</td></tr>
+    <tr><td>Acknowledgement without delivery</td><td>+0 (short-term); −1 (if repeated 3×)</td></tr>
+    <tr><td>Exciter feature from Kano</td><td>+2; 40% advocate promotion</td></tr>
+    <tr><td>Competitor launches before you</td><td>−1 if customer is Innovator type (not others)</td></tr>
+  </table>
+
+  <h3>Why some customers become more engaged later (teaching moment)</h3>
+  <div class="note">
+    <strong>The game teaches this explicitly through scenario narratives:</strong>
+    <ul>
+      <li><strong>Activation moment:</strong> a release finally solves a pain the customer didn't articulate but was feeling. Triggers engagement jump. The lesson: customers often can't name what they need; observation beats surveys.</li>
+      <li><strong>Social proof:</strong> another customer of the same archetype becomes vocal; this one wakes up to try. Lesson: community signals matter.</li>
+      <li><strong>Credibility accumulation:</strong> after 3 consecutive on-time commitments, a skeptic becomes active. Lesson: trust is earned in drops, lost in buckets.</li>
+      <li><strong>Role change:</strong> the customer gets promoted; now they need different outcomes. Lesson: stakeholders are moving targets.</li>
+      <li><strong>External event:</strong> regulation change makes your product suddenly essential. Lesson: context shifts value.</li>
+    </ul>
+  </div>
+
+  <h3>Feedback mechanisms in-game (what the player sees)</h3>
+  <ul>
+    <li><strong>Inbox messages</strong> — customers send feedback, bug reports, feature requests; frequency varies by archetype</li>
+    <li><strong>Quiet signals</strong> — dormant customers show small activity pulses (or don't)</li>
+    <li><strong>Reviews</strong> — occasional public reviews that affect acquisition of new customers</li>
+    <li><strong>Referrals</strong> — advocate-level customers bring in new ones at random</li>
+    <li><strong>Churn warnings</strong> — only visible if the player looks at the right signal (teaches attentiveness)</li>
+  </ul>
+</section>
+
+<!-- 7. EVENT ENGINE -->
+<section class="section">
+  <h2>7. Event Engine (Dice Replacement)</h2>
+
+  <p>The original Business Value Game uses a d6 for velocity variance. PRAXIS replaces this with a <strong>weighted event deck</strong> where probabilities shift based on the player's prior choices. Every event is a teaching moment because it's caused.</p>
+
+  <h3>Event categories &amp; base weights</h3>
+  <table>
+    <tr><th>Category</th><th>Base weight</th><th>Example events</th></tr>
+    <tr><td>Team health</td><td>15%</td><td>Engineer sick · New hire ramping · Team in flow state · Burnout warning</td></tr>
+    <tr><td>Tech surprises</td><td>20%</td><td>Hidden debt on item X · API vendor outage · Flaky test eats 2 days · Perf regression</td></tr>
+    <tr><td>Dependencies</td><td>15%</td><td>Legal review delayed · Platform team migration · Design review bottleneck</td></tr>
+    <tr><td>Scope surprises</td><td>15%</td><td>Item X is 2x effort · Hidden acceptance criteria · Integration doesn't work</td></tr>
+    <tr><td>Stakeholder events</td><td>15%</td><td>Exec demands feature · Customer escalation · Sales lost deal · Analyst call</td></tr>
+    <tr><td>Positive events</td><td>10%</td><td>Pair programming breakthrough · Earlier investment pays off · Press mention</td></tr>
+    <tr><td>External shocks</td><td>10%</td><td>Competitor launch · Regulation change · Macro event · Security advisory</td></tr>
+  </table>
+
+  <h3>How PO behaviour shifts probabilities</h3>
+  <table>
+    <tr><th>Prior behaviour</th><th>Probability shift</th></tr>
+    <tr><td>Skipped refinement 2+ times</td><td>Scope surprises: +15% · Estimate accuracy: −30%</td></tr>
+    <tr><td>Invested in DoD</td><td>Tech surprises: −20% · Positive events: +5%</td></tr>
+    <tr><td>Invested in tests / automation</td><td>Bug events: −40% · Velocity variance: −25%</td></tr>
+    <tr><td>Changed priorities mid-sprint 2+ times</td><td>Team health −1 permanent · Morale events: +20%</td></tr>
+    <tr><td>Didn't release for 2 iterations</td><td>Stakeholder events: +30% · Customer churn warnings: +25%</td></tr>
+    <tr><td>Didn't talk to users (no discovery activity)</td><td>"Wrong feature shipped" event: +40%</td></tr>
+  </table>
+
+  <h3>Event response mechanics</h3>
+  <p>When an event fires, a modal offers 2–3 choices. Each choice has a visible and hidden consequence. Examples:</p>
+  <div class="story">
+    <div class="title">Event: Exec demands a scope addition mid-sprint</div>
+    <p><strong>Options:</strong></p>
+    <ul>
+      <li><strong>Accept the scope</strong> — exec trust +2, team morale −2, tech debt +1, current Sprint Goal probability of completion −30%</li>
+      <li><strong>Defer to backlog refinement</strong> — exec trust −1 (short term), team morale 0, Sprint Goal preserved</li>
+      <li><strong>Trade: accept scope, drop equivalent existing item</strong> — exec trust +1, team morale 0, no tech debt, current sprint goal mutated</li>
+    </ul>
+  </div>
+
+  <h3>Deck composition by scenario</h3>
+  <p>Each scenario has its own event deck (20–50 cards). The deck mixes universal PM events (the above) with domain-specific ones (e.g., "Regulator asks for audit trail" in a fintech scenario; "HIPAA alert" in a health scenario).</p>
+</section>
+
+<!-- 7B. TECH & PLATFORM ECONOMICS -->
+<section class="section">
+  <h2>7B. Technology &amp; Platform Economics</h2>
+
+  <p>Every sprint runs on top of code, infrastructure, tooling, and team practices that either <strong>compound advantage</strong> (investments pay forward) or <strong>compound cost</strong> (debt accrues silently). PRAXIS models this as a first-class game mechanic because it's the hardest real-PM decision: invest in the platform now and ship fewer features this sprint — or postpone and pay growing interest.</p>
+
+  <div class="callout"><strong>Principle:</strong> The dice in the original BVG teaches velocity variance. The tech backlog teaches the compounding nature of platform investment. Both must be modelled explicitly for the game to be complete.</div>
+
+  <h3>Six hidden state variables tracked per game</h3>
+  <table>
+    <tr><th>Variable</th><th>Start state</th><th>How it moves</th></tr>
+    <tr><td>Release cost</td><td>3 pt per release</td><td>↓ with CI/CD, deploy automation investment · ↑ silently with debt accumulation</td></tr>
+    <tr><td>Capacity baseline</td><td>15 pt/sprint</td><td>↑ with framework upgrades, team training · ↓ with burnout, debt</td></tr>
+    <tr><td>Capacity variance</td><td>±3</td><td>Tightens with test coverage, DoD discipline · Widens with new hires, skipped refinement</td></tr>
+    <tr><td>Tech debt score</td><td>0–100 scale</td><td>Rises from shortcuts, skipped investment · Falls from refactors</td></tr>
+    <tr><td>Reliability</td><td>High</td><td>Falls with cut corners · Rises with monitoring, test coverage</td></tr>
+    <tr><td>Cycle time</td><td>Baseline</td><td>Shortens with automation · Lengthens with accumulated debt</td></tr>
+  </table>
+
+  <h3>Tech Backlog (separate from Product Backlog)</h3>
+  <p>A dedicated section of the backlog where the player can invest effort in platform work. Benefits apply to <em>future</em> iterations, not the current sprint.</p>
+  <table>
+    <tr><th>Tech item (example)</th><th>Effort</th><th>Benefit (starts next iteration, permanent)</th></tr>
+    <tr><td>CI/CD Pipeline</td><td>5 pt</td><td>Release cost drops from 3 → 1 pt permanently</td></tr>
+    <tr><td>Automated test suite</td><td>4 pt</td><td>Bug event probability −50%; variance tightens by 1</td></tr>
+    <tr><td>Observability platform</td><td>3 pt</td><td>"Hidden complexity" events eliminated</td></tr>
+    <tr><td>Refactor core module</td><td>6 pt</td><td>Tech debt −30; future estimates 20% more accurate</td></tr>
+    <tr><td>Dev team training (bundle)</td><td>3 × 1 pt</td><td>+1 capacity baseline for rest of game (when all 3 done)</td></tr>
+    <tr><td>Framework upgrade (bundle)</td><td>3 × 2 pt</td><td>+2 capacity baseline for rest of game (when all 3 done)</td></tr>
+    <tr><td>Knowledge documentation</td><td>2 pt</td><td>Eliminates "key person leaves" risk; new-hire ramp halved</td></tr>
+    <tr><td>Security hardening</td><td>4 pt</td><td>Removes security events from the deck</td></tr>
+    <tr><td>Design system</td><td>5 pt</td><td>UX-related stories cost 30% less going forward</td></tr>
+    <tr><td>Data platform</td><td>6 pt</td><td>Unlocks analytics-based scenarios; +1 per-sprint bonus to discovery</td></tr>
+  </table>
+  <p>Scenarios define their own tech backlog, scaled to their domain (a fintech scenario would include compliance tooling; a consumer scenario would include marketing infrastructure).</p>
+
+  <h3>Debt accumulation — the cost of ignoring</h3>
+  <p>Tech debt accrues silently from:</p>
+  <ul>
+    <li>Shipping items with incomplete Definition of Done (+5 debt per item)</li>
+    <li>Declining tech investment when the team flags it (+3 debt per refusal)</li>
+    <li>Every 3 iterations with zero tech investment (+10 debt automatic)</li>
+    <li>Responding to an event with the "shortcut" option (+2 to +8 debt depending on severity)</li>
+  </ul>
+
+  <h3>Debt thresholds — compounding consequences</h3>
+  <table>
+    <tr><th>Debt level</th><th>Consequence</th></tr>
+    <tr><td>≥ 30</td><td>Release card silently grows from 3 → 4 pt</td></tr>
+    <tr><td>≥ 40</td><td>Capacity variance widens by +1 (more unpredictable sprints)</td></tr>
+    <tr><td>≥ 50</td><td>Customer-facing incident events enter the deck</td></tr>
+    <tr><td>≥ 60</td><td>Release cost: 4 → 5 pt</td></tr>
+    <tr><td>≥ 70</td><td>Capacity baseline drops by 2 (fewer points per sprint)</td></tr>
+    <tr><td>≥ 80</td><td>Release cost: 5 → 6 pt; team morale events trigger; engineers quit</td></tr>
+    <tr><td>≥ 90</td><td>"Critical outage" events force-fire; may end the game early in some scenarios</td></tr>
+  </table>
+
+  <p>Thresholds are <em>permanent until reversed</em> — reducing debt back below 30 doesn't automatically shrink release cost. Players must explicitly invest in the right kind of refactor to reverse the damage. This models reality: once a platform decays, undoing the rot takes more effort than preventing it.</p>
+
+  <h3>Making it teachable — narrative over numbers</h3>
+  <p>Following the zero-friction principle, tech state is <strong>never shown as a raw number</strong>. It's exposed through in-game narrative signals:</p>
+  <table>
+    <tr><th>Hidden state</th><th>What player sees</th></tr>
+    <tr><td>Debt rising past 30</td><td><em>"The test suite is flaking. A dev mentions the backend is getting hard to change."</em></td></tr>
+    <tr><td>Release cost climbing</td><td><em>"Last deploy took 2 days. The team spent more time debugging than shipping."</em></td></tr>
+    <tr><td>Capacity variance widening</td><td><em>"The sprints feel inconsistent. Some weeks the team crushes it; other weeks nothing ships."</em></td></tr>
+    <tr><td>Capacity baseline dropping</td><td><em>"Sprints feel slower. Nobody can put their finger on why."</em></td></tr>
+    <tr><td>Post-investment payoff</td><td><em>"CI/CD is live. Deploys are one-click. Team visibly happier. Velocity is trending up."</em></td></tr>
+    <tr><td>Refactor payoff</td><td><em>"The core module refactor is in. Estimates feel more accurate; scope surprises have dropped."</em></td></tr>
+    <tr><td>Silent decay</td><td><em>"A senior engineer submits notice. They cited 'tech debt' as the reason."</em></td></tr>
+  </table>
+
+  <h3>Tech investment payoff moments (emotional design)</h3>
+  <p>Each tech investment triggers a <strong>visible payoff moment</strong> the iteration after it lands — same celebration as a customer release. This is a deliberate design choice: real orgs under-celebrate platform wins; PRAXIS over-corrects so players <em>feel</em> why infrastructure matters.</p>
+
+  <h3>The core PM teaching moment this creates</h3>
+  <p>Every scenario forces the decision: <strong>invest now</strong> (sacrificing customer work this sprint) or <strong>postpone</strong> (paying growing interest later). The end-game retrospective explicitly grades tech decisions:</p>
+  <div class="note"><em>"You declined 3 tech investments in favour of features. Release cost rose from 3 to 5 pt. Your final sprint cost you 2 releases you would otherwise have made. A senior PM would have paid down CI/CD in iteration 2, worth +$4,200 in compounded value."</em></div>
+
+  <h3>Integration with the event engine (Section 7)</h3>
+  <p>Tech state directly feeds the event deck weights from Section 7. For example:</p>
+  <ul>
+    <li>Low reliability → higher "outage" event weight</li>
+    <li>High debt → higher "scope surprise" event weight</li>
+    <li>High test coverage → lower "bug" event weight</li>
+    <li>Wide capacity variance → more variable iteration outcomes</li>
+  </ul>
+  <p>This means <strong>tech decisions and customer decisions are not independent systems</strong> — they both feed the same event probability model. Neglect either side and events pile up. Balance both and events stay manageable.</p>
+</section>
+
+<!-- 8. SCENARIO FRAMEWORK -->
+<section class="section">
+  <h2>8. Scenario Framework</h2>
+
+  <h3>What a Scenario is</h3>
+  <p>A self-contained game world. Includes: product vision, personas (3–8), backlog (20–100 items with effort + dependencies), event deck (20–50 cards), win/lose conditions, narrative beats (tied to iteration numbers).</p>
+
+  <h3>Scenario library roadmap (30 scenarios across 4 phases)</h3>
+  <p>The scenario library is the primary content engine. Launch with 10, expand to 30+ across Year 1. Scenarios are grouped by the skill cluster they target.</p>
+
+  <h4>Phase 1 — MVP (10 scenarios · core mechanics + foundational skills)</h4>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Domain</th><th>Level</th><th>Teaches</th></tr>
+    <tr><td>01</td><td>The First Sprint</td><td>SaaS generic</td><td>Tutorial</td><td>Ordering, release mechanics, customer happiness</td></tr>
+    <tr><td>02</td><td>The MVP Race</td><td>Consumer app</td><td>Beginner</td><td>Narrowest wedge, customer discovery</td></tr>
+    <tr><td>03</td><td>Churn Cliff</td><td>B2B SaaS</td><td>Beginner</td><td>Retention, customer engagement model</td></tr>
+    <tr><td>04</td><td>The Regulated Product</td><td>Fintech</td><td>Intermediate</td><td>Compliance constraints, platform economics</td></tr>
+    <tr><td>05</td><td>Scope Creep City</td><td>Enterprise</td><td>Intermediate</td><td>Saying no, Sprint Goal defense</td></tr>
+    <tr><td>06</td><td>The Platform Pivot</td><td>SaaS</td><td>Intermediate</td><td>Strategic change, tech debt payoff</td></tr>
+    <tr><td>07</td><td>Two-Sided Marketplace</td><td>Marketplace</td><td>Advanced</td><td>Multi-stakeholder optimization</td></tr>
+    <tr><td>08</td><td>The Post-Launch</td><td>Consumer</td><td>Advanced</td><td>PMF detection, growth vs retention</td></tr>
+    <tr><td>09</td><td>Incident Response Week</td><td>B2B SaaS</td><td>Advanced</td><td>Crisis management, blameless postmortems</td></tr>
+    <tr><td>10</td><td>The Interview Scenario</td><td>Generic</td><td>Expert</td><td>30-min scored scenario for interview prep</td></tr>
+  </table>
+
+  <h4>Phase 2 — PM ↔ Developer Dynamics (10 scenarios · the highest-value missing content)</h4>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Level</th><th>Teaches</th></tr>
+    <tr><td>11</td><td>The Hero Engineer</td><td>Intermediate</td><td>Rebuild temptation · when to respect eng judgment vs push back</td></tr>
+    <tr><td>12</td><td>The Estimate Wars</td><td>Intermediate</td><td>Calibration conversation · asking "what would make this smaller?"</td></tr>
+    <tr><td>13</td><td>The Tech Lead Disagreement</td><td>Advanced</td><td>Public disagreement navigation · never undermine, never capitulate publicly</td></tr>
+    <tr><td>14</td><td>The Burning Engineer</td><td>Advanced</td><td>Recognizing burnout as leading indicator · team health intervention</td></tr>
+    <tr><td>15</td><td>The Goodbye Sprint</td><td>Intermediate</td><td>Knowledge transfer economics · saying no to one more feature</td></tr>
+    <tr><td>16</td><td>The New Hire Ramp</td><td>Beginner</td><td>Ramp-up investment · managing impatient stakeholders</td></tr>
+    <tr><td>17</td><td>The Design vs Eng Standoff</td><td>Intermediate</td><td>Mediation · surfacing value trade-offs without picking sides</td></tr>
+    <tr><td>18</td><td>The Tech Debt Negotiation</td><td>Intermediate</td><td>Quantifying "if we don't do this, next sprint costs X more"</td></tr>
+    <tr><td>19</td><td>The Dev Who Won't Talk to Users</td><td>Beginner</td><td>Building customer empathy as eng skill without forcing</td></tr>
+    <tr><td>20</td><td>The "Can't We Just" Moment</td><td>Beginner</td><td>Humility · responding to "this is actually complex" with curiosity</td></tr>
+  </table>
+
+  <h4>Phase 3 — Stakeholder Management &amp; Strategic Judgment (10 scenarios)</h4>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Level</th><th>Teaches</th></tr>
+    <tr><td>21</td><td>The Shadow PM</td><td>Advanced</td><td>Boundary defense · correcting patterns without breaking relationships</td></tr>
+    <tr><td>22</td><td>The Sales Promise</td><td>Advanced</td><td>Revenue-vs-roadmap integrity · trade-off conversations with sales</td></tr>
+    <tr><td>23</td><td>The 10x Customer</td><td>Advanced</td><td>The whale trap · avoiding becoming a custom services org</td></tr>
+    <tr><td>24</td><td>The Pivot Call</td><td>Advanced</td><td>Leading team through strategic uncertainty</td></tr>
+    <tr><td>25</td><td>The Cross-Team Blocker</td><td>Intermediate</td><td>Influence without authority · trading favors, aligning bosses</td></tr>
+    <tr><td>26</td><td>The Roadmap Review</td><td>Intermediate</td><td>Executive communication · pre-baked answers to "why not X"</td></tr>
+    <tr><td>27</td><td>The Strategic No</td><td>Advanced</td><td>Saying no to features that would work but don't fit vision</td></tr>
+    <tr><td>28</td><td>The Sunset Decision</td><td>Expert</td><td>End-of-life management · customer, team, sales communication</td></tr>
+    <tr><td>29</td><td>The Pricing Change</td><td>Expert</td><td>Monetization experiments · grandfathering, positioning, testing</td></tr>
+    <tr><td>30</td><td>The Ethics Call</td><td>Expert</td><td>Values-based decisions when "legally fine" diverges from "right thing"</td></tr>
+  </table>
+
+  <h4>Phase 4 — Operational Reality &amp; Career (10 scenarios · Year 2 content)</h4>
+  <table>
+    <tr><th>#</th><th>Title</th><th>Teaches</th></tr>
+    <tr><td>31</td><td>The Measurement Problem</td><td>Instrumentation discipline · backfilling from other signals</td></tr>
+    <tr><td>32</td><td>The Inconclusive A/B</td><td>Statistical rigor vs shipping pressure</td></tr>
+    <tr><td>33</td><td>The Public Churn</td><td>Reputation management · responding to public customer complaints</td></tr>
+    <tr><td>34</td><td>The Contradictory Feedback</td><td>Segment thinking · not all customer voices are equal</td></tr>
+    <tr><td>35</td><td>The Silent Majority</td><td>Survivor bias in feedback · talking to silent users</td></tr>
+    <tr><td>36</td><td>The Metric That Lied</td><td>Goodhart's Law · when hitting targets hurts the goal</td></tr>
+    <tr><td>37</td><td>The Discovery Disconnect</td><td>Navigating user research vs leadership intuition</td></tr>
+    <tr><td>38</td><td>The Reorg</td><td>Change management from the receiving side</td></tr>
+    <tr><td>39</td><td>The First 90 Days</td><td>Onboarding playbook · building trust before changing things</td></tr>
+    <tr><td>40</td><td>The No-Win Meeting</td><td>Facilitation under fire · alignment as a floor not ceiling</td></tr>
+  </table>
+
+  <h4>Bonus: Named case studies (community-contributed, Year 2+)</h4>
+  <p>High-fidelity recreations of famous product decisions: the Slack pivot (from Glitch), the Figma browser bet, the Nokia smartphone miss, the Quibi launch, the Instagram sale. Each uses real public context with fictionalized names. Teaches judgment by replay.</p>
+
+  <h4>Bonus: Industry packs (community-authored, Year 2+)</h4>
+  <ul>
+    <li><strong>Fintech pack</strong> — regulated product, clearing/settlement scenarios, KYC/AML decisions</li>
+    <li><strong>Healthtech pack</strong> — HIPAA/PHIPA constraints, clinical workflow integration</li>
+    <li><strong>Marketplace pack</strong> — supply/demand balancing, trust &amp; safety events</li>
+    <li><strong>AI product pack</strong> — hallucination risk, model cost economics, evaluation design</li>
+    <li><strong>Platform/API pack</strong> — developer experience, versioning, deprecation</li>
+  </ul>
+
+  <h3>Scenario authoring (for v2+)</h3>
+  <p>YAML/JSON-based scenario format so CSTs and community members can author their own. Schema:</p>
+  <pre>scenario:
+  id: "churn-cliff"
+  title: "Churn Cliff"
+  domain: "B2B SaaS"
+  iterations: 6
+  product_vision: "..."
+  personas:
+    - id: "priya"
+      archetype: "Enterprise"
+      starting_state: "ACTIVE"
+      ltv: 50000
+  backlog:
+    - id: "feature-a"
+      title: "..."
+      effort: 5
+      value: 2500
+      satisfies: ["priya"]
+      tech_debt_if_skipped: true
+  event_deck:
+    - id: "churn-warning"
+      weight_base: 0.15
+      weight_modifiers:
+        no_refinement: 1.5
+      trigger_after_iter: 2</pre>
+</section>
+
+<!-- 8B. PM BEHAVIOR PATTERNS & NUDGE SYSTEM -->
+<section class="section">
+  <h2>8B. PM Behavior Patterns &amp; Interaction Nudge System</h2>
+
+  <p>PRAXIS teaches product management through scenarios, but scenarios alone are not enough. The deepest value comes from recognizing <strong>behavioral patterns</strong> that play out across many scenarios — the same mistakes in different costumes. A player may win a scenario but lose the career-long game if they don't see the pattern. This section defines the pattern-recognition system that turns PRAXIS from a knowledge-delivery tool into a behavior-change tool.</p>
+
+  <div class="callout"><strong>Design principle:</strong> Most PM training teaches frameworks. PRAXIS teaches reflexes. Reflexes are built by catching yourself in the moment, repeatedly, until the right move becomes automatic. The nudge system is how we produce that catch.</div>
+
+  <h3>PM ↔ Developer interaction patterns (reference model)</h3>
+  <p>Each pattern below has a "healthy" and an "anti" behavior. The game observes the player's choices and tracks both.</p>
+  <table>
+    <tr><th>Interaction context</th><th>Healthy PM behavior</th><th>Anti-pattern (tracked)</th></tr>
+    <tr><td>Backlog refinement</td><td>Tell the "why" and "who"; answer questions; stay available; let devs propose "how"</td><td>Specifying implementation; drifting into technical solutioning; writing pseudo-code in tickets</td></tr>
+    <tr><td>Daily Scrum</td><td>Usually doesn't attend. If invited, observes silently.</td><td>Using it as a status report; adding scope mid-sprint; interrogating individuals</td></tr>
+    <tr><td>Estimation</td><td>Asks "what would make this smaller?"; surfaces the business value of a smaller scope</td><td>Challenging estimates; suggesting corners to cut; anchoring to an external deadline</td></tr>
+    <tr><td>Sprint Planning</td><td>Presents ordered backlog; explains priority logic; answers clarifying questions</td><td>Dictating scope; overriding team commitment; negotiating individual items with individual devs</td></tr>
+    <tr><td>Sprint Review</td><td>Frames why the work matters; invites stakeholder feedback; updates backlog from it</td><td>Treating it as a demo gate; surprising stakeholders; blaming team for incomplete items</td></tr>
+    <tr><td>Retrospective</td><td>Attends only if invited; shows up as team member not boss</td><td>Facilitating (SM's job); using it to pressure team; defending own decisions</td></tr>
+    <tr><td>1:1 with Tech Lead</td><td>Weekly cadence; surfaces blockers early; keeps them informed of roadmap shifts</td><td>Treating as status meeting; skipping when busy; going around them to other devs</td></tr>
+    <tr><td>Incident Response</td><td>Owns customer communication; lets engineering own technical diagnosis</td><td>Jumping into technical debate; "what if we just…" in the war room; blaming during the incident</td></tr>
+    <tr><td>Tech Debt Discussion</td><td>Asks "what does it cost us if we don't?"; listens for quantifiable answer</td><td>Dismissing as "not now"; accepting every refactor proposal without scoping</td></tr>
+    <tr><td>Team Health</td><td>Notices burnout signals; celebrates wins; protects the team from thrash</td><td>Cheerleading when something's really wrong; performative concern; ignoring signals</td></tr>
+    <tr><td>Stakeholder Pressure</td><td>Translates pressure into trade-offs; surfaces to team transparently</td><td>Absorbing pressure silently and passing as urgency; promising without consultation</td></tr>
+    <tr><td>Technical Disagreement</td><td>Acknowledges publicly, resolves privately, never undermines</td><td>Overruling in-channel; capitulating publicly; dragging into long thread</td></tr>
+  </table>
+
+  <h3>Pattern tracking layer (telemetry model)</h3>
+  <p>Every player action is classified against the pattern table and logged. Over many games, patterns emerge as signals, not single incidents.</p>
+  <table>
+    <tr><th>Pattern tag</th><th>Triggered by</th><th>Surfaced when</th></tr>
+    <tr><td><code>specifies_how</code></td><td>Sprint Goal or event response contains implementation detail (AI-classified)</td><td>3+ times in 5 games → retro flag</td></tr>
+    <tr><td><code>mid_sprint_scope_add</code></td><td>Player accepts scope during execution phase</td><td>2+ times in 3 games → immediate in-game nudge</td></tr>
+    <tr><td><code>overrules_tech_lead</code></td><td>Player picks the "override" option in a technical disagreement event</td><td>Any single instance → flagged in retro</td></tr>
+    <tr><td><code>skips_refinement</code></td><td>Player declines the refinement investment option</td><td>2+ consecutive sprints → scope-surprise event probability rises</td></tr>
+    <tr><td><code>ignores_tech_debt</code></td><td>Player ignores tech signals for 3+ iterations</td><td>Debt crosses threshold → narrative signal fires</td></tr>
+    <tr><td><code>yes_to_everything</code></td><td>Accepts all customer asks in 2+ consecutive iterations</td><td>Backlog balloons → capacity warnings</td></tr>
+    <tr><td><code>no_user_contact</code></td><td>No customer inbox clicks for 2+ iterations</td><td>Discovery drought → "wrong feature shipped" event weight rises</td></tr>
+    <tr><td><code>changes_priority_mid_sprint</code></td><td>Player re-orders backlog after commit</td><td>Any instance → team morale −1; pattern in retro</td></tr>
+    <tr><td><code>owns_the_demo</code></td><td>Player chooses "I'll present" over "Let the devs present" in Sprint Review events</td><td>Pattern in retro: "consider letting the team own the showcase"</td></tr>
+    <tr><td><code>cheerleader_mode</code></td><td>Player dismisses team health warnings 2+ times</td><td>Leading indicator of burnout event within 2 iterations</td></tr>
+    <tr><td><code>absorbs_pressure</code></td><td>Player accepts exec scope add without team discussion</td><td>Team trust −1; pattern in retro</td></tr>
+    <tr><td><code>skips_retro</code></td><td>Player declines retro investment or doesn't set improvement goal</td><td>Process debt accrues; retro flag at end of game</td></tr>
+  </table>
+
+  <h3>Real-time nudge system (in-game coaching)</h3>
+  <p>When a player is about to take an action that matches a known anti-pattern, PRAXIS surfaces a <strong>subtle nudge</strong> — not a blocker. The player still makes the choice, but now with awareness.</p>
+
+  <h4>Nudge delivery rules</h4>
+  <ul>
+    <li><strong>Never block.</strong> The player can always proceed with the anti-pattern choice. Consequences teach; popups preach.</li>
+    <li><strong>Never interrupt mid-drag.</strong> Nudges appear on commit, not during planning.</li>
+    <li><strong>Time-box to once per pattern per game.</strong> If a player sees the "specifies_how" nudge once, they don't see it again that game — prevents nagging.</li>
+    <li><strong>Tone: curious, not corrective.</strong> "Notice this pattern?" not "This is wrong."</li>
+    <li><strong>Opt-out available.</strong> "Expert mode" disables in-game nudges; all tracking still happens for the retrospective.</li>
+  </ul>
+
+  <h4>Example nudges</h4>
+  <table>
+    <tr><th>Trigger</th><th>Nudge text</th></tr>
+    <tr><td>Sprint Goal contains "build a" or "implement"</td><td>"Heads up — your Sprint Goal reads like a 'what' more than a 'why'. Outcomes travel further than outputs. Proceed anyway?"</td></tr>
+    <tr><td>Player accepts mid-sprint scope add</td><td>"You've taken a mid-sprint scope change. This is the 3rd this game. The team notices. Continue?"</td></tr>
+    <tr><td>Player overrules tech lead in disagreement event</td><td>"You're overriding the tech lead publicly. A senior PM might have taken this offline. Are you sure?"</td></tr>
+    <tr><td>Player hasn't opened inbox in 2 iterations</td><td>"Your customers haven't heard from you in 2 sprints. Discovery signal is fading."</td></tr>
+    <tr><td>Player declines tech investment 3rd time</td><td>"Third tech investment declined. The team is quietly escalating debt. Continue?"</td></tr>
+  </table>
+
+  <h3>Cross-game pattern recognition (the moat)</h3>
+  <p>Single games teach scenarios. Cross-game pattern detection teaches <em>you as a PM</em>.</p>
+
+  <h4>Player profile (private, visible to the player only)</h4>
+  <p>After 5+ games, the player sees their own pattern dashboard:</p>
+  <ul>
+    <li><strong>Strengths</strong> — patterns they consistently do well (e.g., "Strong at customer coverage — 9/10 iterations with active customer engagement")</li>
+    <li><strong>Edges</strong> — patterns they consistently struggle with (e.g., "Tends to accept scope mid-sprint — 11 instances across 8 games")</li>
+    <li><strong>Trends</strong> — patterns improving or declining over time (e.g., "Tech debt decisions improving — declined 3 investments in early games, 0 in last 3")</li>
+    <li><strong>Unlocks</strong> — mastery badges earned for 10+ consistent healthy patterns</li>
+  </ul>
+
+  <h4>AI retrospective integration (links to Section 9)</h4>
+  <p>The end-of-game retrospective uses the pattern tracker as input. Instead of generic feedback, the AI mentor surfaces specific pattern evidence:</p>
+  <div class="note"><em>"Across this game and your previous 4, you've overruled your tech lead 3 times — twice publicly. Each time, the decision worked out in the short term, but team trust eroded. A senior PM would have taken the first disagreement offline and established the pattern that technical decisions live with engineering. Here's what that would have looked like in this game's Iteration 3…"</em></div>
+
+  <h3>Cohort-level insights (trainer feature, Phase 2)</h3>
+  <p>CSTs and L&amp;D leads get a cohort dashboard showing aggregate patterns across their trainees (anonymised in aggregate, attributable only to the trainer). Answers questions like:</p>
+  <ul>
+    <li>What's the most common anti-pattern in this cohort?</li>
+    <li>Which trainees are showing rapid behavior change?</li>
+    <li>Which scenarios triggered the most learning moments?</li>
+  </ul>
+  <p>This turns PRAXIS from individual training into measurable organizational learning — key for enterprise sales.</p>
+
+  <h3>Integration with the core engine</h3>
+  <ul>
+    <li>Pattern classification runs server-side on decision events</li>
+    <li>Claude Haiku 4.5 classifies text inputs (Sprint Goals, event responses) for implicit patterns</li>
+    <li>Rules-based classification for structural patterns (mid-sprint changes, inbox ignores)</li>
+    <li>Patterns stored in PostgreSQL linked to Game + User; aggregated in UserProgress</li>
+    <li>Cost per game: ~$0.04 (Haiku classification) + ~$0.12 (Opus retro) = ~$0.16 all-in</li>
+  </ul>
+
+  <div class="green"><strong>Strategic implication:</strong> the pattern library is proprietary content that compounds. Each player's games train the system on what "good" and "anti" look like across thousands of decision points. Competitors starting later can't easily replicate the behavioral training data.</div>
+</section>
+
+<!-- 9. AI MENTOR -->
+<section class="section">
+  <h2>9. AI Mentor System</h2>
+
+  <h3>Two distinct AI surfaces</h3>
+  <table>
+    <tr><th>Surface</th><th>Model</th><th>Latency req.</th><th>Cost target</th></tr>
+    <tr><td><strong>In-game event generation</strong> (dynamic events)</td><td>Claude Haiku 4.5</td><td>&lt;2s</td><td>&lt;$0.02 per event</td></tr>
+    <tr><td><strong>Sprint Goal clarity grading</strong></td><td>Claude Haiku 4.5</td><td>&lt;3s</td><td>&lt;$0.01 per grade</td></tr>
+    <tr><td><strong>Post-game retrospective</strong></td><td>Claude Opus 4.7 (1M ctx)</td><td>&lt;30s</td><td>&lt;$0.30 per retro</td></tr>
+    <tr><td><strong>Stakeholder roleplay</strong> (v2)</td><td>Claude Sonnet 4.6</td><td>&lt;4s</td><td>&lt;$0.05 per turn</td></tr>
+  </table>
+
+  <h3>Post-game retrospective — structure</h3>
+  <div class="story">
+    <div class="title">AI-generated retrospective template (per game)</div>
+    <ol>
+      <li><strong>Headline</strong> — one sentence that captures this game's defining decision</li>
+      <li><strong>3 strengths</strong> — with specific moments timestamped</li>
+      <li><strong>3 growth edges</strong> — with specific alternative decisions</li>
+      <li><strong>Alternate history replay</strong> — "Here's what would have happened if, in iteration 3, you had..."</li>
+      <li><strong>Technique unlocked</strong> — one framework the player demonstrated readiness for (Kano, WSJF, ICE, Cost of Delay, etc.)</li>
+      <li><strong>Recommended next scenario</strong> — based on growth edges</li>
+    </ol>
+  </div>
+
+  <h3>Prompt scaffolding (Opus 4.7)</h3>
+  <p>The retrospective prompt includes: full game log (decisions, events, outcomes), scenario metadata, player's prior games (if any), PM principles library (Cagan, Torres, Patton, Šochová). Output validated against JSON schema for consistent UI rendering.</p>
+
+  <h3>Prompt caching strategy</h3>
+  <p>Scenario definitions + PM principles library + retrospective rubric are static per game — <strong>cache them with 5-minute TTL</strong>. Expected cache hit rate: 70%+, reducing average retrospective cost from $0.30 to ~$0.12.</p>
+
+  <h3>Content safety</h3>
+  <ul>
+    <li>Retrospective tone is constructive, not shaming. Prompt explicitly forbids ridicule.</li>
+    <li>No personal data in prompts (use game state IDs, not real names).</li>
+    <li>All AI output labelled; players know what's AI-generated.</li>
+  </ul>
+</section>
+
+<!-- 10. MULTIPLAYER -->
+<section class="section">
+  <h2>10. Multiplayer Architecture</h2>
+
+  <h3>Modes</h3>
+  <table>
+    <tr><th>Mode</th><th>Players</th><th>Synchronicity</th><th>Priority</th></tr>
+    <tr><td>Solo</td><td>1</td><td>N/A</td><td>MVP</td></tr>
+    <tr><td>3-role Co-op (PO/SM/Dev)</td><td>3</td><td>Real-time</td><td>Phase 2</td></tr>
+    <tr><td>Tournament</td><td>Unlimited, same scenario</td><td>Async</td><td>Phase 2</td></tr>
+    <tr><td>Async campaign</td><td>3</td><td>1 iteration/day</td><td>Phase 3</td></tr>
+    <tr><td>Classroom mode</td><td>10–50 per cohort</td><td>Facilitator-paced</td><td>Phase 3</td></tr>
+  </table>
+
+  <h3>Role-specific views (Co-op)</h3>
+  <table>
+    <tr><th>Role</th><th>Can see</th><th>Can do</th></tr>
+    <tr><td>PO</td><td>Full backlog, customer signals, stakeholder messages, budget</td><td>Order backlog, set Sprint Goal, respond to stakeholder events</td></tr>
+    <tr><td>SM</td><td>Team health, impediments, facilitation opportunities</td><td>Remove impediments, call retros, coach team decisions</td></tr>
+    <tr><td>Dev</td><td>Backlog + technical detail, DoD, code health</td><td>Commit to sprint, flag scope surprises, estimate effort</td></tr>
+  </table>
+
+  <h3>Technical layer</h3>
+  <ul>
+    <li>WebSocket channels per game (Socket.IO or Pusher)</li>
+    <li>Authoritative server state in Postgres; Redis for ephemeral game state</li>
+    <li>Optimistic UI for decision drag-drop; server reconciles</li>
+    <li>Spectator mode: trainers can observe any game they have access to</li>
+  </ul>
+</section>
+
+<!-- 11. TECHNICAL ARCHITECTURE -->
+<section class="section">
+  <h2>11. Technical Architecture</h2>
+
+  <h3>Stack</h3>
+  <pre>Frontend:
+  Next.js 14 (App Router, Server Components, Suspense streaming)
+  React 18 + TypeScript
+  dnd-kit (drag-drop for backlog ordering)
+  Framer Motion (event reveals, release animations)
+  Tailwind CSS + shadcn/ui
+  Zustand (client state)
+
+Backend:
+  Next.js API Routes + tRPC for type-safe APIs
+  Node.js 20 runtime
+  Prisma ORM
+  PostgreSQL 16 (primary data store)
+  Redis (Upstash) — ephemeral game state, pub/sub
+  Socket.IO or Pusher for WebSocket multiplayer
+
+AI/ML:
+  Anthropic SDK (claude-opus-4-7, claude-haiku-4-5, claude-sonnet-4-6)
+  Prompt caching with 5-minute TTL
+  Structured output via JSON schema
+
+Auth:
+  Clerk (MVP) or NextAuth.js (Phase 2)
+
+Payments:
+  Stripe (subscriptions, metered billing for enterprise)
+
+Observability:
+  PostHog (product analytics — Mike's existing stack)
+  Sentry (error tracking)
+  Vercel Analytics (Core Web Vitals)
+
+Hosting:
+  Vercel (frontend + API routes)
+  Railway or Supabase (Postgres)
+  Upstash (Redis)
+
+CI/CD:
+  GitHub Actions
+  Preview deploys on Vercel per PR
+  Vitest for unit, Playwright for E2E</pre>
+
+  <h3>Systems diagram (narrative)</h3>
+  <p>Player's browser runs Next.js app. Game engine state lives in Postgres (persistent) + Redis (hot state during play). Decisions mutate state via tRPC. Event engine runs server-side, consults Claude Haiku for dynamic narration, writes results back. Post-game, Claude Opus generates retrospective (background job). PostHog ingests every decision event for analytics.</p>
+
+  <h3>Game engine design (critical)</h3>
+  <ul>
+    <li><strong>Pure deterministic core</strong> — given state + action, always produces same result. Enables replay, debugging, and scenario testing.</li>
+    <li><strong>Event log</strong> — every decision and outcome stored as append-only log. Enables replay and alternate-history simulation.</li>
+    <li><strong>Deterministic randomness</strong> — seed-based PRNG per game; same seed + decisions = same game. Enables "replay with different strategy."</li>
+    <li><strong>Engine is a library</strong>, not a service — can run in browser for tutorial, on server for real games.</li>
+  </ul>
+</section>
+
+<!-- 12. DATA MODEL -->
+<section class="section">
+  <h2>12. Data Model</h2>
+
+  <div class="schema">// Core Prisma schema — simplified for PRD
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  tier        Tier     @default(FREE)
+  createdAt   DateTime @default(now())
+  games       Game[]
+  progress    UserProgress?
+  cohortId    String?
+  cohort      Cohort?  @relation(fields: [cohortId], references: [id])
+}
+
+enum Tier { FREE INDIVIDUAL PRO TEAM_SEAT ENTERPRISE }
+
+model Cohort {
+  id          String   @id @default(cuid())
+  name        String
+  trainerId   String
+  trainer     User     @relation("TrainerCohorts", fields: [trainerId], references: [id])
+  users       User[]
+  startDate   DateTime
+  endDate     DateTime
+}
+
+model Scenario {
+  id          String   @id
+  slug        String   @unique
+  title       String
+  domain      String
+  level       Level
+  iterations  Int
+  definition  Json     // full scenario config
+  eventDeck   Json
+  authorId    String?
+  public      Boolean  @default(false)
+}
+
+enum Level { TUTORIAL BEGINNER INTERMEDIATE ADVANCED EXPERT }
+
+model Game {
+  id          String   @id @default(cuid())
+  scenarioId  String
+  scenario    Scenario @relation(fields: [scenarioId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  mode        Mode
+  state       Json     // full serialized game state
+  seed        String   // for deterministic replay
+  status      Status   @default(IN_PROGRESS)
+  iterations  Iteration[]
+  retro       Retrospective?
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+}
+
+enum Mode { SOLO COOP TOURNAMENT CLASSROOM INTERVIEW }
+enum Status { IN_PROGRESS COMPLETED ABANDONED }
+
+model Iteration {
+  id          String   @id @default(cuid())
+  gameId      String
+  game        Game     @relation(fields: [gameId], references: [id])
+  number      Int
+  backlogOrder Json    // ordered list of PBI IDs + release card position
+  sprintGoal  String?
+  events      Json     // events drawn this iteration
+  decisions   Json     // player responses to events
+  outcome     Json     // releases, happiness deltas, score changes
+  startedAt   DateTime
+  completedAt DateTime?
+}
+
+model Customer {
+  // Customer data is embedded in Game.state JSON, not a separate table.
+  // Rationale: customers are ephemeral per game; heavy joins would harm perf.
+}
+
+model Retrospective {
+  id          String   @id @default(cuid())
+  gameId      String   @unique
+  game        Game     @relation(fields: [gameId], references: [id])
+  headline    String
+  strengths   Json
+  growthEdges Json
+  alternateHistory Json
+  techniqueUnlocked String?
+  recommendedNext String?
+  aiModel     String
+  generatedAt DateTime @default(now())
+}
+
+model UserProgress {
+  userId      String   @id
+  user        User     @relation(fields: [userId], references: [id])
+  scenariosCompleted Int @default(0)
+  techniquesUnlocked Json
+  badges      Json
+  elo         Int      @default(1000)
+}
+
+model EventLog {
+  id          String   @id @default(cuid())
+  gameId      String
+  type        String   // decision | event | outcome | retro
+  payload     Json
+  timestamp   DateTime @default(now())
+  @@index([gameId, timestamp])
+}</div>
+</section>
+
+<!-- 13. FEATURE SPECS MVP -->
+<section class="section">
+  <h2>13. Feature Specifications (MVP)</h2>
+
+  <div class="story">
+    <div class="title">F-01 · Onboarding &amp; tutorial (3-iteration mini-game)</div>
+    <p><strong>User story:</strong> As a new user, I want a 15-minute tutorial that teaches me the core mechanics so I can immediately play a real scenario.</p>
+    <div class="ac"><span class="label">AC-1</span> Signed-up user lands on tutorial automatically; skippable for returning users.</div>
+    <div class="ac"><span class="label">AC-2</span> Tutorial uses a 3-iteration SaaS scenario with 3 personas and a preset event deck.</div>
+    <div class="ac"><span class="label">AC-3</span> First iteration walks through drag-order, release card placement, and commit.</div>
+    <div class="ac"><span class="label">AC-4</span> Iter 2 introduces customer signals (inbox message).</div>
+    <div class="ac"><span class="label">AC-5</span> Iter 3 introduces an event with choice; tutorial ends with mini-retro.</div>
+    <div class="ac"><span class="label">AC-6</span> Completion unlocks first real scenario + writes `tutorial_completed` to PostHog.</div>
+  </div>
+
+  <div class="story">
+    <div class="title">F-02 · Iteration planning board</div>
+    <p><strong>User story:</strong> As a player, I want to drag items into an ordered iteration backlog and place a release card so I can commit to a plan.</p>
+    <div class="ac"><span class="label">AC-1</span> Left panel: full product backlog (scrollable, filterable by customer).</div>
+    <div class="ac"><span class="label">AC-2</span> Right panel: empty iteration backlog (drag target).</div>
+    <div class="ac"><span class="label">AC-3</span> Top: current Sprint Goal (editable text field, required before commit).</div>
+    <div class="ac"><span class="label">AC-4</span> Bottom: "Commit Sprint" button (disabled until Sprint Goal + 1 item placed).</div>
+    <div class="ac"><span class="label">AC-5</span> Drag-reorder with dnd-kit; accessible with keyboard (arrow keys + space).</div>
+    <div class="ac"><span class="label">AC-6</span> Release card is a draggable card (1 pt); players insert anywhere in ordered list.</div>
+    <div class="ac"><span class="label">AC-7</span> Effort total vs. expected velocity shown as a progress bar, not a number (zero-friction).</div>
+  </div>
+
+  <div class="story">
+    <div class="title">F-03 · Event engine + response modal</div>
+    <p><strong>User story:</strong> As a player, when an event fires mid-sprint, I want to choose a response and see the consequence.</p>
+    <div class="ac"><span class="label">AC-1</span> Events fire between iterations based on weighted deck + behaviour modifiers.</div>
+    <div class="ac"><span class="label">AC-2</span> Modal shows event narrative, 2–3 choices, and visible consequence preview.</div>
+    <div class="ac"><span class="label">AC-3</span> Choice locks in; hidden consequences (tech debt, trust shifts) recorded silently.</div>
+    <div class="ac"><span class="label">AC-4</span> Events logged to EventLog table for retrospective analysis.</div>
+  </div>
+
+  <div class="story">
+    <div class="title">F-04 · Customer inbox (signals)</div>
+    <p><strong>User story:</strong> As a player, I want to see customer messages so I can understand who's engaged and what they need.</p>
+    <div class="ac"><span class="label">AC-1</span> Inbox widget shows 3–10 messages per iteration, variable by customer archetype.</div>
+    <div class="ac"><span class="label">AC-2</span> Messages include: feature requests, bug reports, compliments, churn warnings, silent signals.</div>
+    <div class="ac"><span class="label">AC-3</span> Clicking a customer avatar shows their engagement history (graph of state transitions).</div>
+    <div class="ac"><span class="label">AC-4</span> Unread badge; messages marked read on click (tracked for analytics).</div>
+  </div>
+
+  <div class="story">
+    <div class="title">F-05 · Sprint Review (post-iteration recap)</div>
+    <p><strong>User story:</strong> As a player, I want a clear recap of what happened each iteration so I can learn.</p>
+    <div class="ac"><span class="label">AC-1</span> Animated release moment: released items fly out, revenue number counts up.</div>
+    <div class="ac"><span class="label">AC-2</span> Customer reaction section: which customers changed state, why.</div>
+    <div class="ac"><span class="label">AC-3</span> Team health indicator: morale, velocity trend.</div>
+    <div class="ac"><span class="label">AC-4</span> Next iteration button starts the next planning phase.</div>
+  </div>
+
+  <div class="story">
+    <div class="title">F-06 · AI-generated retrospective (end of game)</div>
+    <p><strong>User story:</strong> As a player, I want a personalised retrospective after each game so I know exactly what to improve.</p>
+    <div class="ac"><span class="label">AC-1</span> End-game triggers Claude Opus call with full game log.</div>
+    <div class="ac"><span class="label">AC-2</span> Loading screen shows game stats during generation (~20s wait).</div>
+    <div class="ac"><span class="label">AC-3</span> Retrospective displays: headline, 3 strengths, 3 growth edges, 1 alternate-history replay.</div>
+    <div class="ac"><span class="label">AC-4</span> Technique unlocked is added to UserProgress.</div>
+    <div class="ac"><span class="label">AC-5</span> "Recommended next scenario" CTA.</div>
+    <div class="ac"><span class="label">AC-6</span> Shareable link (public URL) for retrospective card (LinkedIn-friendly).</div>
+  </div>
+
+  <div class="story">
+    <div class="title">F-07 · User progress &amp; scenario library</div>
+    <p><strong>User story:</strong> As a player, I want to see my progress and pick my next challenge.</p>
+    <div class="ac"><span class="label">AC-1</span> Home screen: recommended scenario, recent retrospectives, techniques unlocked.</div>
+    <div class="ac"><span class="label">AC-2</span> Library: all scenarios, locked or unlocked by tier + prerequisites.</div>
+    <div class="ac"><span class="label">AC-3</span> Each scenario card shows: difficulty, est. time, what it teaches, completion status.</div>
+  </div>
+
+  <div class="story">
+    <div class="title">F-08 · Auth &amp; payment</div>
+    <p><strong>User story:</strong> As a user, I want to sign up and upgrade to unlock more scenarios.</p>
+    <div class="ac"><span class="label">AC-1</span> Email + Google auth via Clerk.</div>
+    <div class="ac"><span class="label">AC-2</span> Free tier: tutorial + scenario 01 + 02 (2 real scenarios).</div>
+    <div class="ac"><span class="label">AC-3</span> $19/mo Individual unlocks all scenarios.</div>
+    <div class="ac"><span class="label">AC-4</span> Stripe Checkout integration. Cancel anytime.</div>
+  </div>
+</section>
+
+<!-- 14. UX -->
+<section class="section">
+  <h2>14. UI / UX Design Principles</h2>
+
+  <h3>Five zero-friction principles</h3>
+  <ol>
+    <li><strong>No numbers on screen unless essential.</strong> Use progress bars, sentiment icons, message tone — not integers.</li>
+    <li><strong>One primary action per screen.</strong> Planning = drag + commit. Review = read + continue. Retro = absorb + next.</li>
+    <li><strong>Animations carry meaning.</strong> A customer becoming an advocate gets a real celebration moment. A churn gets a quiet dimming, not a red banner.</li>
+    <li><strong>Progressive disclosure.</strong> Hide advanced mechanics (tech debt meter, stakeholder trust) until the player's behaviour unlocks them.</li>
+    <li><strong>No manual saves.</strong> Every decision auto-persists. Game is always resumable from any device.</li>
+  </ol>
+
+  <h3>Key screens (MVP)</h3>
+  <ol>
+    <li><strong>Onboarding</strong> — 3 screens: welcome, tutorial start, first drag</li>
+    <li><strong>Home/Library</strong> — scenarios + progress + recent retros</li>
+    <li><strong>Planning board</strong> — the drag-drop canvas (most used screen)</li>
+    <li><strong>Customer inbox</strong> — message list + customer detail panel</li>
+    <li><strong>Event modal</strong> — event narrative + choices</li>
+    <li><strong>Sprint Review</strong> — animated recap</li>
+    <li><strong>End-game retrospective</strong> — AI-generated report</li>
+    <li><strong>Account/Billing</strong> — settings + Stripe portal</li>
+  </ol>
+
+  <h3>Design system</h3>
+  <p>shadcn/ui as base. Custom components for card drag, release moment animation, customer avatar grid. Typography: Inter. Colour palette: warm neutrals + deep teal accent + single "victory" gold for releases.</p>
+
+  <h3>Accessibility (non-negotiable for MVP)</h3>
+  <ul>
+    <li>Full keyboard navigation for drag-drop (dnd-kit built-in)</li>
+    <li>Screen reader-friendly state changes</li>
+    <li>WCAG AA contrast throughout</li>
+    <li>Reduced-motion mode for animations</li>
+  </ul>
+</section>
+
+<!-- 15. ANALYTICS -->
+<section class="section">
+  <h2>15. Analytics &amp; Instrumentation</h2>
+
+  <h3>PostHog event schema (MVP)</h3>
+  <table>
+    <tr><th>Event</th><th>Key properties</th></tr>
+    <tr><td><code>game_started</code></td><td>scenario_id, mode, user_tier</td></tr>
+    <tr><td><code>iteration_planned</code></td><td>game_id, iter_number, release_card_position, items_ordered</td></tr>
+    <tr><td><code>iteration_committed</code></td><td>game_id, iter_number, sprint_goal_length, sprint_goal_clarity_score</td></tr>
+    <tr><td><code>event_fired</code></td><td>game_id, iter_number, event_type</td></tr>
+    <tr><td><code>event_responded</code></td><td>game_id, event_id, choice_id, time_to_decide_ms</td></tr>
+    <tr><td><code>release_occurred</code></td><td>game_id, iter_number, products_released, revenue</td></tr>
+    <tr><td><code>customer_state_transition</code></td><td>game_id, customer_id, from_state, to_state, trigger</td></tr>
+    <tr><td><code>retro_generated</code></td><td>game_id, technique_unlocked, generation_cost_usd</td></tr>
+    <tr><td><code>retro_shared</code></td><td>game_id, channel</td></tr>
+    <tr><td><code>subscription_started</code></td><td>tier, mrr</td></tr>
+  </table>
+
+  <h3>Key dashboards</h3>
+  <ul>
+    <li><strong>Funnel:</strong> visit → signup → tutorial complete → scenario 1 complete → paid subscription</li>
+    <li><strong>Engagement:</strong> games per user per week, time-to-first-decision, avg session length</li>
+    <li><strong>Learning outcomes:</strong> techniques unlocked per player, retro sharing rate</li>
+    <li><strong>Business:</strong> MRR, churn, CAC by channel, LTV by tier</li>
+    <li><strong>AI cost:</strong> cost per retro, cache hit rate, cost per game by tier</li>
+  </ul>
+</section>
+
+<!-- 16. SECURITY -->
+<section class="section">
+  <h2>16. Security, Privacy &amp; Compliance</h2>
+
+  <h3>Auth &amp; access control</h3>
+  <ul>
+    <li>Clerk for auth (email + Google + LinkedIn). MFA optional free; required for enterprise tier.</li>
+    <li>Row-level security via Prisma middleware — users only see their own games.</li>
+    <li>Trainer/cohort roles: CSTs can view games of users in their cohort.</li>
+  </ul>
+
+  <h3>Data handling</h3>
+  <ul>
+    <li>PII (email, name) stored in Postgres with encryption at rest (Supabase default).</li>
+    <li>Game data (no PII beyond user_id) retained indefinitely unless user requests deletion.</li>
+    <li>AI prompts never include PII — only game state IDs and generated narrative.</li>
+    <li>Stripe handles all payment data (PCI offloaded).</li>
+  </ul>
+
+  <h3>Privacy compliance</h3>
+  <ul>
+    <li>GDPR: right to export (Game + Retrospective JSON), right to delete (hard delete with cascade).</li>
+    <li>CCPA: Do Not Sell toggle in account settings.</li>
+    <li>Canadian PIPEDA: relevant for Mike's home jurisdiction; handled by above controls.</li>
+    <li>Cookie banner with analytics opt-out.</li>
+  </ul>
+
+  <h3>AI safety</h3>
+  <ul>
+    <li>Retrospective prompts include explicit system message: "Feedback must be constructive, specific, never shaming."</li>
+    <li>User-facing AI outputs labelled "Generated by Claude".</li>
+    <li>Anthropic's Prompt Shield + usage policies enforced.</li>
+  </ul>
+</section>
+
+<!-- 17. PRICING -->
+<section class="section">
+  <h2>17. Pricing &amp; Business Model</h2>
+
+  <h3>Tiers</h3>
+  <table>
+    <tr><th>Tier</th><th>Price</th><th>Features</th><th>Target</th></tr>
+    <tr><td>Free</td><td>$0</td><td>Tutorial + 2 scenarios · 1 retro/mo · Solo only</td><td>Acquisition</td></tr>
+    <tr><td>Individual</td><td>$19/mo or $149/yr</td><td>All scenarios · Unlimited retros · Progress tracking</td><td>Aspiring / mid-career PMs</td></tr>
+    <tr><td>Pro</td><td>$49/mo or $399/yr</td><td>Individual + Tournament + Multiplayer co-op · Interview mode · Paste-your-backlog</td><td>Working PMs · founders · job seekers</td></tr>
+    <tr><td>Team</td><td>$199/mo (10 seats)</td><td>Pro × 10 + Private cohort · Admin dashboard · Team leaderboard</td><td>Scrum teams training internally</td></tr>
+    <tr><td>CST Partner</td><td>Rev share 70/30</td><td>Branded cohort URL · Trainer dashboard · Co-branded certificates</td><td>Certified Scrum Trainers</td></tr>
+    <tr><td>Enterprise</td><td>$15K+ /yr</td><td>Custom scenarios · SSO · DPA · On-site training kits · SLA</td><td>F500 L&amp;D departments</td></tr>
+  </table>
+
+  <h3>Unit economics (Individual tier)</h3>
+  <table>
+    <tr><td>Monthly price</td><td>$19</td></tr>
+    <tr><td>Stripe fees (2.9% + 30¢)</td><td>−$0.85</td></tr>
+    <tr><td>AI costs (~10 retros/mo × $0.12)</td><td>−$1.20</td></tr>
+    <tr><td>Hosting/infra (per active user, amortised)</td><td>−$0.50</td></tr>
+    <tr><td><strong>Gross margin / user / month</strong></td><td><strong>$16.45 (87%)</strong></td></tr>
+    <tr><td>Assumed avg churn</td><td>7%/mo</td></tr>
+    <tr><td>Avg customer lifetime</td><td>14 months</td></tr>
+    <tr><td><strong>LTV (Individual)</strong></td><td><strong>$230</strong></td></tr>
+    <tr><td>Target CAC</td><td>&lt; $70 (3:1 LTV:CAC)</td></tr>
+  </table>
+
+  <h3>Conversion funnel assumptions</h3>
+  <table>
+    <tr><td>Visit → signup</td><td>10%</td></tr>
+    <tr><td>Signup → tutorial complete</td><td>60%</td></tr>
+    <tr><td>Tutorial → free scenario complete</td><td>50%</td></tr>
+    <tr><td>Free scenario complete → paid</td><td>8%</td></tr>
+    <tr><td>Overall visit → paid</td><td>0.24%</td></tr>
+  </table>
+</section>
+
+<!-- 18. GTM -->
+<section class="section">
+  <h2>18. Go-to-Market Strategy</h2>
+
+  <h3>Phase 1 (Months 0–3): Wedge — PM Interview Simulator</h3>
+  <ul>
+    <li>Launch one polished scenario: the "Interview Scenario" (30-min scored)</li>
+    <li>Price: $29 single-play or $19/mo unlimited</li>
+    <li>Distribution: Product Hunt launch, Hacker News Show HN, LinkedIn organic from Mike's network</li>
+    <li>Content: 10 blog posts on "I practiced N PM scenarios. Here's what I learned." — long-tail SEO</li>
+    <li>Target: 500 signups, 50 paying = ~$1,000 MRR by month 3</li>
+  </ul>
+
+  <h3>Phase 2 (Months 3–6): CST Partnership Program</h3>
+  <ul>
+    <li>Direct outreach to 50 top CSTs (Scrum Alliance directory)</li>
+    <li>Offer: free branded cohort instance for their next workshop, 70/30 rev share</li>
+    <li>Signal: "Zuzi Šochová uses PRAXIS for her CSPO cohorts" would unlock the channel</li>
+    <li>Target: 5 signed CSTs, 500 student-users, +$2,500 MRR</li>
+  </ul>
+
+  <h3>Phase 3 (Months 6–12): Enterprise pilots</h3>
+  <ul>
+    <li>Target 20 mid-market L&amp;D teams that have recently adopted Scrum</li>
+    <li>Offer: 3-month pilot at $5K; if successful, $15K annual</li>
+    <li>Sales channel: Mike's Questrade network + LinkedIn Sales Navigator</li>
+    <li>Target: 2 signed enterprises = +$2,500 MRR</li>
+  </ul>
+
+  <h3>Positioning &amp; messaging</h3>
+  <table>
+    <tr><th>Audience</th><th>Hook</th></tr>
+    <tr><td>Aspiring PMs</td><td>"Leetcode, but for product judgment."</td></tr>
+    <tr><td>Working PMs</td><td>"Rehearse your next sprint before running it."</td></tr>
+    <tr><td>CSTs</td><td>"Your workshop, continued — as a digital cohort."</td></tr>
+    <tr><td>Enterprise L&amp;D</td><td>"Scrum training with measurable outcomes, for under $50 a seat."</td></tr>
+  </table>
+
+  <h3>Content engine</h3>
+  <ul>
+    <li>Weekly blog post dissecting a famous PM decision (Slack pivot, Nokia fall, Figma merger)</li>
+    <li>Monthly "PRAXIS leaderboard" — best decisions of the month, with commentary</li>
+    <li>Shareable retro cards — every player's retro has LinkedIn share button; viral loop</li>
+    <li>Podcast appearances: Lenny's, Marty Cagan's, This Is Product Management</li>
+  </ul>
+</section>
+
+<!-- 19. COST PROJECTIONS -->
+<section class="section">
+  <h2>19. Cost Projections &amp; Financials</h2>
+
+  <h3>Development costs (MVP, 6 weeks)</h3>
+  <table>
+    <tr><th>Category</th><th>Cost</th><th>Notes</th></tr>
+    <tr><td>Mike's time (6 weeks × 30 hrs)</td><td>$0 (sweat)</td><td>Founder opportunity cost</td></tr>
+    <tr><td>Claude Code subscription</td><td>$100/mo × 2 mo = $200</td><td>Accelerates build speed</td></tr>
+    <tr><td>Design work (1 scenario polish)</td><td>$1,500</td><td>Contract designer for Sprint Review animations + illustrations</td></tr>
+    <tr><td>Scenario content writing</td><td>$500</td><td>Scenario 01 narrative + events</td></tr>
+    <tr><td>Legal (terms, privacy)</td><td>$500</td><td>One-time template</td></tr>
+    <tr><td>Incorporation &amp; domain</td><td>$300</td><td>CCPC + domain + SSL</td></tr>
+    <tr><td><strong>Pre-launch total</strong></td><td><strong>$3,000</strong></td><td></td></tr>
+  </table>
+
+  <h3>Monthly operating costs (at 500 users, ~50 paid)</h3>
+  <table>
+    <tr><th>Line item</th><th>Cost/mo</th></tr>
+    <tr><td>Vercel Pro</td><td>$20</td></tr>
+    <tr><td>Supabase Pro (Postgres + storage)</td><td>$25</td></tr>
+    <tr><td>Upstash Redis (free tier sufficient)</td><td>$0</td></tr>
+    <tr><td>Clerk (Startup tier)</td><td>$25</td></tr>
+    <tr><td>Stripe (transactions)</td><td>passthrough (already in margin)</td></tr>
+    <tr><td>PostHog (Cloud, under 1M events)</td><td>$0</td></tr>
+    <tr><td>Sentry</td><td>$26</td></tr>
+    <tr><td>Domain / misc</td><td>$10</td></tr>
+    <tr><td>Claude API (500 users avg 5 retros/mo)</td><td>~$300</td></tr>
+    <tr><td>Email (Resend/Postmark)</td><td>$20</td></tr>
+    <tr><td>Marketing (content + ads)</td><td>$500</td></tr>
+    <tr><td><strong>Total monthly opex</strong></td><td><strong>~$926</strong></td></tr>
+  </table>
+
+  <h3>Year-1 P&amp;L projection</h3>
+  <table>
+    <tr><th>Quarter</th><th>Paying users (end)</th><th>MRR (end)</th><th>Quarterly revenue</th><th>Quarterly opex</th><th>Net</th></tr>
+    <tr><td>Q1 (MVP launch)</td><td>20</td><td>$400</td><td>$800</td><td>$4,000</td><td>−$3,200</td></tr>
+    <tr><td>Q2 (CST partnerships)</td><td>120</td><td>$2,800</td><td>$4,800</td><td>$5,500</td><td>−$700</td></tr>
+    <tr><td>Q3 (growth)</td><td>350</td><td>$8,000</td><td>$16,000</td><td>$9,000</td><td>+$7,000</td></tr>
+    <tr><td>Q4 (enterprise pilots)</td><td>700</td><td>$18,000</td><td>$38,000</td><td>$14,000</td><td>+$24,000</td></tr>
+    <tr><td><strong>Year 1 total</strong></td><td><strong>700</strong></td><td><strong>$18,000</strong></td><td><strong>$59,600</strong></td><td><strong>$32,500</strong></td><td><strong>+$27,100</strong></td></tr>
+  </table>
+
+  <p><strong>ARR run-rate at end of year 1: $216K.</strong> Break-even around month 8 assuming the above trajectory and no hiring.</p>
+
+  <h3>Capital requirements</h3>
+  <ul>
+    <li><strong>Bootstrap feasible.</strong> Total cash burn year 1 ≈ $11K (Q1+Q2 losses). Mike covers from savings or DentinFlow cashflow.</li>
+    <li><strong>Optional raise:</strong> $250K pre-seed at $2M cap for growth acceleration — hire 1 FT engineer by month 6.</li>
+  </ul>
+</section>
+
+<!-- 20. ROADMAP -->
+<section class="section">
+  <h2>20. Roadmap &amp; Phasing</h2>
+
+  <h3>MVP — 6 weeks</h3>
+  <table>
+    <tr><th>Week</th><th>Deliverable</th></tr>
+    <tr><td>1</td><td>Repo setup · Auth · Prisma schema · 1 scenario hardcoded · Game engine core</td></tr>
+    <tr><td>2</td><td>Iteration planning board (drag-drop) · Commit + basic event firing</td></tr>
+    <tr><td>3</td><td>Customer inbox · Sprint Review screen · State transitions</td></tr>
+    <tr><td>4</td><td>Claude integration · Retrospective generator · Event deck complete for scenario 01</td></tr>
+    <tr><td>5</td><td>Tutorial · Billing (Stripe) · Polish animations · Accessibility pass</td></tr>
+    <tr><td>6</td><td>Soft launch: private beta to 20 CSPO cohort peers · Iterate · Public launch</td></tr>
+  </table>
+
+  <h3>Phase 2 — Months 3–6</h3>
+  <ul>
+    <li>9 more scenarios (03–10) · Scenario authoring tool for internal use</li>
+    <li>CST partnership dashboard + private cohort URLs</li>
+    <li>Multiplayer co-op (PO/SM/Dev) · WebSocket infrastructure</li>
+    <li>Interview mode standalone product</li>
+    <li>Public retrospective sharing · Referral program</li>
+  </ul>
+
+  <h3>Phase 3 — Months 6–12</h3>
+  <ul>
+    <li>Tournament mode · Leaderboards · ELO system</li>
+    <li>Paste-your-backlog (Linear/Jira import)</li>
+    <li>Enterprise features: SSO, admin dashboard, cohort reporting</li>
+    <li>Mobile-responsive / PWA</li>
+    <li>Year campaign mode (24 iter) · Portfolio mode</li>
+  </ul>
+
+  <h3>Phase 4 — Year 2</h3>
+  <ul>
+    <li>Community-contributed scenarios</li>
+    <li>Stakeholder roleplay via AI (Sonnet)</li>
+    <li>Integrations: Slack, Microsoft Teams, Linear, Jira</li>
+    <li>Mentor marketplace (senior PMs charge for 1:1 retro reviews)</li>
+    <li>Credentialing path · Industry-recognised certifications</li>
+  </ul>
+</section>
+
+<!-- 21. SUCCESS METRICS -->
+<section class="section">
+  <h2>21. Success Metrics &amp; KPIs</h2>
+
+  <h3>North Star metric</h3>
+  <div class="callout"><strong>Weekly Active Deciders (WAD):</strong> users who made at least 5 consequential decisions in the past 7 days. Captures engagement in the thing that matters (practice), not vanity metrics (logins).</div>
+
+  <h3>Product health metrics</h3>
+  <ul>
+    <li><strong>Tutorial completion rate:</strong> &gt; 60% of signups</li>
+    <li><strong>Scenario 01 completion rate:</strong> &gt; 50% of tutorial-completers</li>
+    <li><strong>Games per active user per week:</strong> &gt; 2.0</li>
+    <li><strong>Retrospective share rate:</strong> &gt; 10% of retros shared to LinkedIn</li>
+    <li><strong>Time to first commit (from signup):</strong> &lt; 15 min</li>
+  </ul>
+
+  <h3>Business metrics</h3>
+  <ul>
+    <li><strong>Paid conversion (free → Individual):</strong> &gt; 5% within 30 days</li>
+    <li><strong>Monthly churn:</strong> &lt; 7%</li>
+    <li><strong>CAC payback:</strong> &lt; 4 months</li>
+    <li><strong>NPS:</strong> &gt; 40 at 6 months (PM training benchmark ~30)</li>
+    <li><strong>LTV:CAC ratio:</strong> &gt; 3:1</li>
+  </ul>
+
+  <h3>Learning outcome metrics (unique to PRAXIS)</h3>
+  <ul>
+    <li><strong>Techniques unlocked per user:</strong> median &gt; 5 within 90 days</li>
+    <li><strong>Decision quality improvement:</strong> ratio of "good" decisions (per AI mentor) per game, tracked over a player's history</li>
+    <li><strong>Certification pass rate:</strong> for paired CSPO candidates, pass rate &gt; baseline</li>
+  </ul>
+</section>
+
+<!-- 22. RISKS -->
+<section class="section">
+  <h2>22. Risks &amp; Mitigations</h2>
+
+  <table>
+    <tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr>
+    <tr><td>AI retrospectives are generic / low-quality</td><td>Medium</td><td>High</td><td>Extensive prompt engineering · user testing · iteration · structured output validation · Opus 4.7 for depth</td></tr>
+    <tr><td>CSTs resist because it competes with them</td><td>Medium</td><td>High</td><td>Position as augmentation not replacement · generous rev share · co-branded certificates</td></tr>
+    <tr><td>Game becomes "too gamey" — PMs don't take seriously</td><td>Medium</td><td>High</td><td>Professional tone · real scenarios · named industry mentors · evidence-backed content</td></tr>
+    <tr><td>AI costs scale worse than expected</td><td>Medium</td><td>Medium</td><td>Aggressive prompt caching · Haiku for in-game · batch retros · tier-gate high-cost features</td></tr>
+    <tr><td>Chicken-and-egg for multiplayer</td><td>High</td><td>Medium</td><td>Solo mode is fully viable on its own · multiplayer rolls out when cohorts exist</td></tr>
+    <tr><td>GoPractice / Reforge launches a competing simulator</td><td>Low</td><td>High</td><td>Speed · own the Scrum/PO niche · build moat via scenario library + AI quality</td></tr>
+    <tr><td>Anthropic pricing increases significantly</td><td>Low</td><td>Medium</td><td>Multi-provider abstraction (OpenAI, Google fallback) · usage caps</td></tr>
+    <tr><td>Mike burns out juggling DentinFlow + PRAXIS</td><td>High</td><td>High</td><td>Pick ONE product for year 1 · park the other · be explicit with self about priority</td></tr>
+    <tr><td>Scenario authoring is bottleneck</td><td>High</td><td>Medium</td><td>AI-assisted scenario generation by Month 6 · community contribution Year 2</td></tr>
+    <tr><td>Accessibility gaps hurt enterprise sales</td><td>Medium</td><td>Medium</td><td>WCAG AA from MVP · third-party audit before enterprise launch</td></tr>
+  </table>
+
+  <div class="warn"><strong>Top risk:</strong> founder overcommitment. Mike has DentinFlow already in flight. PRAXIS is a separate product requiring focus. Recommend making an explicit choice before starting: PRAXIS full-time, or DentinFlow full-time with PRAXIS in weekend mode only. Not both concurrently as primary.</div>
+</section>
+
+<!-- 23. TEAM -->
+<section class="section">
+  <h2>23. Team &amp; Resourcing</h2>
+
+  <h3>Founding (year 1)</h3>
+  <ul>
+    <li><strong>Mike Hamata</strong> — CEO, Product, Engineering, GTM. Full-time from month 0 if PRAXIS becomes the chosen focus.</li>
+    <li><strong>Claude Code + Claude Opus 4.7</strong> — primary "force multiplier" development partner. Estimated 3–5× throughput vs. solo.</li>
+    <li><strong>Contractors</strong> — designer (10 hrs, $1,500), legal (one-time).</li>
+  </ul>
+
+  <h3>First hires (months 6–12)</h3>
+  <table>
+    <tr><th>Role</th><th>When</th><th>Why</th></tr>
+    <tr><td>Full-stack engineer</td><td>Month 6 if $10K+ MRR</td><td>Scenario authoring tooling, enterprise features</td></tr>
+    <tr><td>Content / scenario designer</td><td>Month 9</td><td>Build out library to 40 scenarios</td></tr>
+    <tr><td>Customer success / CST liaison</td><td>Month 12</td><td>Manage 20+ CST partnerships</td></tr>
+  </table>
+
+  <h3>Advisory board targets</h3>
+  <ul>
+    <li>One CST (Zuzi Šochová ideal — relationship already open)</li>
+    <li>One senior PM (Shreyas Doshi, Lenny Rachitsky-tier)</li>
+    <li>One educator from Stanford GSB or MIT Sloan for academic credibility</li>
+    <li>One YC founder for GTM advice</li>
+  </ul>
+</section>
+
+<!-- 24. NEXT STEPS -->
+<section class="section">
+  <h2>24. Next Steps</h2>
+
+  <h3>Immediate (next 7 days)</h3>
+  <ol>
+    <li>Mike decides: PRAXIS full-time OR weekend side project. Write it down.</li>
+    <li>Lock working name (PRAXIS or alternative). Register domain + trademark check.</li>
+    <li>Set up GitHub repo: <code>mikehamata/praxis</code>. MIT license. Public repo for community credibility.</li>
+    <li>Brief Zuzi Šochová on the idea. Ask for a 30-min call. Offer free pilot for her next cohort.</li>
+    <li>Claude Code session: scaffold Next.js + Prisma + Clerk + Stripe · seed scenario 01</li>
+  </ol>
+
+  <h3>Weeks 1–6 (MVP build)</h3>
+  <ol>
+    <li>Follow the 6-week roadmap in Section 20.</li>
+    <li>Weekly demo to 3 chosen beta users (Mike's CSPO cohort members).</li>
+    <li>Instrument PostHog events from day 1.</li>
+    <li>Write blog posts (2 per week) as build-in-public marketing.</li>
+  </ol>
+
+  <h3>Week 7 (launch)</h3>
+  <ol>
+    <li>Product Hunt launch (Tuesday, optimal day).</li>
+    <li>Show HN post.</li>
+    <li>LinkedIn long-form from Mike's account: "Why I built PRAXIS."</li>
+    <li>Email all CSPO alumni + Scrum Alliance contacts.</li>
+    <li>Offer lifetime 50% discount for first 100 paying customers.</li>
+  </ol>
+
+  <h3>Decision gates</h3>
+  <table>
+    <tr><th>Gate</th><th>Target</th><th>Action if missed</th></tr>
+    <tr><td>End of Month 1</td><td>100 signups</td><td>Pivot GTM messaging</td></tr>
+    <tr><td>End of Month 3</td><td>$1K MRR</td><td>Question PMF; interview 20 churned users</td></tr>
+    <tr><td>End of Month 6</td><td>$5K MRR + 3 CST partners</td><td>Slow down hiring; extend runway</td></tr>
+    <tr><td>End of Month 12</td><td>$15K MRR</td><td>Decide on raise vs. continued bootstrap</td></tr>
+  </table>
+
+  <div class="green"><strong>Success criteria for continuing after Month 6:</strong> if MRR &gt; $5K AND at least 2 CST partnerships signed AND weekly active deciders &gt; 100, <em>commit to year 2 and consider raise</em>.</div>
+</section>
+
+<!-- SIGNATURE -->
+<section class="section">
+  <div class="sig-block">
+    <p><strong>Document status:</strong> Draft v1.0 · Pending stakeholder review · 2026-04-18</p>
+    <p><strong>Review cycle:</strong> This PRD should be revisited after: (a) initial user research with 5 CSPO cohort members, (b) first Claude Code build week, (c) first 20 paying users. Update version number with each significant revision.</p>
+    <p><strong>Co-author acknowledgement:</strong> This PRD was co-authored by Mike Hamata and Claude Opus 4.7. All decisions are Mike's; Claude contributed research synthesis, market analysis, technical architecture proposals, and document structuring.</p>
+  </div>
+</section>
+
+</body>
+</html>
