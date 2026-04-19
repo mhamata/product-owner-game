@@ -32,7 +32,20 @@ Product Owner Game/
 - [x] Scenario 02 — The Clearing Pipeline (Moomoo interview role)
 - [x] PM Methods reference
 - [x] Engine algorithms doc
-- [ ] Next.js scaffold + playable v1 (in progress — `app/`)
+- [x] Next.js scaffold + playable v1 (`app/` — run `cd app && npm run dev`)
+
+## 🕹️ Run the game
+
+```bash
+cd app
+npm install          # first time only
+npm run dev          # http://localhost:3000
+```
+
+For the AI retro, add `ANTHROPIC_API_KEY` to `app/.env.local`. The rest of
+the game runs fully client-side (localStorage persistence).
+
+Tests: `npm test` · Typecheck: `npm run typecheck` · Build: `npm run build`
 
 ## 🚀 Starting a new Claude Code session — handoff prompt
 
