@@ -190,7 +190,7 @@ export const methods: Method[] = [
       'Ignoring Cost of Delay for infrastructure — the bill comes due with interest',
     ],
     example: {
-      title: 'Options Expiry at Questrade',
+      title: 'Options Expiry at a Brokerage',
       body:
         'Missed expiry-day automation = urgency-sensitive + fixed-date hybrid. Every missed Friday = ~$X in manual ops cost AND regulatory exposure. When you frame it as "we pay $Y/month to not automate," the conversation stops being about priority and starts being about economics.',
     },
