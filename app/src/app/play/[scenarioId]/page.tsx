@@ -1,3 +1,5 @@
+import { notFound } from 'next/navigation';
+import { getScenario } from '@/scenarios';
 import { SimRunner } from '@/components/console/sim/SimRunner';
 
 // The /play capstone now renders the Guided Flow simulation (a linear sprint
@@ -10,5 +12,8 @@ export default async function PlayPage({
   params: Promise<{ scenarioId: string }>;
 }) {
   const { scenarioId } = await params;
+  // 404 on unknown/removed scenarios (e.g. the excluded scenario02) instead of
+  // rendering a broken sim full of "undefined".
+  if (!getScenario(scenarioId)) notFound();
   return <SimRunner scenarioId={scenarioId} />;
 }
