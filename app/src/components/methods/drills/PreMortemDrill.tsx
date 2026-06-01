@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { GradeDisplay, useLLMGrade } from './LLMGrade';
 
-const PROJECT = `Moomoo Canada will rebuild the clearing & settlement platform from a batch architecture to an event-driven architecture. Target: 2 quarters. Team: 4 engineers + 1 QA. Success = 60% reduction in break rate, zero settlement fails during cutover, CIRO audit passes. The batch system currently runs the entire post-trade flow — any cutover risk is existential.`;
+const PROJECT = `Hubflow will re-architect its core data-sync platform from a nightly batch pipeline to an event-driven one. Target: 2 quarters. Team: 4 engineers + 1 QA. Success = 60% reduction in sync failures, zero data loss during cutover, the enterprise security review passes. The batch pipeline currently powers every customer dashboard and integration — any cutover risk is existential.`;
 
 export function PreMortemDrill() {
   const [failures, setFailures] = useState<string[]>(['', '', '', '']);
@@ -40,7 +40,7 @@ export function PreMortemDrill() {
                 next[i] = e.target.value;
                 setFailures(next);
               }}
-              placeholder="e.g., HQ platform team blocked a required API change and we were stuck on a forked version for 6 weeks"
+              placeholder="e.g., the platform team blocked a required API change and we were stuck on a forked version for 6 weeks"
               className="flex-1 border rounded px-2 py-1 text-sm"
             />
           </div>

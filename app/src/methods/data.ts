@@ -83,7 +83,7 @@ export const methods: Method[] = [
       body:
         'SOC 2 Audit Prep: Value 8, Time Criticality 13 (hard Q3 deadline tied to enterprise renewals), Risk 8, Size 13 → (8+13+8)/13 = 2.23.\nError Dashboard: Value 8, Time Criticality 3, Risk 3, Size 8 → (8+3+3)/8 = 1.75.\nThe audit wins despite similar raw value, because the compliance deadline compounds delay cost. This is the exact shape of reasoning a senior PM interview will probe.',
     },
-    relatedScenarios: ['02-clearing-pipeline'],
+    relatedScenarios: ['01-canadian-launch'],
     drill: 'wsjf',
   },
   {
@@ -194,7 +194,7 @@ export const methods: Method[] = [
       body:
         'Postponing billing automation = urgency-sensitive + fixed-date hybrid. Every month it slips = ~$X in manual finance-ops time AND a growing backlog of invoice errors. When you frame it as "we pay $Y/month to not automate," the conversation stops being about priority and starts being about economics.',
     },
-    relatedScenarios: ['02-clearing-pipeline'],
+    relatedScenarios: ['01-canadian-launch'],
   },
 
   // ────────────── Estimation ──────────────
@@ -395,7 +395,7 @@ export const methods: Method[] = [
       body:
         '1. "Imagine it\'s 6 months from now. We shipped this feature and it failed. What happened?" (10 min silent writing, each person)\n2. Share all failure modes; dedupe.\n3. Vote on top 3 most probable.\n4. For each, define a leading indicator you\'ll monitor.\n5. Assign an owner to each indicator.\nThe output isn\'t a list of fears — it\'s a dashboard.',
     },
-    relatedScenarios: ['02-clearing-pipeline'],
+    relatedScenarios: ['01-canadian-launch'],
     drill: 'pre-mortem',
   },
   {

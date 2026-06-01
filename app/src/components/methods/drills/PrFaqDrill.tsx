@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { GradeDisplay, useLLMGrade } from './LLMGrade';
 
-const PROMPT = `Write the press-release opener for the Moomoo Canada "Clearing Pipeline v2" platform — an event-driven post-trade system replacing the legacy batch architecture. Target audience for the PR: Moomoo Canada employees, brokerage ops leaders, CIRO, and financial-press readers.`;
+const PROMPT = `Write the press-release opener for Hubflow's "Realtime Sync" platform — an event-driven data-sync engine replacing the legacy nightly-batch pipeline. Target audience for the PR: Hubflow customers, ops admins and engineering leads who run on the platform, the security-review team, and trade-press readers.`;
 
 export function PrFaqDrill() {
   const [headline, setHeadline] = useState('');
@@ -30,7 +30,7 @@ export function PrFaqDrill() {
           <input
             value={headline}
             onChange={(e) => setHeadline(e.target.value)}
-            placeholder='e.g., "Moomoo Canada cuts settlement breaks in half — and gets ops analysts home on time"'
+            placeholder='e.g., "Hubflow cuts dashboard sync failures in half — and gets ops teams home on time"'
             className="w-full border rounded px-2 py-1"
           />
         </div>
@@ -41,7 +41,7 @@ export function PrFaqDrill() {
           <input
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
-            placeholder='e.g., "New event-driven platform serves 14-person Canadian ops team and 120K daily trades"'
+            placeholder='e.g., "New event-driven platform serves 14-person ops teams and 120K daily dashboard updates"'
             className="w-full border rounded px-2 py-1"
           />
         </div>
@@ -53,7 +53,7 @@ export function PrFaqDrill() {
             rows={5}
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
-            placeholder="Previously, post-trade processing relied on nightly batch runs..."
+            placeholder="Previously, dashboards and integrations relied on nightly batch syncs..."
             className="w-full border rounded px-2 py-1 text-sm"
           />
         </div>

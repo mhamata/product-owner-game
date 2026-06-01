@@ -1,3 +1,5 @@
+// EXCLUDED from the app (finance/Moomoo content) — kept for later
+// de-specialization; not exported, so /play/02-clearing-pipeline 404s.
 import type { Scenario } from '@/engine/types';
 
 // Scenario 02 — The Clearing Pipeline (Moomoo). Platform/internal PM.

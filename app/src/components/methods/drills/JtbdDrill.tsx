@@ -5,16 +5,16 @@ import { GradeDisplay, useLLMGrade } from './LLMGrade';
 
 const SCENARIOS = [
   {
-    id: 'priya-investor',
-    label: 'Priya (24, first-time investor, $2K to invest)',
+    id: 'priya-trialer',
+    label: 'Priya (New trialer, evaluating Hubflow this week)',
     context:
-      'Priya is 24, Vancouver, recent grad. Has $2K to invest. Spends time on r/CanadianInvestor. Follows finfluencers on TikTok. Has never had a brokerage account. Sees ads for Wealthsimple, Questrade, and now Moomoo.',
+      "Priya just started a free trial of Hubflow, a B2B team-collaboration SaaS. She is comparing it to two competitors. She has never set up SSO or invited a team before. She skims onboarding emails and lives in her existing tools — she will churn silently if first-run value isn't obvious.",
   },
   {
-    id: 'darnell-ops',
-    label: 'Darnell (Ops Team Lead, 12 years brokerage ops)',
+    id: 'darren-eng-lead',
+    label: 'Darren (Engineering Lead, 12 years shipping software)',
     context:
-      'Darnell leads a team of 14 ops analysts at Moomoo Canada. His team spends ~60% of their time on reconciliations and break resolution. He has seen three "platform rebuilds" promise the world. He wants to get home for dinner.',
+      'Darren is an engineering lead whose team of 14 relies on Hubflow daily. They spend ~60% of their time wiring up integrations and chasing flaky dashboards and reliability issues. He has seen three "platform rebuilds" promise the world. He wants to get home for dinner.',
   },
 ];
 
@@ -59,7 +59,7 @@ export function JtbdDrill() {
             value={situation}
             onChange={(e) => setSituation(e.target.value)}
             className="w-full border rounded px-2 py-1"
-            placeholder="e.g., I get my first real paycheque and my friends are posting investment gains"
+            placeholder="e.g., I start a trial on Friday and need to show my team something useful by Monday standup"
           />
         </div>
         <div>
@@ -70,7 +70,7 @@ export function JtbdDrill() {
             value={motivation}
             onChange={(e) => setMotivation(e.target.value)}
             className="w-full border rounded px-2 py-1"
-            placeholder="e.g., start investing my $2K without needing a finance degree"
+            placeholder="e.g., get my team collaborating in the new tool without a long setup project"
           />
         </div>
         <div>
@@ -81,7 +81,7 @@ export function JtbdDrill() {
             value={outcome}
             onChange={(e) => setOutcome(e.target.value)}
             className="w-full border rounded px-2 py-1"
-            placeholder="e.g., feel like I'm doing the grown-up thing"
+            placeholder="e.g., look decisive to my team instead of like I picked the wrong tool"
           />
         </div>
       </div>

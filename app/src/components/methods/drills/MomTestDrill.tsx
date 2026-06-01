@@ -19,9 +19,9 @@ const QUOTES: Quote[] = [
   },
   {
     id: '2',
-    text: '"Last Saturday I spent 40 minutes in Excel reconciling my TFSA contribution room. I ended up calling my sister who\'s an accountant."',
+    text: '"Last Tuesday I spent 40 minutes exporting our dashboard to a spreadsheet by hand for the weekly report. I ended up pinging a teammate who knew a faster way."',
     good: true,
-    why: 'Specific past behavior. Concrete time cost. Reveals workaround (asking sister) — a hint at real pain.',
+    why: 'Specific past behavior. Concrete time cost. Reveals workaround (asking a teammate) — a hint at real pain.',
   },
   {
     id: '3',
@@ -31,7 +31,7 @@ const QUOTES: Quote[] = [
   },
   {
     id: '4',
-    text: '"Last month I almost switched to Wealthsimple because I needed fractional shares for my daughter\'s RESP. I didn\'t switch because changing brokers is a hassle."',
+    text: '"Last month I almost moved the team to a competitor because we needed a Salesforce integration. I didn\'t switch because re-doing our SSO and permissions setup is a hassle."',
     good: true,
     why: 'Specific past almost-action. Names the competitor and the specific use case. Ends with a switching-cost insight.',
   },
@@ -43,7 +43,7 @@ const QUOTES: Quote[] = [
   },
   {
     id: '6',
-    text: '"Yeah I tried the chart analysis feature in the app last week but I couldn\'t figure out how to save a study. I ended up taking a screenshot."',
+    text: '"Yeah I tried the new dashboard builder last week but I couldn\'t figure out how to save a view to share with my team. I ended up taking a screenshot."',
     good: true,
     why: 'Specific past use. Named friction point. Named workaround. You could prototype the fix today.',
   },
