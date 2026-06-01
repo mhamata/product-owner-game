@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PRAXIS — Direction B · Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     PRAXIS — Direction B "Console"
+     Light, technical, engineer-tool aesthetic. Coheres with the
+     founder's portfolio ("The System"): mono metadata + one
+     electric indigo accent. Gamification = crisp data-viz, not toys.
+     ============================================================ */
+
+  :root {
+    /* monochrome slate scale */
+    --ink:        #171717;
+    --ink-2:      #404040;
+    --slate:      #525252;
+    --mute:       #737373;
+    --faint:      #A3A3A3;
+    --line:       #E5E5E5;
+    --line-2:     #EDEDED;
+    --panel:      #FAFAFA;
+    --panel-2:    #F5F5F5;
+    --paper:      #FFFFFF;
+
+    /* one electric accent + semantic state */
+    --accent:     #2563EB;
+    --accent-700: #1D4ED8;
+    --accent-050: #EFF4FF;
+    --accent-100: #DBE6FF;
+    --good:       #16A34A;
+    --good-050:   #ECFDF3;
+    --good-line:  #BBF7D0;
+    --bad:        #DC2626;
+    --bad-050:    #FEF2F2;
+    --bad-line:   #FECACA;
+
+    --radius:     7px;
+    --radius-sm:  5px;
+    --radius-lg:  10px;
+
+    --shadow-sm:  0 1px 2px rgba(15,23,42,0.04);
+    --shadow-md:  0 6px 20px rgba(15,23,42,0.06);
+    --shadow-lg:  0 14px 40px rgba(15,23,42,0.10);
+
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--panel);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    line-height: 1.5;
+  }
+
+  /* faint technical grid (matches portfolio .blueprint-light) */
+  .blueprint {
+    background-image:
+      linear-gradient(rgba(15,23,42,0.030) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,23,42,0.030) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+
+  button { font-family: inherit; cursor: pointer; }
+
+  /* accessible focus ring everywhere */
+  a:focus-visible,
+  button:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  .mono { font-family: var(--mono); }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ============================================================
+     APP CHROME
+     ============================================================ */
+  .app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* top utility bar : wordmark + screen toggle */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: saturate(180%) blur(8px);
+  }
+  .topbar__inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .wordmark {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .wordmark .dot { color: var(--accent); }
+  .wordmark .v   { color: var(--faint); font-size: 11px; font-weight: 500; margin-left: 6px; }
+
+  /* segmented screen toggle (Path | Lesson) */
+  .seg {
+    display: inline-flex;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 3px;
+    gap: 2px;
+  }
+  .seg__btn {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--slate);
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: color .15s ease, background .15s ease;
+  }
+  .seg__btn:hover { color: var(--ink); }
+  .seg__btn[aria-selected="true"] {
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line);
+    margin: -1px;
+  }
+  .seg__btn .ico { width: 14px; height: 14px; flex: none; }
+
+  /* ============================================================
+     SCREEN PLUMBING
+     ============================================================ */
+  .screen { display: none; }
+  .screen.is-active { display: block; }
+
+  main { flex: 1 1 auto; }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ============================================================
+     SCREEN 1 — LEARNING PATH (curriculum map / grid)
+     ============================================================ */
+
+  /* status bar : streak / mastery / industry */
+  .status {
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .status__inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    border-radius: var(--radius);
+    padding: 8px 13px;
+  }
+  .stat .ico { width: 17px; height: 17px; flex: none; }
+  .stat__k {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mute);
+    line-height: 1.2;
+  }
+  .stat__v {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat__v small { color: var(--faint); font-weight: 500; }
+
+  /* mastery readout uses a precise ring */
+  .ring { width: 34px; height: 34px; flex: none; transform: rotate(-90deg); }
+  .ring__track { stroke: var(--line); }
+  .ring__fill  { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1); }
+
+  .status__spacer { flex: 1 1 auto; }
+
+  /* industry chip = select-like */
+  .chip-select {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    transition: border-color .15s ease;
+  }
+  .chip-select:hover { border-color: var(--faint); }
+  .chip-select .ico { width: 15px; height: 15px; color: var(--accent); flex: none; }
+  .chip-select__k {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+  .chip-select select {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+    padding-right: 16px;
+    cursor: pointer;
+  }
+  .chip-select .caret {
+    position: absolute; right: 12px; pointer-events: none;
+    width: 11px; height: 11px; color: var(--slate);
+  }
+
+  /* page heading */
+  .path-head {
+    padding: 36px 0 8px;
+  }
+  .path-head__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .path-head h1 {
+    margin: 10px 0 0;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .path-head p {
+    margin: 8px 0 0;
+    color: var(--slate);
+    font-size: 15px;
+    max-width: 52ch;
+  }
+  .progress-count {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--faint);
+    white-space: nowrap;
+  }
+
+  /* overall curriculum progress meter */
+  .meter {
+    margin-top: 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .meter__bar {
+    flex: 1 1 auto;
+    height: 6px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .meter__fill {
+    height: 100%;
+    width: 18%;
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .meter__pct {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--slate);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- units ---- */
+  .units { padding: 28px 0 64px; }
+
+  .unit { margin-top: 30px; }
+  .unit:first-child { margin-top: 22px; }
+
+  .unit__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .unit__no {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-050);
+    border: 1px solid var(--accent-100);
+    padding: 4px 9px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+  }
+  .unit.is-locked .unit__no {
+    color: var(--mute);
+    background: var(--panel-2);
+    border-color: var(--line);
+  }
+  .unit.is-done .unit__no {
+    color: var(--good);
+    background: var(--good-050);
+    border-color: var(--good-line);
+  }
+  .unit__title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .unit.is-locked .unit__title { color: var(--mute); }
+  .unit__state {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mute);
+    white-space: nowrap;
+  }
+  .unit__state .ico { width: 13px; height: 13px; flex: none; }
+  .unit__state.s-done { color: var(--good); }
+  .unit__state.s-current { color: var(--accent); }
+
+  /* skill card grid */
+  .grid {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+    gap: 14px;
+  }
+
+  .card {
+    position: relative;
+    text-align: left;
+    width: 100%;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 132px;
+    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+  }
+  .card__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .card__name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .card__meta {
+    margin-top: 3px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--faint);
+    text-transform: uppercase;
+  }
+  .card__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+  }
+  .card__pct {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--slate);
+  }
+
+  /* state badge (icon + always a text label — never color alone) */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--mute);
+    background: var(--panel);
+    white-space: nowrap;
+  }
+  .badge .ico { width: 12px; height: 12px; flex: none; }
+  .badge.b-done { color: var(--good); background: var(--good-050); border-color: var(--good-line); }
+  .badge.b-active { color: var(--accent); background: var(--accent-050); border-color: var(--accent-100); }
+  .badge.b-locked { color: var(--mute); background: var(--panel-2); border-color: var(--line); }
+
+  /* small inline ring inside a card foot */
+  .miniring { width: 26px; height: 26px; flex: none; transform: rotate(-90deg); }
+  .miniring .t { stroke: var(--line); }
+  .miniring .f { stroke-linecap: round; }
+  .miniring .f.good { stroke: var(--good); }
+  .miniring .f.accent { stroke: var(--accent); }
+
+  /* completed card */
+  .card.is-done { background: var(--paper); }
+  .card.is-done .card__check {
+    color: var(--good);
+    width: 18px; height: 18px;
+  }
+
+  /* active card = Von Restorff highlight, only the START affordance */
+  .card.is-active {
+    border-color: rgba(37,99,235,0.45);
+    background: linear-gradient(180deg, var(--accent-050), #fff 80%);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+  }
+  .card.is-active:hover {
+    transform: translateY(-2px);
+    border-color: rgba(37,99,235,0.7);
+    box-shadow: var(--shadow-md);
+  }
+  .card.is-active:active { transform: translateY(0); }
+  .card__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent);
+    border: 0;
+    padding: 8px 13px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    transition: background .15s ease;
+  }
+  .card.is-active:hover .card__cta { background: var(--accent-700); }
+  .card__cta .ico { width: 13px; height: 13px; }
+
+  /* locked card */
+  .card.is-locked {
+    background: var(--panel);
+    border-style: dashed;
+    border-color: var(--line);
+  }
+  .card.is-locked .card__name { color: var(--mute); }
+  .card.is-locked .card__lock { color: var(--faint); width: 15px; height: 15px; }
+
+  /* unit body collapses for locked units to keep the map scannable */
+  .unit__locknote {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--mute);
+    font-size: 13.5px;
+  }
+  .unit__locknote .ico { width: 15px; height: 15px; color: var(--faint); flex: none; }
+  .unit__locknote .topics {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--faint);
+    letter-spacing: 0.02em;
+  }
+
+  /* ============================================================
+     SCREEN 2 — DRILL (core loop)
+     ============================================================ */
+  .drill {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* slim progress + close */
+  .drill-top {
+    position: sticky;
+    top: 49px; /* under the topbar */
+    z-index: 10;
+    background: var(--panel);
+    padding: 18px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .drill-top__bar {
+    flex: 1 1 auto;
+    height: 7px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .drill-top__fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+    width: 40%;
+    transition: width .5s cubic-bezier(.2,.7,.2,1);
+  }
+  .drill-top__step {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--slate);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .iconbtn {
+    appearance: none;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    width: 34px; height: 34px;
+    border-radius: var(--radius);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--slate);
+    flex: none;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .iconbtn:hover { border-color: var(--faint); color: var(--ink); }
+  .iconbtn .ico { width: 16px; height: 16px; }
+
+  .drill-body { padding: 8px 0 200px; }
+
+  .drill__eyebrow {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .drill__eyebrow .pill {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-050);
+    border: 1px solid var(--accent-100);
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+  }
+  .drill__prompt {
+    margin: 16px 0 0;
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.3;
+    color: var(--ink);
+  }
+  .drill__prompt b { color: var(--accent); font-weight: 700; }
+
+  /* data table */
+  .tbl-wrap {
+    margin-top: 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--paper);
+  }
+  table.tbl { width: 100%; border-collapse: collapse; }
+  .tbl thead th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mute);
+    text-align: left;
+    padding: 10px 16px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+  .tbl tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--line-2);
+    font-size: 14px;
+    color: var(--ink-2);
+    vertical-align: middle;
+  }
+  .tbl tbody tr:last-child td { border-bottom: 0; }
+  .tbl .feat { font-weight: 600; color: var(--ink); }
+  .tbl .feat .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--faint);
+    margin-right: 9px;
+  }
+  /* value/effort cells : icon + text label (never color alone) */
+  .lvl {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .lvl .ico { width: 13px; height: 13px; flex: none; }
+  .lvl.high { color: var(--good); }
+  .lvl.low  { color: var(--mute); }
+
+  /* answer options */
+  .opts {
+    margin-top: 22px;
+    display: grid;
+    gap: 10px;
+  }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    width: 100%;
+    text-align: left;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    border-radius: var(--radius);
+    padding: 14px 15px;
+    transition: border-color .14s ease, background .14s ease, box-shadow .14s ease, transform .08s ease;
+  }
+  .opt:hover { border-color: var(--faint); }
+  .opt:active { transform: translateY(1px); }
+  .opt__key {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--slate);
+    width: 26px; height: 26px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    display: inline-flex; align-items: center; justify-content: center;
+    flex: none;
+    background: var(--panel);
+    transition: inherit;
+  }
+  .opt__label { font-size: 14.5px; font-weight: 500; color: var(--ink); }
+  .opt__mark { margin-left: auto; width: 18px; height: 18px; color: var(--accent); opacity: 0; transition: opacity .14s ease; flex: none; }
+
+  .opt[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--accent-050);
+    box-shadow: 0 0 0 1px var(--accent) inset;
+  }
+  .opt[aria-pressed="true"] .opt__key {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .opt[aria-pressed="true"] .opt__mark { opacity: 1; }
+
+  /* post-check lock + correctness coloring */
+  .opts.is-locked .opt { cursor: default; pointer-events: none; }
+  .opt.reveal-correct {
+    border-color: var(--good);
+    background: var(--good-050);
+    box-shadow: 0 0 0 1px var(--good) inset;
+  }
+  .opt.reveal-correct .opt__key { background: var(--good); color:#fff; border-color: var(--good); }
+  .opt.reveal-correct .opt__mark { opacity: 1; color: var(--good); }
+  .opt.reveal-wrong {
+    border-color: var(--bad);
+    background: var(--bad-050);
+    box-shadow: 0 0 0 1px var(--bad) inset;
+  }
+  .opt.reveal-wrong .opt__key { background: var(--bad); color:#fff; border-color: var(--bad); }
+  .opt.reveal-wrong .opt__mark { opacity: 1; color: var(--bad); }
+
+  /* ============================================================
+     FEEDBACK BAR (slides up) + PRIMARY BUTTON DOCK
+     ============================================================ */
+  .dock {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 40;
+    pointer-events: none;
+  }
+  .dock__inner {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px 20px;
+  }
+
+  /* feedback bar */
+  .feedback {
+    pointer-events: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+    box-shadow: var(--shadow-lg);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    display: none;
+    transform: translateY(16px);
+    opacity: 0;
+    transition: transform .32s cubic-bezier(.2,.8,.2,1), opacity .28s ease;
+  }
+  .feedback.is-shown { display: block; transform: translateY(0); opacity: 1; }
+  .feedback.good { border-color: var(--good-line); background: var(--good-050); }
+  .feedback.bad  { border-color: var(--bad-line);  background: var(--bad-050); }
+  .feedback__row { display: flex; align-items: center; gap: 11px; }
+  .feedback__icon {
+    width: 30px; height: 30px; border-radius: 999px; flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff;
+  }
+  .feedback.good .feedback__icon { background: var(--good); }
+  .feedback.bad  .feedback__icon { background: var(--bad); }
+  .feedback__icon .ico { width: 17px; height: 17px; }
+  .feedback__title {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .feedback.good .feedback__title { color: var(--good); }
+  .feedback.bad  .feedback__title { color: var(--bad); }
+  .feedback__body {
+    margin: 9px 0 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+  .feedback__body b { color: var(--ink); font-weight: 600; }
+  .feedback__more {
+    margin-top: 9px;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    background: none; border: 0; padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .feedback__more:hover { color: var(--accent-700); }
+  .feedback__expand {
+    margin-top: 10px;
+    padding-top: 11px;
+    border-top: 1px dashed var(--line);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--slate);
+    display: none;
+  }
+  .feedback__expand.is-open { display: block; }
+  .feedback__expand .axis { font-family: var(--mono); font-size: 11px; color: var(--mute); letter-spacing: 0.05em; }
+
+  /* primary button (CHECK -> CONTINUE) */
+  .primary {
+    pointer-events: auto;
+    width: 100%;
+    appearance: none;
+    border: 0;
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent);
+    padding: 15px 18px;
+    box-shadow: var(--shadow-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    transition: background .15s ease, transform .07s ease, box-shadow .15s ease, opacity .15s ease;
+  }
+  .primary .ico { width: 16px; height: 16px; }
+  .primary:hover:not(:disabled) { background: var(--accent-700); }
+  .primary:active:not(:disabled) { transform: translateY(1px); box-shadow: var(--shadow-sm); }
+  .primary:disabled {
+    background: var(--panel-2);
+    color: var(--faint);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+  .primary.is-good { background: var(--good); }
+  .primary.is-good:hover { background: #15803D; }
+  .primary.is-bad { background: var(--bad); }
+  .primary.is-bad:hover { background: #B91C1C; }
+
+  /* ============================================================
+     LESSON-COMPLETE OVERLAY (restrained celebration)
+     ============================================================ */
+  .complete {
+    position: fixed; inset: 0; z-index: 60;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    background: rgba(250,250,250,0.72);
+    backdrop-filter: blur(3px);
+  }
+  .complete.is-shown { display: flex; }
+  .complete__card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    padding: 30px 28px 26px;
+    text-align: center;
+    transform: translateY(10px) scale(.98);
+    opacity: 0;
+    transition: transform .34s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
+  }
+  .complete.is-shown .complete__card { transform: translateY(0) scale(1); opacity: 1; }
+
+  .complete__ring { position: relative; width: 96px; height: 96px; margin: 0 auto; }
+  .complete__ring svg { width: 96px; height: 96px; transform: rotate(-90deg); }
+  .complete__ring .t { stroke: var(--line); }
+  .complete__ring .f {
+    stroke: var(--good); stroke-linecap: round;
+    transition: stroke-dashoffset 1s cubic-bezier(.2,.7,.2,1);
+  }
+  .complete__ring .center {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--good);
+  }
+  .complete__ring .center .ico { width: 34px; height: 34px; }
+
+  .complete__chip {
+    margin: 18px auto 0;
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--good);
+    background: var(--good-050);
+    border: 1px solid var(--good-line);
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+  .complete__chip .ico { width: 13px; height: 13px; }
+  .complete__title {
+    margin: 16px 0 0;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .complete__stats {
+    margin: 16px auto 0;
+    display: grid;
+    gap: 8px;
+    text-align: left;
+    max-width: 280px;
+  }
+  .complete__stat {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13.5px;
+    color: var(--ink-2);
+  }
+  .complete__stat .ico { width: 16px; height: 16px; flex: none; }
+  .complete__stat .ico.good { color: var(--good); }
+  .complete__stat .ico.accent { color: var(--accent); }
+  .complete__stat .ico.flame { color: #EA580C; }
+  .complete__stat b { color: var(--ink); font-weight: 600; }
+  .complete__stat .next {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .complete__btn {
+    margin-top: 22px;
+    width: 100%;
+    appearance: none; border: 0;
+    border-radius: var(--radius);
+    font-family: var(--mono);
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: #fff; background: var(--accent);
+    padding: 13px;
+    transition: background .15s ease, transform .07s ease;
+  }
+  .complete__btn:hover { background: var(--accent-700); }
+  .complete__btn:active { transform: translateY(1px); }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 560px) {
+    .topbar__inner { padding: 10px 16px; }
+    .wordmark .v { display: none; }
+    .seg__btn { padding: 6px 11px; }
+    .status__inner { padding: 14px 16px; gap: 10px; }
+    .status__spacer { flex-basis: 100%; height: 0; }
+    .wrap { padding: 0 16px; }
+    .drill, .dock__inner { padding-left: 16px; padding-right: 16px; }
+    .path-head { padding-top: 26px; }
+    .path-head h1 { font-size: 25px; }
+    .path-head__row { flex-direction: column; gap: 6px; }
+    .grid { grid-template-columns: 1fr; }
+    .drill__prompt { font-size: 20px; }
+    .tbl thead th, .tbl tbody td { padding-left: 12px; padding-right: 12px; }
+    .tbl .feat .tag { display: block; margin: 0 0 3px; }
+    .drill-top { top: 45px; }
+  }
+
+  @media (max-width: 360px) {
+    .stat { padding: 7px 10px; }
+  }
+
+  /* honor reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.001ms !important;
+      animation-duration: 0.001ms !important;
+    }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ═══════════════ TOP UTILITY BAR ═══════════════ -->
+  <div class="topbar">
+    <div class="topbar__inner">
+      <a href="#" class="wordmark" aria-label="PRAXIS home">praxis<span class="dot">.</span><span class="v">v0 · console</span></a>
+
+      <div class="seg" role="tablist" aria-label="Switch screen">
+        <button class="seg__btn" id="tab-path" role="tab" aria-selected="true" aria-controls="screen-path" data-screen="path">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Path
+        </button>
+        <button class="seg__btn" id="tab-lesson" role="tab" aria-selected="false" aria-controls="screen-lesson" data-screen="lesson">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          Lesson
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SCREEN 1 — LEARNING PATH
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="screen is-active" id="screen-path" role="tabpanel" aria-labelledby="tab-path">
+
+      <!-- status bar -->
+      <div class="status">
+        <div class="status__inner">
+          <!-- consistency streak (habit, not guilt) -->
+          <div class="stat" title="Flexible consistency streak — keep the habit, no guilt">
+            <svg class="ico" viewBox="0 0 24 24" fill="#EA580C" aria-hidden="true"><path d="M12 2c.5 3-1.8 4.2-2.9 5.7C7.7 9.5 7 11 7 13a5 5 0 0 0 10 .2c0-1.7-.6-3-1.4-4.2-.3 2-1.6 2.7-2.3 2.1.4-2.6-.2-5.6-1.3-9.1Z"/></svg>
+            <span>
+              <span class="stat__k">Streak</span><br>
+              <span class="stat__v">12 <small>days</small></span>
+            </span>
+          </div>
+
+          <!-- mastery (demonstrated competence, not lesson count) -->
+          <div class="stat" title="Mastery — demonstrated competence across skills">
+            <svg class="ring" viewBox="0 0 36 36" aria-hidden="true">
+              <circle class="ring__track" cx="18" cy="18" r="15" fill="none" stroke-width="3.4"/>
+              <circle class="ring__fill" id="masteryRing" cx="18" cy="18" r="15" fill="none" stroke-width="3.4"
+                      stroke-dasharray="94.25" stroke-dashoffset="94.25"/>
+            </svg>
+            <span>
+              <span class="stat__k">Mastery</span><br>
+              <span class="stat__v">04 <small>/ 22</small></span>
+            </span>
+          </div>
+
+          <div class="status__spacer"></div>
+
+          <!-- home industry chip -->
+          <label class="chip-select" title="Your home industry tunes every scenario">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h0M9 13h0M9 17h0M15 9h0M15 13h0M15 17h0"/></svg>
+            <span class="chip-select__k">Home industry</span>
+            <select aria-label="Home industry">
+              <option selected>SaaS</option>
+              <option>Fintech</option>
+              <option>Marketplace</option>
+              <option>Consumer</option>
+              <option>Healthcare</option>
+            </select>
+            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </label>
+        </div>
+      </div>
+
+      <div class="wrap">
+        <!-- heading -->
+        <header class="path-head">
+          <div class="path-head__row">
+            <div>
+              <p class="eyebrow">Curriculum · product management</p>
+              <h1>The Practice Map</h1>
+              <p>Seven units, twenty-two skills. Earn mastery by proving the judgment — not by clearing checkboxes.</p>
+            </div>
+            <span class="progress-count">04 / 22 mastered</span>
+          </div>
+
+          <div class="meter" aria-hidden="true">
+            <span class="eyebrow">Progress</span>
+            <div class="meter__bar"><div class="meter__fill"></div></div>
+            <span class="meter__pct">18%</span>
+          </div>
+        </header>
+
+        <!-- units -->
+        <div class="units">
+
+          <!-- UNIT 01 — DISCOVERY FOUNDATIONS — COMPLETED -->
+          <section class="unit is-done">
+            <div class="unit__head">
+              <span class="unit__no">Unit 01</span>
+              <span class="unit__title">Discovery Foundations</span>
+              <span class="unit__state s-done">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                Completed
+              </span>
+            </div>
+            <div class="grid">
+              <!-- JTBD -->
+              <div class="card is-done">
+                <div class="card__top">
+                  <div>
+                    <div class="card__name">Jobs To Be Done</div>
+                    <div class="card__meta">Skill 01</div>
+                  </div>
+                  <svg class="card__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                </div>
+                <div class="card__foot">
+                  <span class="badge b-done"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Mastered</span>
+                  <span class="card__pct">100%</span>
+                </div>
+              </div>
+              <!-- User Interviews -->
+              <div class="card is-done">
+                <div class="card__top">
+                  <div>
+                    <div class="card__name">User Interviews</div>
+                    <div class="card__meta">Skill 02</div>
+                  </div>
+                  <svg class="card__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                </div>
+                <div class="card__foot">
+                  <span class="badge b-done"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Mastered</span>
+                  <span class="card__pct">100%</span>
+                </div>
+              </div>
+              <!-- Problem Framing -->
+              <div class="card is-done">
+                <div class="card__top">
+                  <div>
+                    <div class="card__name">Problem Framing</div>
+                    <div class="card__meta">Skill 03</div>
+                  </div>
+                  <svg class="card__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                </div>
+                <div class="card__foot">
+                  <span class="badge b-done"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Mastered</span>
+                  <span class="card__pct">100%</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- UNIT 02 — PRIORITIZATION — CURRENT -->
+          <section class="unit is-current">
+            <div class="unit__head">
+              <span class="unit__no">Unit 02</span>
+              <span class="unit__title">Prioritization</span>
+              <span class="unit__state s-current">
+                <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="6"/></svg>
+                In progress
+              </span>
+            </div>
+            <div class="grid">
+              <!-- Value vs Effort — ACTIVE / START (the playable node) -->
+              <button class="card is-active" id="startNode" aria-label="Start the active skill: Value vs Effort">
+                <div class="card__top">
+                  <div>
+                    <div class="card__name">Value vs Effort</div>
+                    <div class="card__meta">Skill 04 · current</div>
+                  </div>
+                  <svg class="miniring" viewBox="0 0 26 26" aria-hidden="true">
+                    <circle class="t" cx="13" cy="13" r="10.5" fill="none" stroke-width="3"/>
+                    <circle class="f accent" cx="13" cy="13" r="10.5" fill="none" stroke-width="3" stroke-dasharray="65.97" stroke-dashoffset="46.18"/>
+                  </svg>
+                </div>
+                <div class="card__foot">
+                  <span class="card__cta">
+                    Start
+                    <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                  </span>
+                  <span class="card__pct">30%</span>
+                </div>
+              </button>
+              <!-- RICE — locked -->
+              <div class="card is-locked">
+                <div class="card__top">
+                  <div>
+                    <div class="card__name">RICE Scoring</div>
+                    <div class="card__meta">Skill 05</div>
+                  </div>
+                  <svg class="card__lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                </div>
+                <div class="card__foot">
+                  <span class="badge b-locked"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Locked</span>
+                  <span class="card__pct">—</span>
+                </div>
+              </div>
+              <!-- Kano & MoSCoW — locked -->
+              <div class="card is-locked">
+                <div class="card__top">
+                  <div>
+                    <div class="card__name">Kano &amp; MoSCoW</div>
+                    <div class="card__meta">Skill 06</div>
+                  </div>
+                  <svg class="card__lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                </div>
+                <div class="card__foot">
+                  <span class="badge b-locked"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Locked</span>
+                  <span class="card__pct">—</span>
+                </div>
+              </div>
+              <!-- Cost of Delay — locked -->
+              <div class="card is-locked">
+                <div class="card__top">
+                  <div>
+                    <div class="card__name">Cost of Delay</div>
+                    <div class="card__meta">Skill 07</div>
+                  </div>
+                  <svg class="card__lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                </div>
+                <div class="card__foot">
+                  <span class="badge b-locked"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Locked</span>
+                  <span class="card__pct">—</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- UNIT 03 — METRICS FUNDAMENTALS — LOCKED (collapsed) -->
+          <section class="unit is-locked">
+            <div class="unit__head">
+              <span class="unit__no">Unit 03</span>
+              <span class="unit__title">Metrics Fundamentals</span>
+              <span class="unit__state">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                Locked
+              </span>
+            </div>
+            <div class="unit__locknote">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <span>Unlocks after Prioritization · <span class="topics">AARRR Funnel · Activation &amp; Retention · North Star</span></span>
+            </div>
+          </section>
+
+          <!-- UNIT 04 — EXECUTION & DELIVERY — LOCKED -->
+          <section class="unit is-locked">
+            <div class="unit__head">
+              <span class="unit__no">Unit 04</span>
+              <span class="unit__title">Execution &amp; Delivery</span>
+              <span class="unit__state">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                Locked
+              </span>
+            </div>
+            <div class="unit__locknote">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <span>Unlocks after Metrics Fundamentals · <span class="topics">Roadmapping · Sprint Scoping · Stakeholder Tradeoffs</span></span>
+            </div>
+          </section>
+
+          <!-- UNIT 05 — STRATEGY & VISION — LOCKED -->
+          <section class="unit is-locked">
+            <div class="unit__head">
+              <span class="unit__no">Unit 05</span>
+              <span class="unit__title">Strategy &amp; Vision</span>
+              <span class="unit__state">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                Locked
+              </span>
+            </div>
+            <div class="unit__locknote">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <span>Unlocks after Execution &amp; Delivery · <span class="topics">Vision Narratives · Moats · Bets vs Hedges</span></span>
+            </div>
+          </section>
+
+          <!-- UNIT 06 — EXPERIMENTATION — LOCKED -->
+          <section class="unit is-locked">
+            <div class="unit__head">
+              <span class="unit__no">Unit 06</span>
+              <span class="unit__title">Experimentation</span>
+              <span class="unit__state">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                Locked
+              </span>
+            </div>
+            <div class="unit__locknote">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <span>Unlocks after Strategy &amp; Vision · <span class="topics">Hypotheses · A/B Design · Reading Results</span></span>
+            </div>
+          </section>
+
+          <!-- UNIT 07 — COMMUNICATION & RISK — LOCKED -->
+          <section class="unit is-locked">
+            <div class="unit__head">
+              <span class="unit__no">Unit 07</span>
+              <span class="unit__title">Communication &amp; Risk</span>
+              <span class="unit__state">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                Locked
+              </span>
+            </div>
+            <div class="unit__locknote">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <span>Final unit · <span class="topics">Written Updates · Saying No · Risk Registers</span></span>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SCREEN 2 — DRILL
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="screen" id="screen-lesson" role="tabpanel" aria-labelledby="tab-lesson">
+      <div class="drill">
+
+        <!-- slim progress + close -->
+        <div class="drill-top">
+          <button class="iconbtn" id="closeDrill" aria-label="Close drill and return to the path">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <div class="drill-top__bar"><div class="drill-top__fill" id="drillProgress"></div></div>
+          <span class="drill-top__step" id="drillStep">02 / 05</span>
+        </div>
+
+        <div class="drill-body">
+          <div class="drill__eyebrow">
+            <span class="pill">Unit 02 · Value vs Effort</span>
+            <span class="eyebrow">Scenario · SaaS</span>
+          </div>
+
+          <h2 class="drill__prompt">
+            Your team can ship one thing this sprint. Which is the best <b>quick win</b>?
+          </h2>
+
+          <!-- decision table -->
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th scope="col">Feature</th>
+                  <th scope="col">Value</th>
+                  <th scope="col">Effort</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="feat"><span class="tag">A</span>Onboarding checklist</td>
+                  <td><span class="lvl high"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg>High</span></td>
+                  <td><span class="lvl low"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>Low</span></td>
+                </tr>
+                <tr>
+                  <td class="feat"><span class="tag">B</span>Custom dashboards</td>
+                  <td><span class="lvl high"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg>High</span></td>
+                  <td><span class="lvl high"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg>High</span></td>
+                </tr>
+                <tr>
+                  <td class="feat"><span class="tag">C</span>Dark mode</td>
+                  <td><span class="lvl low"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>Low</span></td>
+                  <td><span class="lvl low"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>Low</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- options -->
+          <div class="opts" id="opts" role="group" aria-label="Choose the best quick win">
+            <button class="opt" data-id="A" data-correct="true" aria-pressed="false">
+              <span class="opt__key">A</span>
+              <span class="opt__label">Onboarding checklist</span>
+              <svg class="opt__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button class="opt" data-id="B" aria-pressed="false">
+              <span class="opt__key">B</span>
+              <span class="opt__label">Custom dashboards</span>
+              <svg class="opt__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button class="opt" data-id="C" aria-pressed="false">
+              <span class="opt__key">C</span>
+              <span class="opt__label">Dark mode</span>
+              <svg class="opt__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button class="opt" data-id="ALL" aria-pressed="false">
+              <span class="opt__key">∑</span>
+              <span class="opt__label">Ship all three</span>
+              <svg class="opt__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- fixed dock : feedback bar + primary button -->
+        <div class="dock">
+          <div class="dock__inner">
+            <!-- feedback bar -->
+            <div class="feedback" id="feedback" role="status" aria-live="polite">
+              <div class="feedback__row">
+                <span class="feedback__icon" id="fbIcon" aria-hidden="true"></span>
+                <span class="feedback__title" id="fbTitle"></span>
+              </div>
+              <p class="feedback__body" id="fbBody"></p>
+              <button class="feedback__more" id="fbMore" type="button" aria-expanded="false">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h0"/></svg>
+                Explain my answer
+              </button>
+              <div class="feedback__expand" id="fbExpand">
+                <p style="margin:0 0 6px"><span class="axis">VALUE AXIS</span> — how much it moves activation, retention, or revenue.</p>
+                <p style="margin:0 0 6px"><span class="axis">EFFORT AXIS</span> — engineering + design cost to ship it.</p>
+                <p style="margin:0"><b>Quick wins</b> sit top-left: maximum value for minimum effort. Ship them first to build momentum and earn the right to attempt the big bets.</p>
+              </div>
+            </div>
+
+            <!-- primary button -->
+            <button class="primary" id="primary" type="button" disabled aria-live="off">
+              <span id="primaryText">Check</span>
+              <svg class="ico" id="primaryIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═══════════════ LESSON-COMPLETE OVERLAY ═══════════════ -->
+<div class="complete" id="complete" role="dialog" aria-modal="true" aria-labelledby="completeTitle">
+  <div class="complete__card">
+    <div class="complete__ring">
+      <svg viewBox="0 0 96 96" aria-hidden="true">
+        <circle class="t" cx="48" cy="48" r="42" fill="none" stroke-width="6"/>
+        <circle class="f" id="completeRing" cx="48" cy="48" r="42" fill="none" stroke-width="6"
+                stroke-dasharray="263.9" stroke-dashoffset="263.9"/>
+      </svg>
+      <div class="center">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
+
+    <span class="complete__chip">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+      Skill Mastered
+    </span>
+
+    <h3 class="complete__title" id="completeTitle">Value vs Effort</h3>
+
+    <div class="complete__stats">
+      <div class="complete__stat">
+        <svg class="ico accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.4 6.9H22l-6 4.3 2.3 7-6.3-4.4L5.7 20l2.3-7-6-4.3h7.6Z"/></svg>
+        <span><b>+1</b> mastery</span>
+        <span class="next">05 / 22</span>
+      </div>
+      <div class="complete__stat">
+        <svg class="ico flame" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c.5 3-1.8 4.2-2.9 5.7C7.7 9.5 7 11 7 13a5 5 0 0 0 10 .2c0-1.7-.6-3-1.4-4.2-.3 2-1.6 2.7-2.3 2.1.4-2.6-.2-5.6-1.3-9.1Z"/></svg>
+        <span>Consistency streak <b>kept</b></span>
+        <span class="next">12 days</span>
+      </div>
+      <div class="complete__stat">
+        <svg class="ico good" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        <span>Next up <b>RICE Scoring</b></span>
+        <span class="next">Skill 05</span>
+      </div>
+    </div>
+
+    <button class="complete__btn" id="completeContinue" type="button">Continue</button>
+  </div>
+</div>
+
+<script>
+  /* ============================================================
+     Vanilla JS — screen switching + drill state machine
+     ============================================================ */
+  (function () {
+    "use strict";
+
+    var doc = document;
+    var byId = function (id) { return doc.getElementById(id); };
+
+    /* ---------- screen switching ---------- */
+    var tabs = [byId('tab-path'), byId('tab-lesson')];
+    var screens = {
+      path: byId('screen-path'),
+      lesson: byId('screen-lesson')
+    };
+
+    function showScreen(name) {
+      Object.keys(screens).forEach(function (k) {
+        screens[k].classList.toggle('is-active', k === name);
+      });
+      tabs.forEach(function (t) {
+        var on = t.getAttribute('data-screen') === name;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      // jump to top on switch (no smooth — respects reduced motion intent)
+      window.scrollTo(0, 0);
+    }
+
+    tabs.forEach(function (t) {
+      t.addEventListener('click', function () {
+        showScreen(t.getAttribute('data-screen'));
+      });
+    });
+
+    /* keyboard arrow support on the tablist (Left/Right move between tabs) */
+    var seg = doc.querySelector('.seg');
+    seg.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      var cur = doc.activeElement === tabs[1] ? 1 : 0;
+      var nextI = cur === 0 ? 1 : 0; // only two tabs — Left/Right both toggle
+      tabs[nextI].focus();
+      showScreen(tabs[nextI].getAttribute('data-screen'));
+    });
+
+    /* ---------- path -> drill ---------- */
+    byId('startNode').addEventListener('click', function () {
+      resetDrill();
+      showScreen('lesson');
+      tabs[1].focus();
+    });
+
+    /* close drill -> path */
+    byId('closeDrill').addEventListener('click', function () {
+      showScreen('path');
+      tabs[0].focus();
+    });
+
+    /* ---------- mastery ring fill on load ---------- */
+    // animate the status mastery ring to 4/22 ≈ 18%
+    var masteryRing = byId('masteryRing');
+    var C = 2 * Math.PI * 15; // 94.25
+    window.requestAnimationFrame(function () {
+      window.setTimeout(function () {
+        masteryRing.style.strokeDashoffset = (C * (1 - 0.18)).toFixed(2);
+      }, 120);
+    });
+
+    /* ============================================================
+       DRILL STATE MACHINE
+       phase: 'select' -> 'checked' -> (continue) overlay -> path
+       ============================================================ */
+    var opts = Array.prototype.slice.call(doc.querySelectorAll('.opt'));
+    var optsWrap = byId('opts');
+    var primary = byId('primary');
+    var primaryText = byId('primaryText');
+    var primaryIcon = byId('primaryIcon');
+    var feedback = byId('feedback');
+    var fbIcon = byId('fbIcon');
+    var fbTitle = byId('fbTitle');
+    var fbBody = byId('fbBody');
+    var fbMore = byId('fbMore');
+    var fbExpand = byId('fbExpand');
+    var drillProgress = byId('drillProgress');
+    var drillStep = byId('drillStep');
+
+    var selectedId = null;
+    var phase = 'select';
+
+    var CHECK_ICON = '<polyline points="20 6 9 17 4 12"/>';
+    var X_ICON = '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+    var ARROW_ICON = '<polyline points="9 18 15 12 9 6"/>';
+
+    function setIconPaths(svgEl, inner) {
+      svgEl.innerHTML = inner;
+    }
+
+    /* option selection (single-select, toggleable before check) */
+    opts.forEach(function (opt) {
+      opt.addEventListener('click', function () {
+        if (phase !== 'select') return;
+        opts.forEach(function (o) { o.setAttribute('aria-pressed', 'false'); });
+        opt.setAttribute('aria-pressed', 'true');
+        selectedId = opt.getAttribute('data-id');
+        primary.disabled = false;
+      });
+    });
+
+    /* primary button: CHECK then CONTINUE */
+    primary.addEventListener('click', function () {
+      if (phase === 'select') {
+        doCheck();
+      } else if (phase === 'checked') {
+        doContinue();
+      }
+    });
+
+    function doCheck() {
+      if (!selectedId) return;
+      phase = 'checked';
+
+      var isCorrect = selectedId === 'A';
+
+      // lock options + reveal correctness
+      optsWrap.classList.add('is-locked');
+      opts.forEach(function (o) {
+        var id = o.getAttribute('data-id');
+        if (id === 'A') {
+          o.classList.add('reveal-correct');
+        } else if (id === selectedId && !isCorrect) {
+          o.classList.add('reveal-wrong');
+        }
+      });
+
+      // feedback bar content
+      feedback.classList.remove('good', 'bad');
+      if (isCorrect) {
+        feedback.classList.add('good');
+        fbIcon.innerHTML = svgWrap(CHECK_ICON);
+        fbTitle.textContent = 'Correct!';
+        fbBody.innerHTML = 'A quick win is <b>HIGH value, LOW effort</b> — Feature A. (B is a high-value &ldquo;big bet&rdquo;; C is &ldquo;maybe later.&rdquo;)';
+      } else {
+        feedback.classList.add('bad');
+        fbIcon.innerHTML = svgWrap(X_ICON);
+        fbTitle.textContent = 'Not quite';
+        fbBody.innerHTML = 'A quick win is <b>HIGH value, LOW effort</b> — Feature A. (B is a high-value &ldquo;big bet&rdquo;; C is &ldquo;maybe later.&rdquo;)';
+      }
+
+      // show feedback bar
+      feedback.classList.add('is-shown');
+
+      // morph button -> CONTINUE, colour matches result
+      primary.classList.remove('is-good', 'is-bad');
+      primary.classList.add(isCorrect ? 'is-good' : 'is-bad');
+      primaryText.textContent = 'Continue';
+      primaryIcon.style.display = '';
+      setIconPaths(primaryIcon, ARROW_ICON);
+
+      // nudge progress forward a touch
+      drillProgress.style.width = '60%';
+    }
+
+    /* helper: build the small feedback icon svg */
+    function svgWrap(inner) {
+      return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
+    }
+
+    /* explain-my-answer toggle */
+    fbMore.addEventListener('click', function () {
+      var open = fbExpand.classList.toggle('is-open');
+      fbMore.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    function doContinue() {
+      // fill drill progress, then show the complete overlay
+      drillProgress.style.width = '100%';
+      drillStep.textContent = '02 / 05';
+      openComplete();
+    }
+
+    /* ---------- lesson-complete overlay ---------- */
+    var complete = byId('complete');
+    var completeRing = byId('completeRing');
+    var completeContinue = byId('completeContinue');
+    var RC = 2 * Math.PI * 42; // 263.9
+
+    function openComplete() {
+      complete.classList.add('is-shown');
+      completeRing.style.strokeDashoffset = RC; // reset
+      window.requestAnimationFrame(function () {
+        window.setTimeout(function () {
+          completeRing.style.strokeDashoffset = '0'; // fill the ring
+        }, 160);
+      });
+      completeContinue.focus();
+    }
+
+    completeContinue.addEventListener('click', function () {
+      complete.classList.remove('is-shown');
+      // bump the path mastery ring 4 -> 5 (≈ 22.7%)
+      masteryRing.style.strokeDashoffset = (C * (1 - 0.227)).toFixed(2);
+      resetDrill();
+      showScreen('path');
+      tabs[0].focus();
+    });
+
+    /* allow ESC to dismiss the overlay */
+    doc.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && complete.classList.contains('is-shown')) {
+        completeContinue.click();
+      }
+    });
+
+    /* ---------- reset drill to pristine ---------- */
+    function resetDrill() {
+      phase = 'select';
+      selectedId = null;
+      optsWrap.classList.remove('is-locked');
+      opts.forEach(function (o) {
+        o.setAttribute('aria-pressed', 'false');
+        o.classList.remove('reveal-correct', 'reveal-wrong');
+      });
+      feedback.classList.remove('is-shown', 'good', 'bad');
+      fbExpand.classList.remove('is-open');
+      fbMore.setAttribute('aria-expanded', 'false');
+      primary.classList.remove('is-good', 'is-bad');
+      primary.disabled = true;
+      primaryText.textContent = 'Check';
+      primaryIcon.style.display = 'none';
+      drillProgress.style.width = '40%';
+      drillStep.textContent = '02 / 05';
+    }
+  })();
+</script>
+</body>
+</html>

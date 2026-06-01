@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 export const dynamic = 'force-dynamic';
 
 interface GradeRequest {
-  drill: 'jtbd' | 'pre-mortem' | 'pr-faq';
+  drill: 'jtbd' | 'mom-test' | 'pre-mortem' | 'pr-faq';
   input: string;
   context?: Record<string, unknown>;
 }
@@ -18,11 +18,22 @@ GRADING CRITERIA:
 - OUTCOME: what the user gains, not what the product does
 
 Common failure modes:
-- Writing the feature as the motivation ("I want Level 2 data")
-- Abstract situation ("when I want to invest")
-- Tautological outcome ("so I can get Level 2 data")
+- Writing the feature as the motivation ("I want a dark-mode toggle")
+- Abstract situation ("when I'm using the app")
+- Tautological outcome ("so I can use dark mode")
 
 Return JSON: { "score": 0-10, "strengths": [...], "issues": [...], "rewrite": "a better version", "interview_angle": "how to pitch this in a PM interview" }. No prose outside JSON.`,
+  'mom-test': `You are a senior PM grading a user-research interview question against The Mom Test (Rob Fitzpatrick).
+
+The Mom Test rule: ask about the customer's life and past behavior, never pitch your idea or ask hypotheticals about the future.
+
+GRADING CRITERIA:
+- PAST BEHAVIOR: asks about something the person actually did, not what they would/might do
+- SPECIFIC: anchored to a concrete recent instance ("the last time…"), not a general habit
+- NON-LEADING: doesn't telegraph the desired answer or pitch a solution
+- BAD signals to penalize: hypotheticals ("would you…"), compliments-bait ("do you like…"), pricing speculation ("would you pay…")
+
+Return JSON: { "score": 0-10, "strengths": [...], "issues": [...], "rewrite": "a stronger Mom-Test version of the question", "interview_angle": "how to talk about this discovery skill in a PM interview" }. No prose outside JSON.`,
   'pre-mortem': `You are a senior PM evaluating a pre-mortem exercise. The user was asked to name ways a project could fail.
 
 GRADING CRITERIA:

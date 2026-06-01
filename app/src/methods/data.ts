@@ -28,9 +28,9 @@ export const methods: Method[] = [
       'Ignoring the denominator — a score of 40 on a 6-month feature is not 2× better than 20 on a 1-month one',
     ],
     example: {
-      title: 'Moomoo Canada: RRSP vs Fractional Shares',
+      title: 'SaaS onboarding: SSO vs In-app Checklist',
       body:
-        'RRSP: Reach 15k Canadians/qtr, Impact 3 (Massive — table stakes), Confidence 80%, Effort 12 pm → (15000 × 3 × 0.8) / 12 = 3,000.\nFractional shares: Reach 8k, Impact 2, Confidence 80%, Effort 6 → (8000 × 2 × 0.8) / 6 = 2,133.\nRRSP wins — but the confidence gap is what matters: you have survey data on TFSA/RRSP demand, only forum signal on fractional.',
+        'SSO / SAML login: Reach 15k users/qtr, Impact 3 (Massive — blocks enterprise deals), Confidence 80%, Effort 12 pm → (15000 × 3 × 0.8) / 12 = 3,000.\nIn-app onboarding checklist: Reach 8k, Impact 2, Confidence 80%, Effort 6 → (8000 × 2 × 0.8) / 6 = 2,133.\nSSO wins — but the confidence gap is what matters: you have signed deals gated on SSO, only survey signal on the checklist.',
     },
     relatedScenarios: ['01-canadian-launch'],
     drill: 'rice',
@@ -79,9 +79,9 @@ export const methods: Method[] = [
       'Using WSJF for truly small items (<1 week) where coordination cost dominates',
     ],
     example: {
-      title: 'Clearing Pipeline: CIRO Audit vs Break Dashboard',
+      title: 'Platform work: SOC 2 Audit vs Error Dashboard',
       body:
-        'CIRO Audit Prep: Value 8, Time Criticality 13 (hard Q3 deadline), Risk 8, Size 13 → (8+13+8)/13 = 2.23.\nBreak Dashboard: Value 8, Time Criticality 3, Risk 3, Size 8 → (8+3+3)/8 = 1.75.\nAudit wins despite similar raw value, because the regulatory deadline compounds delay cost. This is the exact shape of reasoning Moomoo will ask about.',
+        'SOC 2 Audit Prep: Value 8, Time Criticality 13 (hard Q3 deadline tied to enterprise renewals), Risk 8, Size 13 → (8+13+8)/13 = 2.23.\nError Dashboard: Value 8, Time Criticality 3, Risk 3, Size 8 → (8+3+3)/8 = 1.75.\nThe audit wins despite similar raw value, because the compliance deadline compounds delay cost. This is the exact shape of reasoning a senior PM interview will probe.',
     },
     relatedScenarios: ['02-clearing-pipeline'],
     drill: 'wsjf',
@@ -190,9 +190,9 @@ export const methods: Method[] = [
       'Ignoring Cost of Delay for infrastructure — the bill comes due with interest',
     ],
     example: {
-      title: 'Options Expiry at a Brokerage',
+      title: 'Manual billing reconciliation',
       body:
-        'Missed expiry-day automation = urgency-sensitive + fixed-date hybrid. Every missed Friday = ~$X in manual ops cost AND regulatory exposure. When you frame it as "we pay $Y/month to not automate," the conversation stops being about priority and starts being about economics.',
+        'Postponing billing automation = urgency-sensitive + fixed-date hybrid. Every month it slips = ~$X in manual finance-ops time AND a growing backlog of invoice errors. When you frame it as "we pay $Y/month to not automate," the conversation stops being about priority and starts being about economics.',
     },
     relatedScenarios: ['02-clearing-pipeline'],
   },
@@ -286,13 +286,13 @@ export const methods: Method[] = [
       'Over-applied — every tiny feature doesn\'t need a JTBD statement',
     ],
     pitfalls: [
-      'Writing the job as the feature ("When I want Level 2 data, I want the Level 2 feature") — tautology',
+      'Writing the job as the feature ("When I want a CSV export, I want the export button") — tautology',
       'Naming the outcome as what the product does, not what the user gains',
     ],
     example: {
-      title: 'Moomoo Canada: Priya (aspiring investor)',
+      title: 'Analytics tool: Maya (marketing analyst)',
       body:
-        '"When I get my first real paycheque and my friends are posting TFSA gains on TikTok, I want to start investing with my $2K, so I can feel like I\'m doing the grown-up thing without needing a finance degree."\n\nNote what this tells you: competitors are Wealthsimple AND inaction. Killer feature = educational onboarding + low minimums, not depth of charting tools.',
+        '"When it is Monday morning and my VP needs the campaign report before standup, I want to pull the numbers together once and trust they are right, so I can walk in without scrambling or second-guessing."\n\nNote what this tells you: the competitors are the spreadsheet AND doing nothing. The killer feature = trustworthy one-click reporting, not more chart types.',
     },
     relatedScenarios: ['01-canadian-launch'],
     drill: 'jtbd',
@@ -323,7 +323,7 @@ export const methods: Method[] = [
     example: {
       title: 'Three rewrites',
       body:
-        '❌ "Would you pay for an app that tracks your TFSA?"\n✅ "When was the last time you checked your TFSA balance? Walk me through how you did it."\n\n❌ "Do you like social investing features?"\n✅ "Tell me about the last investment tip someone shared with you. What did you do with it?"\n\n❌ "Would this feature be useful?"\n✅ "Show me how you currently do this. What\'s the annoying part?"',
+        '❌ "Would you pay for a tool that tracks your team\'s tasks?"\n✅ "When was the last time you checked where a project stood? Walk me through how you did it."\n\n❌ "Do you like having a shared dashboard?"\n✅ "Tell me about the last status update someone asked you for. What did you do to put it together?"\n\n❌ "Would this feature be useful?"\n✅ "Show me how you currently do this. What\'s the annoying part?"',
     },
     relatedScenarios: ['01-canadian-launch'],
     drill: 'mom-test',
@@ -363,9 +363,9 @@ export const methods: Method[] = [
       'Leading the whys toward a predetermined answer',
     ],
     example: {
-      title: 'Settlement fail',
+      title: 'Sync job failure',
       body:
-        'Why did we fail to settle? → The trade didn\'t match.\nWhy didn\'t it match? → DTCC\'s file format changed.\nWhy didn\'t we know? → We didn\'t subscribe to their protocol update list.\nWhy not? → We don\'t have an owner for vendor comms.\nWhy not? → Vendor management was never staffed when Canada launched.\n→ Root cause is organizational, not technical. The fix is hiring, not a patch.',
+        'Why did the nightly data sync fail? → The records didn\'t match the schema.\nWhy didn\'t they match? → A third-party API changed its payload format.\nWhy didn\'t we know? → We weren\'t subscribed to their changelog.\nWhy not? → No one owns vendor-integration comms.\nWhy not? → Integrations were never staffed when we launched the feature.\n→ Root cause is organizational, not technical. The fix is ownership, not a patch.',
     },
     drill: 'five-whys',
   },
@@ -445,7 +445,7 @@ export const methods: Method[] = [
     example: {
       title: 'Good vs bad KRs',
       body:
-        '❌ "Launch the TFSA feature" (output, binary, no outcome)\n✅ "Grow active Canadian users from 22k → 60k" (outcome)\n✅ "Day-14 retention from 34% → 50%" (outcome, measurable)\nThe TFSA feature is the bet that might move the KR — but shipping it isn\'t the KR.',
+        '❌ "Launch the self-serve onboarding flow" (output, binary, no outcome)\n✅ "Grow weekly active users from 22k → 60k" (outcome)\n✅ "Day-14 retention from 34% → 50%" (outcome, measurable)\nThe onboarding flow is the bet that might move the KR — but shipping it isn\'t the KR.',
     },
   },
   {

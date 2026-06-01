@@ -8,7 +8,7 @@ export interface GradeResult {
   error?: string;
 }
 
-export function useLLMGrade(drill: 'jtbd' | 'pre-mortem' | 'pr-faq') {
+export function useLLMGrade(drill: 'jtbd' | 'mom-test' | 'pre-mortem' | 'pr-faq') {
   const [result, setResult] = useState<GradeResult | null>(null);
   const [loading, setLoading] = useState(false);
 
