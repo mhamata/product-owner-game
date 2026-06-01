@@ -1,19 +1,23 @@
 import type { Scenario } from '@/engine/types';
 
-// Scenario 01 — The Canadian Launch (Moomoo). Consumer-facing PM.
+// Scenario 01 — The Q3 Expansion (Hubflow). B2B team-collaboration SaaS PM.
+// NOTE: the scenario `id` stays '01-canadian-launch' — it is a foreign key
+// referenced by methods/data.ts (relatedScenarios) and the home page link.
+// All PBI/customer/stakeholder/product ids are likewise load-bearing engine
+// wiring and must not change; only human-readable copy is themed here.
 
 export const scenario01: Scenario = {
   id: '01-canadian-launch',
-  name: 'The Canadian Launch — Moomoo',
+  name: 'The Q3 Expansion — Hubflow',
   summary:
-    'Senior PM for Moomoo Canada mobile app. Hit 100K Canadian traders this quarter without tripping CIRO or breaking HQ trust.',
+    'Senior PM for Hubflow, a B2B team-collaboration SaaS. Win the enterprise upmarket push this quarter — hit the revenue target without failing the security review or burning leadership trust.',
   totalIterations: 6,
   targetRevenue: 5000,
 
   customers: [
     {
       id: 'maya',
-      name: 'Maya (New Canadian Investor)',
+      name: 'Maya (Ops Admin, mid-market trial)',
       archetype: 'mainstream',
       engagementState: 'interested',
       happiness: 5,
@@ -24,7 +28,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'darren',
-      name: 'Darren (Active Trader)',
+      name: 'Darren (Engineering Lead, power user)',
       archetype: 'power-user',
       engagementState: 'active',
       happiness: 4,
@@ -35,7 +39,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'priya',
-      name: 'Priya (Aspiring Investor)',
+      name: 'Priya (New Trialer, evaluating)',
       archetype: 'innovator',
       engagementState: 'dormant',
       happiness: 4,
@@ -47,8 +51,8 @@ export const scenario01: Scenario = {
   ],
 
   stakeholders: [
-    { id: 'hq', name: 'Wei (HQ Growth VP)', role: 'Leadership', trust: 6, lastInteraction: 0 },
-    { id: 'ciro', name: 'Aisha (CIRO Compliance)', role: 'Compliance', trust: 8, lastInteraction: 0 },
+    { id: 'hq', name: 'Wei (VP of Growth)', role: 'Leadership', trust: 6, lastInteraction: 0 },
+    { id: 'ciro', name: 'Aisha (Head of Platform & Security)', role: 'Security & Compliance', trust: 8, lastInteraction: 0 },
   ],
 
   team: {
@@ -80,7 +84,7 @@ export const scenario01: Scenario = {
   initialBacklog: [
     {
       id: 'tfsa',
-      title: 'TFSA Account Support',
+      title: 'Self-Serve Team Onboarding',
       kind: 'customer',
       effort: 10,
       effortRevealed: 10,
@@ -91,7 +95,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'rrsp',
-      title: 'RRSP Account Support',
+      title: 'Admin Console & Role-Based Permissions',
       kind: 'customer',
       effort: 12,
       effortRevealed: 12,
@@ -102,7 +106,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'fractional-shares',
-      title: 'Fractional Shares (US equities)',
+      title: 'Integrations Marketplace (Slack & Jira)',
       kind: 'customer',
       effort: 6,
       effortRevealed: 6,
@@ -113,7 +117,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'level2-data',
-      title: 'Level 2 US Market Data (free tier)',
+      title: 'Real-Time Analytics Dashboards',
       kind: 'customer',
       effort: 4,
       effortRevealed: 4,
@@ -124,7 +128,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'us-options',
-      title: 'US Options Trading (w/ Canadian tax)',
+      title: 'Public REST API & Webhooks',
       kind: 'customer',
       effort: 14,
       effortRevealed: null,
@@ -136,7 +140,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'social-feed',
-      title: 'Canadian Social Feed (localized)',
+      title: 'Team Activity Feed & @Mentions',
       kind: 'customer',
       effort: 8,
       effortRevealed: 8,
@@ -147,7 +151,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'premarket-hours',
-      title: 'Pre-Market & Extended Hours',
+      title: 'Mobile App (iOS & Android)',
       kind: 'customer',
       effort: 7,
       effortRevealed: 7,
@@ -158,7 +162,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'cad-priority',
-      title: 'CAD-Priority Display Toggle',
+      title: 'Custom Workspace Branding',
       kind: 'customer',
       effort: 3,
       effortRevealed: 3,
@@ -169,7 +173,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'onboarding-flow',
-      title: 'Beginner Onboarding (Canadian)',
+      title: 'Guided Setup Wizard (first-run)',
       kind: 'customer',
       effort: 5,
       effortRevealed: 5,
@@ -180,7 +184,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'referral',
-      title: 'Referral Program (CA$ bonus)',
+      title: 'In-App Referral Program (credit bonus)',
       kind: 'customer',
       effort: 5,
       effortRevealed: 5,
@@ -191,7 +195,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'feature-flags',
-      title: 'Per-Geo Feature Flag Infrastructure',
+      title: 'Per-Tenant Feature Flag Infrastructure',
       kind: 'tech',
       effort: 4,
       effortRevealed: 4,
@@ -202,7 +206,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'kyc-rebuild',
-      title: 'Canadian KYC Pipeline Rebuild',
+      title: 'SSO / SAML Authentication Rebuild',
       kind: 'tech',
       effort: 8,
       effortRevealed: 8,
@@ -227,7 +231,7 @@ export const scenario01: Scenario = {
   discoveryPool: [
     {
       id: 'discovery-push-notifications',
-      title: 'Push Notification Improvements (Canadian market hours)',
+      title: 'Smart Notification Controls (digest & quiet hours)',
       kind: 'customer',
       effort: 2,
       effortRevealed: 2,
@@ -238,7 +242,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'discovery-tax-export',
-      title: 'Tax Reporting Export (T5008 / T5 support)',
+      title: 'Usage & Billing Export (CSV / invoicing)',
       kind: 'customer',
       effort: 6,
       effortRevealed: 6,
@@ -249,7 +253,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'discovery-education-center',
-      title: 'Education Center (Canadian context)',
+      title: 'In-Product Help Center & Tutorials',
       kind: 'customer',
       effort: 4,
       effortRevealed: 4,
@@ -260,7 +264,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'discovery-auto-invest',
-      title: 'Auto-Invest (scheduled buys)',
+      title: 'Workflow Automations (scheduled triggers)',
       kind: 'customer',
       effort: 7,
       effortRevealed: 7,
@@ -271,7 +275,7 @@ export const scenario01: Scenario = {
     },
     {
       id: 'discovery-market-data-cost',
-      title: 'Market Data Cost Optimization',
+      title: 'Infrastructure Cost Optimization',
       kind: 'tech',
       effort: 5,
       effortRevealed: 5,
@@ -290,12 +294,12 @@ export const scenario01: Scenario = {
       trigger: 'forced',
       forcedAtIteration: 2,
       narrative:
-        'Wei (HQ): "Launch a crypto tab by month-end." Your team has zero crypto expertise; provincial regs vary wildly.',
+        'Wei (VP Growth): "Ship an AI assistant by month-end — every competitor is announcing one." Your team has zero ML experience and the data-privacy story is unclear.',
       options: [
         {
           id: 'accept',
           label: 'Accept and commit',
-          visibleConsequence: 'HQ +2, morale −3, tech debt +10. New crypto PBI injected.',
+          visibleConsequence: 'Leadership +2, morale −3, tech debt +10. New AI-assistant PBI injected.',
           effects: [
             { kind: 'trust', stakeholderId: 'hq', delta: 2 },
             { kind: 'morale', delta: -3 },
@@ -304,7 +308,7 @@ export const scenario01: Scenario = {
               kind: 'add-pbi',
               pbi: {
                 id: 'event-crypto-tab',
-                title: 'Crypto tab (HQ mandate, provincial reg review)',
+                title: 'AI Assistant (exec mandate, data-privacy review)',
                 kind: 'regulatory',
                 effort: 14,
                 effortRevealed: null,
@@ -320,13 +324,13 @@ export const scenario01: Scenario = {
         {
           id: 'trade-off',
           label: 'Propose trade-off in writing',
-          visibleConsequence: 'Crypto OR TFSA. HQ trust short-term −1.',
+          visibleConsequence: 'AI assistant OR self-serve onboarding. Leadership trust short-term −1.',
           effects: [{ kind: 'trust', stakeholderId: 'hq', delta: -1 }],
         },
         {
           id: 'defer',
           label: 'Defer with a plan',
-          visibleConsequence: 'HQ trust −2, team morale +2.',
+          visibleConsequence: 'Leadership trust −2, team morale +2.',
           effects: [
             { kind: 'trust', stakeholderId: 'hq', delta: -2 },
             { kind: 'morale', delta: 2 },
@@ -340,12 +344,12 @@ export const scenario01: Scenario = {
       baseWeight: 3,
       trigger: 'weighted',
       narrative:
-        'Aisha flags the social feed: "Bullish" buttons may constitute unregistered investment advice in Ontario.',
+        'Aisha flags the activity feed: @mentions leak data across tenant boundaries and would fail the SOC 2 review before the enterprise deal closes.',
       options: [
         {
           id: 'scope-down',
-          label: 'Scope feature down; remove signal buttons',
-          visibleConsequence: 'CIRO trust +2. Priya disappointed.',
+          label: 'Scope feature down; enforce tenant isolation',
+          visibleConsequence: 'Security trust +2. Priya disappointed.',
           effects: [
             { kind: 'trust', stakeholderId: 'ciro', delta: 2 },
             { kind: 'happiness', customerId: 'priya', delta: -1 },
@@ -353,14 +357,14 @@ export const scenario01: Scenario = {
         },
         {
           id: 'compliance-review',
-          label: 'Full compliance review before launch',
+          label: 'Full security review before launch',
           visibleConsequence: 'Delay 1 iteration.',
           effects: [{ kind: 'capacity-baseline', delta: -2 }],
         },
         {
           id: 'ship-anyway',
           label: 'Ship anyway — "move fast"',
-          visibleConsequence: 'Big regulatory risk.',
+          visibleConsequence: 'Big compliance risk.',
           effects: [
             { kind: 'trust', stakeholderId: 'ciro', delta: -3 },
             { kind: 'tech-debt', delta: 10 },
@@ -405,17 +409,17 @@ export const scenario01: Scenario = {
       baseWeight: 3,
       trigger: 'weighted',
       narrative:
-        'Maya has logged in twice in 3 weeks. Her survey: "No TFSA, I am moving to Wealthsimple."',
+        'Maya has logged in twice in 3 weeks. Her trial survey: "No self-serve onboarding for my team, we are switching to Asana."',
       options: [
         {
           id: 'commit-tfsa',
-          label: 'Publicly commit to TFSA by iter 4',
-          visibleConsequence: 'Mainstream buy-in.',
+          label: 'Publicly commit to self-serve onboarding by iter 4',
+          visibleConsequence: 'Mid-market buy-in.',
           effects: [{ kind: 'happiness', customerId: 'maya', delta: 2 }],
         },
         {
           id: 'retention-campaign',
-          label: 'Retention promo instead',
+          label: 'Extend trial + discount instead',
           visibleConsequence: 'Temporary lift.',
           effects: [{ kind: 'happiness', customerId: 'maya', delta: 1 }],
         },
@@ -433,7 +437,7 @@ export const scenario01: Scenario = {
       baseWeight: 2,
       trigger: 'random',
       narrative:
-        'Darren posts on r/CanadianInvestor comparing Moomoo to IBKR. His verdict matters.',
+        'Darren posts a teardown on Hacker News comparing Hubflow to Linear. His verdict matters.',
       options: [
         {
           id: 'engage',

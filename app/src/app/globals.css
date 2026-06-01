@@ -39,6 +39,13 @@
   --color-bad-line: #fecaca;
   --color-flame: #ea580c;
 
+  /* amber "warn" state — used by the simulation's telegraphed event cards.
+     (The original Console port omitted these; the sim reintroduces them from
+     the design/previews/sim-b.html palette.) */
+  --color-warn: #b45309;
+  --color-warn-050: #fffbeb;
+  --color-warn-line: #fde68a;
+
   /* app surfaces mapped to the slate scale */
   --color-background: #fafafa;
   --color-foreground: #171717;

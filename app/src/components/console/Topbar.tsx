@@ -6,8 +6,17 @@ import type { ReactNode } from 'react';
  * mockup's `.topbar`. `right` lets each screen slot in its own controls
  * (e.g. the lesson's close affordance) without a screen-toggle that doesn't
  * apply to a routed app.
+ *
+ * `context` is the wordmark suffix after "v0 ·" — "console" on the learning
+ * path (default), "simulation" on the sim route (matches sim-b.html).
  */
-export function Topbar({ right }: { right?: ReactNode }) {
+export function Topbar({
+  right,
+  context = 'console',
+}: {
+  right?: ReactNode;
+  context?: string;
+}) {
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-paper/85 backdrop-blur-md backdrop-saturate-150">
       <div className="mx-auto flex max-w-[1080px] items-center justify-between gap-4 px-6 py-3">
@@ -18,7 +27,7 @@ export function Topbar({ right }: { right?: ReactNode }) {
         >
           praxis<span className="text-accent">.</span>
           <span className="ml-1.5 text-[11px] font-medium text-faint max-[560px]:hidden">
-            v0 · console
+            v0 · {context}
           </span>
         </Link>
         {right}

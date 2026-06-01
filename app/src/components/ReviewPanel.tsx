@@ -1,4 +1,11 @@
 'use client';
+/**
+ * SUPERSEDED — part of the legacy GameView simulation, kept (not deleted) per
+ * the repo's no-silent-deletion rule. This is the old simulation's review panel — replaced by the Ship/Outcome steps.
+ * No route imports this anymore; the Guided Flow sim under
+ * src/components/console/sim/ is the live capstone. Safe to remove once the
+ * old flow is confirmed retired.
+ */
 
 import type { Action, GameState, Scenario } from '@/engine/types';
 import { cn } from '@/lib/cn';
