@@ -1,15 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { rankRows, riceDrill } from '@/curriculum/drills';
+import { useMemo, useState } from 'react';
+import { rankRows, resolveRiceDrill } from '@/curriculum/drills';
+import { useActiveIndustry } from '@/store/industryStore';
 
 /**
- * Library RICE drill. Content + scoring come from the shared, de-specialized
- * drill engine (src/curriculum/drills) so /methods and /learn stay in sync.
- * This surface keeps the "enter your scores → reveal" study model; the graded
- * Console loop lives at /learn/rice.
+ * Library RICE drill. Content + scoring come from the shared drill engine
+ * (src/curriculum/drills) so /methods and /learn stay in sync. The content is
+ * industry-aware: it resolves for the learner's home industry (hydration-safe;
+ * SaaS until the store rehydrates). The reach/impact/confidence/effort numbers
+ * — and the correct ranking — are shared structure, so only the feature names
+ * change. This surface keeps the "enter your scores → reveal" study model; the
+ * graded Console loop lives at /learn/rice.
  */
 export function RiceDrill() {
+  const industry = useActiveIndustry();
+  const riceDrill = useMemo(() => resolveRiceDrill(industry), [industry]);
   const [guesses, setGuesses] = useState<Record<string, string>>({});
   const [revealed, setRevealed] = useState(false);
 

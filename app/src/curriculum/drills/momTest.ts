@@ -1,34 +1,38 @@
-import type { FreeTextDrill, FreeTextValues } from './types';
+import type { FreeTextValues } from './types';
 
 /**
- * User Interviews drill (The Mom Test) — free-text, LLM-graded.
+ * User Interviews drill (The Mom Test) — STRUCTURAL CORE (industry-neutral).
  *
- * The learner writes ONE interview question that passes the Mom Test: it asks
- * about concrete past behaviour, stays specific, and never pitches the idea or
- * asks a hypothetical. /api/grade returns a rubric verdict. Generic SaaS
- * framing (a team-collaboration product), never finance-specific.
+ * Free-text, LLM-graded. The learner writes ONE interview question that passes
+ * the Mom Test: it asks about concrete past behaviour, stays specific, and never
+ * pitches the idea or asks a hypothetical.
+ *
+ * As with the other free-text drills there is no client-side answer key —
+ * grading is the rubric verdict from `/api/grade`, keyed SERVER-SIDE by
+ * `drillId`. The industry-invariant structure is the `drillId`, the single field
+ * key + shape, and the compose/ready logic. The goal/scenario copy is DISPLAY
+ * (`./momTest.display`). The industry changes which product the learner is
+ * researching, never how the question is graded.
  */
-export const momTestDrill: FreeTextDrill = {
+
+export type MomTestFieldKey = 'question';
+
+export interface MomTestFieldShape {
+  key: MomTestFieldKey;
+  multiline: boolean;
+  rows: number;
+}
+
+export interface MomTestStructure {
+  drillId: 'mom-test';
+  fields: MomTestFieldShape[];
+  composeInput: (values: FreeTextValues) => string;
+  isReady: (values: FreeTextValues) => boolean;
+}
+
+export const momTestStructure: MomTestStructure = {
   drillId: 'mom-test',
-  scenario: 'SaaS · discovery',
-  prompt: 'Write one interview question that passes the Mom Test.',
-  briefTitle: 'The interview',
-  brief:
-    'You are building a tool to cut down the number of status meetings teams sit through. You have 30 minutes with a team lead at a prospective customer. You want to learn whether status meetings are actually a painful, recurring problem for them — without leading them or pitching your idea. Write the single best opening question to ask.',
-  fields: [
-    {
-      key: 'question',
-      label: 'Your question (ask about real past behaviour — no "would you…")',
-      placeholder:
-        'e.g., Walk me through the last status meeting your team had — what happened and what did you do afterward?',
-      multiline: true,
-      rows: 3,
-    },
-  ],
-  composeInput: (v: FreeTextValues) => v.question?.trim() ?? '',
-  buildContext: () => ({
-    goal:
-      'Learn whether recurring status meetings are a real, painful problem for a prospective customer team lead, without pitching a meeting-reduction tool.',
-  }),
-  isReady: (v: FreeTextValues) => (v.question?.trim().length ?? 0) >= 12,
+  fields: [{ key: 'question', multiline: true, rows: 3 }],
+  composeInput: (v) => v.question?.trim() ?? '',
+  isReady: (v) => (v.question?.trim().length ?? 0) >= 12,
 };

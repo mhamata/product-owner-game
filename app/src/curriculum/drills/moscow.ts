@@ -1,16 +1,45 @@
-import type { ClassificationDrill } from './types';
+import type { DrillBucket } from './types';
+
+/**
+ * MoSCoW drill — STRUCTURAL CORE (industry-neutral).
+ *
+ * Must / Should / Could / Won't. "Must" is defined strictly: the release fails
+ * without it.
+ *
+ * This file owns the answer key: the four buckets (the fixed MoSCoW taxonomy,
+ * identical for every industry) and, for each item, its stable `id` and the
+ * single `correct` bucket. It carries NO human-readable feature copy — names,
+ * rationales, scenario framing, and the insight live in `./moscow.display`, one
+ * pack per home industry, merged on by `resolveMoscowDrill`. The correct bucket
+ * per item never changes, so a fully-correct attempt is identical across
+ * industries.
+ */
 
 export type MoscowBucket = 'M' | 'S' | 'C' | 'W';
 
-/**
- * MoSCoW drill — de-specialized to scoping a generic SaaS v1 launch.
- * Must / Should / Could / Won't. "Must" is defined strictly: the release
- * fails without it.
- */
-export const moscowDrill: ClassificationDrill<MoscowBucket> = {
-  scenario: 'SaaS · v1 launch scope',
-  prompt:
-    'You’re scoping the v1 launch of a team-collaboration app. Sort each feature into a MoSCoW bucket.',
+/** The structural item ids — the keys every display pack must cover. */
+export type MoscowItemId =
+  | 'auth'
+  | 'gdpr'
+  | 'notifications'
+  | 'activity-feed'
+  | 'native-mobile'
+  | 'dark-mode'
+  | 'chat-support'
+  | 'public-api';
+
+/** One item's answer-bearing data: which bucket is correct. */
+export interface StructuralMoscowItem {
+  id: MoscowItemId;
+  correct: MoscowBucket;
+}
+
+export interface MoscowStructure {
+  buckets: DrillBucket<MoscowBucket>[];
+  items: StructuralMoscowItem[];
+}
+
+export const moscowStructure: MoscowStructure = {
   buckets: [
     { key: 'M', label: 'Must', description: 'Launch blocker' },
     { key: 'S', label: 'Should', description: 'Important, not blocking' },
@@ -18,55 +47,13 @@ export const moscowDrill: ClassificationDrill<MoscowBucket> = {
     { key: 'W', label: "Won't", description: 'Explicitly out' },
   ],
   items: [
-    {
-      id: 'auth',
-      name: 'Email + password authentication',
-      correct: 'M',
-      why: 'Nobody can use the product without an account. "Must" means the release fails without it.',
-    },
-    {
-      id: 'gdpr',
-      name: 'GDPR data-export & delete',
-      correct: 'M',
-      why: 'Legal non-negotiable for launching in the EU. Shipping without it = compliance failure.',
-    },
-    {
-      id: 'notifications',
-      name: 'In-app notifications',
-      correct: 'S',
-      why: 'Important for engagement, but the product works at launch without it. Fast-follow.',
-    },
-    {
-      id: 'activity-feed',
-      name: 'Team activity feed',
-      correct: 'C',
-      why: 'Nice differentiation, but not required for v1. Could ship in a later release.',
-    },
-    {
-      id: 'native-mobile',
-      name: 'Native mobile apps',
-      correct: 'W',
-      why: "Explicitly out of scope for v1 — responsive web covers launch. Name it Won't so it stops resurfacing.",
-    },
-    {
-      id: 'dark-mode',
-      name: 'Dark mode',
-      correct: 'S',
-      why: 'Used to be a Could; now a Should — its absence gets called out in reviews.',
-    },
-    {
-      id: 'chat-support',
-      name: 'In-app live chat support',
-      correct: 'C',
-      why: 'Would help activation, but email support is acceptable for launch.',
-    },
-    {
-      id: 'public-api',
-      name: 'Public REST API',
-      correct: 'W',
-      why: 'Not a launch concern. Explicitly out of scope to keep the team focused.',
-    },
+    { id: 'auth', correct: 'M' },
+    { id: 'gdpr', correct: 'M' },
+    { id: 'notifications', correct: 'S' },
+    { id: 'activity-feed', correct: 'C' },
+    { id: 'native-mobile', correct: 'W' },
+    { id: 'dark-mode', correct: 'S' },
+    { id: 'chat-support', correct: 'C' },
+    { id: 'public-api', correct: 'W' },
   ],
-  insight:
-    'The common mistake is putting everything in Must. A healthy MoSCoW keeps Must to a handful of items — roughly 60% of capacity — so there’s room to absorb surprises.',
 };

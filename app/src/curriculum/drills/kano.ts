@@ -1,16 +1,41 @@
-import type { ClassificationDrill } from './types';
+import type { DrillBucket } from './types';
+
+/**
+ * Kano drill — STRUCTURAL CORE (industry-neutral).
+ *
+ * Basic (must-have) / Performance (more is better) / Delighter (surprise) /
+ * Indifferent (nobody cares).
+ *
+ * This file owns the answer key: the four Kano categories (fixed taxonomy) and,
+ * per item, its stable `id` and the single `correct` category. It carries NO
+ * human-readable copy — names, rationales, framing, and the insight live in
+ * `./kano.display`, one pack per home industry, merged on by `resolveKanoDrill`.
+ * The correct category per item never changes across industries.
+ */
 
 export type KanoCategory = 'basic' | 'performance' | 'delighter' | 'indifferent';
 
-/**
- * Kano drill — de-specialized to a generic SaaS product, mainstream segment.
- * Basic (must-have) / Performance (more is better) / Delighter (surprise) /
- * Indifferent (nobody cares).
- */
-export const kanoDrill: ClassificationDrill<KanoCategory> = {
-  scenario: 'SaaS · mainstream segment',
-  prompt:
-    'For a mainstream SaaS audience today, classify each feature on the Kano model.',
+/** The structural item ids — the keys every display pack must cover. */
+export type KanoItemId =
+  | 'login'
+  | 'load-speed'
+  | 'ai-suggestions'
+  | 'theme-color'
+  | 'dark-mode'
+  | 'uptime';
+
+/** One item's answer-bearing data: which Kano category is correct. */
+export interface StructuralKanoItem {
+  id: KanoItemId;
+  correct: KanoCategory;
+}
+
+export interface KanoStructure {
+  buckets: DrillBucket<KanoCategory>[];
+  items: StructuralKanoItem[];
+}
+
+export const kanoStructure: KanoStructure = {
   buckets: [
     { key: 'basic', label: 'Basic', description: 'Must-have; absence angers' },
     { key: 'performance', label: 'Performance', description: 'More is better' },
@@ -18,43 +43,11 @@ export const kanoDrill: ClassificationDrill<KanoCategory> = {
     { key: 'indifferent', label: 'Indifferent', description: 'Nobody really cares' },
   ],
   items: [
-    {
-      id: 'login',
-      name: 'Secure login with MFA',
-      correct: 'basic',
-      why: 'Expected. Missing = angry users and failed security reviews. Present = nobody notices.',
-    },
-    {
-      id: 'load-speed',
-      name: 'Page load speed',
-      correct: 'performance',
-      why: 'More is better — users continuously compare apps on responsiveness.',
-    },
-    {
-      id: 'ai-suggestions',
-      name: 'AI-generated content suggestions',
-      correct: 'delighter',
-      why: 'Most users don’t expect it; when it’s good it creates genuine surprise and word of mouth.',
-    },
-    {
-      id: 'theme-color',
-      name: 'Custom accent-color picker',
-      correct: 'indifferent',
-      why: 'Almost nobody cares. Engineering effort with little impact on either axis.',
-    },
-    {
-      id: 'dark-mode',
-      name: 'Dark mode',
-      correct: 'basic',
-      why: 'A classic category drift: Delighter (2016) → Performance → now Basic; its absence triggers complaints.',
-    },
-    {
-      id: 'uptime',
-      name: 'Reliable uptime / SLA',
-      correct: 'performance',
-      why: 'More nines = more satisfaction for serious customers. Scales with the number.',
-    },
+    { id: 'login', correct: 'basic' },
+    { id: 'load-speed', correct: 'performance' },
+    { id: 'ai-suggestions', correct: 'delighter' },
+    { id: 'theme-color', correct: 'indifferent' },
+    { id: 'dark-mode', correct: 'basic' },
+    { id: 'uptime', correct: 'performance' },
   ],
-  insight:
-    'Dark mode is the textbook "category drift" example — Delighters decay into Basics over time. Re-survey periodically; yesterday’s wow is today’s table stakes.',
 };

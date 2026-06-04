@@ -47,3 +47,16 @@ export const useIndustryStore = create<IndustryStore>()(
     },
   ),
 );
+
+/**
+ * The active home industry, read SSR-safely. Returns `DEFAULT_INDUSTRY` on the
+ * server and the first client paint (before the persisted store rehydrates),
+ * then the learner's stored choice — so industry-themed content never causes a
+ * hydration mismatch. This is the one-liner SimRunner and the lesson/methods
+ * surfaces share for resolving industry-aware drills.
+ */
+export function useActiveIndustry(): IndustryId {
+  const hasHydrated = useIndustryStore((s) => s.hasHydrated);
+  const industry = useIndustryStore((s) => s.industry);
+  return hasHydrated ? industry : DEFAULT_INDUSTRY;
+}

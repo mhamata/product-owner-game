@@ -1,18 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { cn } from '@/lib/cn';
 import {
   gradeClassification,
-  kanoDrill,
+  resolveKanoDrill,
   type KanoCategory,
 } from '@/curriculum/drills';
+import { useActiveIndustry } from '@/store/industryStore';
 
 /**
- * Library Kano drill. Items + categories + grading come from the shared
- * de-specialized engine; the graded Console loop lives at /learn/kano-moscow.
+ * Library Kano drill. Categories + grading come from the shared engine; the item
+ * copy is industry-aware (resolves for the home industry, SaaS until the store
+ * rehydrates). The correct category per item is shared structure — only the
+ * feature names change. The graded Console loop lives at /learn/kano-moscow.
  */
 export function KanoDrill() {
+  const industry = useActiveIndustry();
+  const kanoDrill = useMemo(() => resolveKanoDrill(industry), [industry]);
   const [assignments, setAssignments] = useState<
     Record<string, KanoCategory | undefined>
   >({});

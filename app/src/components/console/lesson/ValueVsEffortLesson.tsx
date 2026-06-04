@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import type { Skill } from '@/curriculum/types';
 import { getNextSkill, TOTAL_SKILLS } from '@/curriculum/data';
+import { DEFAULT_INDUSTRY, type IndustryId } from '@/curriculum/industries';
+import { resolveValueVsEffortDrill } from '@/curriculum/drills';
 import { useLearnStore } from '@/store/learnStore';
 import { Topbar } from '../Topbar';
 import { CompletionOverlay } from './CompletionOverlay';
@@ -17,35 +19,6 @@ import {
 } from '../Icon';
 
 type Phase = 'select' | 'checked' | 'complete';
-
-interface Option {
-  id: string;
-  /** Display key in the option chip ("A", "B", "C", "∑"). */
-  keyLabel: string;
-  label: string;
-}
-
-interface FeatureRow {
-  tag: string;
-  feature: string;
-  value: 'high' | 'low';
-  effort: 'high' | 'low';
-}
-
-const ROWS: FeatureRow[] = [
-  { tag: 'A', feature: 'Onboarding checklist', value: 'high', effort: 'low' },
-  { tag: 'B', feature: 'Custom dashboards', value: 'high', effort: 'high' },
-  { tag: 'C', feature: 'Dark mode', value: 'low', effort: 'low' },
-];
-
-const OPTIONS: Option[] = [
-  { id: 'A', keyLabel: 'A', label: 'Onboarding checklist' },
-  { id: 'B', keyLabel: 'B', label: 'Custom dashboards' },
-  { id: 'C', keyLabel: 'C', label: 'Dark mode' },
-  { id: 'ALL', keyLabel: '∑', label: 'Ship all three' },
-];
-
-const CORRECT_ID = 'A';
 
 function LevelCell({ level }: { level: 'high' | 'low' }) {
   // Color is always paired with an icon + text label (never color alone).
@@ -81,17 +54,29 @@ function LevelCell({ level }: { level: 'high' | 'low' }) {
  * a later phase can scale the score by first-try correctness so the map can
  * resurface weak skills for reinforcement.
  */
-export function ValueVsEffortLesson({ skill }: { skill: Skill }) {
+export function ValueVsEffortLesson({
+  skill,
+  industry = DEFAULT_INDUSTRY,
+}: {
+  skill: Skill;
+  /** Home industry to theme the drill copy with. Defaults to SaaS. */
+  industry?: IndustryId;
+}) {
   const router = useRouter();
   const recordResult = useLearnStore((s) => s.recordResult);
   const streak = useLearnStore((s) => s.streak);
   const masteredCountNow = useLearnStore((s) => s.masteredCount);
 
+  // Resolve the drill for the active industry: the value/effort answer key is
+  // shared, only the feature names change, so the correct quick win is the same.
+  const drill = useMemo(() => resolveValueVsEffortDrill(industry), [industry]);
+  const { rows, options, correctOptionId, scenario } = drill;
+
   const [phase, setPhase] = useState<Phase>('select');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [explainOpen, setExplainOpen] = useState(false);
 
-  const isCorrect = selectedId === CORRECT_ID;
+  const isCorrect = selectedId === correctOptionId;
   const nextSkill = useMemo(() => getNextSkill(skill.id), [skill.id]);
 
   // Snapshot the post-completion mastered count for the overlay. If this skill
@@ -163,7 +148,7 @@ export function ValueVsEffortLesson({ skill }: { skill: Skill }) {
               <span className="mono rounded-console-sm border border-accent-100 bg-accent-050 px-2 py-0.5 text-[10.5px] uppercase tracking-[0.12em] text-accent">
                 Unit 02 · {skill.title}
               </span>
-              <span className="eyebrow">Scenario · SaaS</span>
+              <span className="eyebrow">Scenario · {scenario}</span>
             </div>
 
             <h2 className="mt-4 text-[23px] font-bold leading-[1.3] tracking-[-0.015em] text-ink max-[560px]:text-[20px]">
@@ -188,12 +173,12 @@ export function ValueVsEffortLesson({ skill }: { skill: Skill }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {ROWS.map((row, i) => (
+                  {rows.map((row, i) => (
                     <tr key={row.tag}>
                       <td
                         className={[
                           'px-4 py-[13px] align-middle text-[14px] font-semibold text-ink max-[560px]:px-3',
-                          i < ROWS.length - 1 ? 'border-b border-line-2' : '',
+                          i < rows.length - 1 ? 'border-b border-line-2' : '',
                         ].join(' ')}
                       >
                         <span className="mono mr-2.5 text-[11px] text-faint max-[560px]:mr-0 max-[560px]:block max-[560px]:mb-0.5">
@@ -204,7 +189,7 @@ export function ValueVsEffortLesson({ skill }: { skill: Skill }) {
                       <td
                         className={[
                           'px-4 py-[13px] align-middle max-[560px]:px-3',
-                          i < ROWS.length - 1 ? 'border-b border-line-2' : '',
+                          i < rows.length - 1 ? 'border-b border-line-2' : '',
                         ].join(' ')}
                       >
                         <LevelCell level={row.value} />
@@ -212,7 +197,7 @@ export function ValueVsEffortLesson({ skill }: { skill: Skill }) {
                       <td
                         className={[
                           'px-4 py-[13px] align-middle max-[560px]:px-3',
-                          i < ROWS.length - 1 ? 'border-b border-line-2' : '',
+                          i < rows.length - 1 ? 'border-b border-line-2' : '',
                         ].join(' ')}
                       >
                         <LevelCell level={row.effort} />
@@ -229,12 +214,12 @@ export function ValueVsEffortLesson({ skill }: { skill: Skill }) {
               aria-label="Choose the best quick win"
               className="mt-[22px] grid gap-2.5"
             >
-              {OPTIONS.map((opt) => {
+              {options.map((opt) => {
                 const pressed = selectedId === opt.id;
                 const locked = phase !== 'select';
-                const revealCorrect = locked && opt.id === CORRECT_ID;
+                const revealCorrect = locked && opt.id === correctOptionId;
                 const revealWrong =
-                  locked && pressed && opt.id !== CORRECT_ID;
+                  locked && pressed && opt.id !== correctOptionId;
 
                 return (
                   <button

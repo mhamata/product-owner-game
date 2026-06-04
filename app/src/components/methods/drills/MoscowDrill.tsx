@@ -1,18 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { cn } from '@/lib/cn';
 import {
   gradeClassification,
-  moscowDrill,
+  resolveMoscowDrill,
   type MoscowBucket,
 } from '@/curriculum/drills';
+import { useActiveIndustry } from '@/store/industryStore';
 
 /**
- * Library MoSCoW drill. Items + buckets + grading come from the shared
- * de-specialized engine; the graded Console loop lives at /learn/kano-moscow.
+ * Library MoSCoW drill. Buckets + grading come from the shared engine; the item
+ * copy is industry-aware (resolves for the home industry, SaaS until the store
+ * rehydrates). The correct bucket per item is shared structure — only the
+ * feature names change. The graded Console loop lives at /learn/kano-moscow.
  */
 export function MoscowDrill() {
+  const industry = useActiveIndustry();
+  const moscowDrill = useMemo(() => resolveMoscowDrill(industry), [industry]);
   const [assignments, setAssignments] = useState<
     Record<string, MoscowBucket | undefined>
   >({});

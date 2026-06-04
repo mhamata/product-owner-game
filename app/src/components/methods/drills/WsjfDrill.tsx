@@ -1,13 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import { rankRows, wsjfDrill } from '@/curriculum/drills';
+import { useMemo, useState } from 'react';
+import { rankRows, resolveWsjfDrill } from '@/curriculum/drills';
+import { useActiveIndustry } from '@/store/industryStore';
 
 /**
- * Library WSJF drill. Content + scoring come from the shared de-specialized
- * drill engine; the graded Console loop lives at /learn/cost-of-delay.
+ * Library WSJF drill. Content + scoring come from the shared drill engine; the
+ * content is industry-aware (resolves for the home industry, SaaS until the
+ * store rehydrates). The Fibonacci factors and the correct ranking are shared
+ * structure — only the feature names change. The graded Console loop lives at
+ * /learn/cost-of-delay.
  */
 export function WsjfDrill() {
+  const industry = useActiveIndustry();
+  const wsjfDrill = useMemo(() => resolveWsjfDrill(industry), [industry]);
   const [revealed, setRevealed] = useState(false);
   const [guesses, setGuesses] = useState<Record<string, string>>({});
 

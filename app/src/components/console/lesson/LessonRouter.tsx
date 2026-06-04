@@ -1,16 +1,18 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { Skill } from '@/curriculum/types';
+import { useActiveIndustry } from '@/store/industryStore';
 import {
-  riceDrill,
-  wsjfDrill,
-  kanoDrill,
-  tshirtDrill,
-  fiveWhysDrill,
-  jtbdDrill,
-  momTestDrill,
-  preMortemDrill,
-  prFaqDrill,
+  resolveRiceDrill,
+  resolveWsjfDrill,
+  resolveKanoDrill,
+  resolveTshirtDrill,
+  resolveFiveWhysDrill,
+  resolveJtbdDrill,
+  resolveMomTestDrill,
+  resolvePreMortemDrill,
+  resolvePrFaqDrill,
 } from '@/curriculum/drills';
 import { ValueVsEffortLesson } from './ValueVsEffortLesson';
 import { ScoreRankLesson } from './ScoreRankLesson';
@@ -30,25 +32,46 @@ const industryOf = (scenario: string) => scenario.split(' · ')[0];
  * the server→client boundary as a prop. So the drill data is selected HERE, in
  * a client component, rather than threaded through the server route. The route
  * just resolves the curriculum `skill` and hands it to this dispatcher.
+ *
+ * The drill content is now industry-aware: we read the learner's home industry
+ * from the persisted store and resolve each drill for it. Reads are
+ * hydration-safe — until the store rehydrates we render the DEFAULT industry,
+ * matching SSR + the first client paint (the same pattern the capstone sim uses
+ * in SimRunner) so there is no hydration mismatch.
  */
 export function LessonRouter({ skill }: { skill: Skill }) {
+  const industry = useActiveIndustry();
+
+  // Resolve only the drill this skill needs, re-resolving when the industry
+  // changes. Each resolver merges the industry's display pack onto the shared
+  // (answer-bearing) structure, so the graded answer is identical across them.
+  const rice = useMemo(() => resolveRiceDrill(industry), [industry]);
+  const wsjf = useMemo(() => resolveWsjfDrill(industry), [industry]);
+  const kano = useMemo(() => resolveKanoDrill(industry), [industry]);
+  const tshirt = useMemo(() => resolveTshirtDrill(industry), [industry]);
+  const fiveWhys = useMemo(() => resolveFiveWhysDrill(industry), [industry]);
+  const jtbd = useMemo(() => resolveJtbdDrill(industry), [industry]);
+  const momTest = useMemo(() => resolveMomTestDrill(industry), [industry]);
+  const preMortem = useMemo(() => resolvePreMortemDrill(industry), [industry]);
+  const prFaq = useMemo(() => resolvePrFaqDrill(industry), [industry]);
+
   switch (skill.id) {
     case 'value-vs-effort':
-      return <ValueVsEffortLesson skill={skill} />;
+      return <ValueVsEffortLesson skill={skill} industry={industry} />;
     case 'rice':
       return (
         <ScoreRankLesson
           skill={skill}
-          drill={riceDrill}
-          scenarioTag={`Scenario · ${industryOf(riceDrill.scenario)}`}
+          drill={rice}
+          scenarioTag={`Scenario · ${industryOf(rice.scenario)}`}
         />
       );
     case 'cost-of-delay':
       return (
         <ScoreRankLesson
           skill={skill}
-          drill={wsjfDrill}
-          scenarioTag={`Scenario · ${industryOf(wsjfDrill.scenario)}`}
+          drill={wsjf}
+          scenarioTag={`Scenario · ${industryOf(wsjf.scenario)}`}
         />
       );
     case 'kano-moscow':
@@ -56,34 +79,34 @@ export function LessonRouter({ skill }: { skill: Skill }) {
       return (
         <ClassificationLesson
           skill={skill}
-          drill={kanoDrill}
-          scenarioTag={`Scenario · ${industryOf(kanoDrill.scenario)}`}
+          drill={kano}
+          scenarioTag={`Scenario · ${industryOf(kano.scenario)}`}
         />
       );
     case 'estimation':
       return (
         <SizingLesson
           skill={skill}
-          drill={tshirtDrill}
-          scenarioTag={`Scenario · ${industryOf(tshirtDrill.scenario)}`}
+          drill={tshirt}
+          scenarioTag={`Scenario · ${industryOf(tshirt.scenario)}`}
         />
       );
     case 'problem-framing':
       return (
         <SequencingLesson
           skill={skill}
-          drill={fiveWhysDrill}
-          scenarioTag={`Scenario · ${industryOf(fiveWhysDrill.scenario)}`}
+          drill={fiveWhys}
+          scenarioTag={`Scenario · ${industryOf(fiveWhys.scenario)}`}
         />
       );
     case 'jtbd':
-      return <FreeTextGradeLesson skill={skill} drill={jtbdDrill} />;
+      return <FreeTextGradeLesson skill={skill} drill={jtbd} />;
     case 'user-interviews':
-      return <FreeTextGradeLesson skill={skill} drill={momTestDrill} />;
+      return <FreeTextGradeLesson skill={skill} drill={momTest} />;
     case 'pre-mortem':
-      return <FreeTextGradeLesson skill={skill} drill={preMortemDrill} />;
+      return <FreeTextGradeLesson skill={skill} drill={preMortem} />;
     case 'pr-faq':
-      return <FreeTextGradeLesson skill={skill} drill={prFaqDrill} />;
+      return <FreeTextGradeLesson skill={skill} drill={prFaq} />;
     default:
       return <ComingSoonLesson skill={skill} />;
   }

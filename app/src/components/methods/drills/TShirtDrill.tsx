@@ -1,19 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { cn } from '@/lib/cn';
 import {
   gradeSizing,
-  tshirtDrill,
+  resolveTshirtDrill,
   TSHIRT_SIZES,
   type TShirtSize,
 } from '@/curriculum/drills';
+import { useActiveIndustry } from '@/store/industryStore';
 
 /**
- * Library T-shirt sizing drill. Stories + grading come from the shared
- * de-specialized engine; the graded Console loop lives at /learn/estimation.
+ * Library T-shirt sizing drill. Grading + the size legend come from the shared
+ * engine; the story copy is industry-aware (resolves for the home industry,
+ * SaaS until the store rehydrates). The correct size per story is shared
+ * structure — only the story titles change. The graded Console loop lives at
+ * /learn/estimation.
  */
 export function TShirtDrill() {
+  const industry = useActiveIndustry();
+  const tshirtDrill = useMemo(() => resolveTshirtDrill(industry), [industry]);
   const [guesses, setGuesses] = useState<Record<string, TShirtSize | undefined>>(
     {},
   );

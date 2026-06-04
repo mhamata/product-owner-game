@@ -1,16 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { fiveWhysDrill } from '@/curriculum/drills';
+import { useMemo, useState } from 'react';
+import { resolveFiveWhysDrill } from '@/curriculum/drills';
+import { useActiveIndustry } from '@/store/industryStore';
 
 /**
  * Library 5-Whys drill. The symptom, canonical chain, and insight come from the
- * shared de-specialized engine. This surface keeps the open-ended "write your
- * own whys → compare with canonical" study model; the deterministic graded
- * variant (order surface → root) lives in the Console loop at
- * /learn/problem-framing.
+ * shared engine; the content is industry-aware (resolves for the home industry,
+ * SaaS until the store rehydrates). The canonical surface-to-root ORDER is
+ * shared structure — only the symptom and cause text change. This surface keeps
+ * the open-ended "write your own whys → compare with canonical" study model; the
+ * deterministic graded variant (order surface → root) lives in the Console loop
+ * at /learn/problem-framing.
  */
 export function FiveWhysDrill() {
+  const industry = useActiveIndustry();
+  const fiveWhysDrill = useMemo(() => resolveFiveWhysDrill(industry), [industry]);
   const canonical = fiveWhysDrill.steps;
   const [answers, setAnswers] = useState<string[]>(() =>
     canonical.map(() => ''),
