@@ -363,7 +363,9 @@ const LEVEL_UNITS: LevelUnitSeeds = {
 
 /* ==================================================================
    SPECIALIZATION TRACKS: off-ladder depth (conceptually unlock at senior+).
-   All coming-soon for now; surfaced in their own Practice Map section.
+   Each track skill ships a concept lesson (status 'ready', 'lesson' modality)
+   and is surfaced in its own Practice Map section. Tracks stay off-ladder, so
+   they never count toward the core mastery denominator (see masterableSkills).
    ================================================================== */
 type TrackSeed = {
   id: TrackId;
@@ -378,8 +380,8 @@ const TRACK_SEEDS: TrackSeed[] = [
     label: 'Growth',
     summary: 'Loops, funnels, and retention as a system.',
     skills: [
-      { id: 'track-growth-loops', title: 'Growth Loops', competency: 'business-outcome', modalities: SOON_LESSON, status: 'coming-soon' },
-      { id: 'track-growth-experimentation', title: 'Growth Experimentation', competency: 'data-fluency', modalities: SOON_LESSON, status: 'coming-soon' },
+      { id: 'track-growth-loops', title: 'Growth Loops', competency: 'business-outcome', modalities: SOON_LESSON, status: 'ready' },
+      { id: 'track-growth-experimentation', title: 'Growth Experimentation', competency: 'data-fluency', modalities: SOON_LESSON, status: 'ready' },
     ],
   },
   {
@@ -387,8 +389,8 @@ const TRACK_SEEDS: TrackSeed[] = [
     label: 'Platform & API',
     summary: 'Products whose customers are other builders.',
     skills: [
-      { id: 'track-platform-thinking', title: 'Platform Thinking', competency: 'technical', modalities: SOON_LESSON, status: 'coming-soon' },
-      { id: 'track-api-as-product', title: 'API as Product', competency: 'technical', modalities: SOON_LESSON, status: 'coming-soon' },
+      { id: 'track-platform-thinking', title: 'Platform Thinking', competency: 'technical', modalities: SOON_LESSON, status: 'ready' },
+      { id: 'track-api-as-product', title: 'API as Product', competency: 'technical', modalities: SOON_LESSON, status: 'ready' },
     ],
   },
   {
@@ -396,10 +398,10 @@ const TRACK_SEEDS: TrackSeed[] = [
     label: 'AI / ML',
     summary: 'Evals, prompt & context engineering, agents, AI-fit judgment.',
     skills: [
-      { id: 'track-ai-fit-judgment', title: 'AI-Fit Judgment', competency: 'technical', modalities: ['lesson', 'judgment'], status: 'coming-soon' },
-      { id: 'track-prompt-context-eng', title: 'Prompt & Context Engineering', competency: 'technical', modalities: SOON_LESSON, status: 'coming-soon' },
-      { id: 'track-evals', title: 'Evals & Quality', competency: 'quality', modalities: SOON_LESSON, status: 'coming-soon' },
-      { id: 'track-agents', title: 'Agentic Products', competency: 'technical', modalities: SOON_LESSON, status: 'coming-soon' },
+      { id: 'track-ai-fit-judgment', title: 'AI-Fit Judgment', competency: 'technical', modalities: ['lesson', 'judgment'], status: 'ready' },
+      { id: 'track-prompt-context-eng', title: 'Prompt & Context Engineering', competency: 'technical', modalities: SOON_LESSON, status: 'ready' },
+      { id: 'track-evals', title: 'Evals & Quality', competency: 'quality', modalities: SOON_LESSON, status: 'ready' },
+      { id: 'track-agents', title: 'Agentic Products', competency: 'technical', modalities: SOON_LESSON, status: 'ready' },
     ],
   },
   {
@@ -407,8 +409,8 @@ const TRACK_SEEDS: TrackSeed[] = [
     label: 'Monetization',
     summary: 'Packaging, pricing, and the business model.',
     skills: [
-      { id: 'track-pricing-strategy', title: 'Pricing Strategy', competency: 'business-outcome', modalities: SOON_LESSON, status: 'coming-soon' },
-      { id: 'track-packaging-tiers', title: 'Packaging & Tiers', competency: 'business-outcome', modalities: SOON_LESSON, status: 'coming-soon' },
+      { id: 'track-pricing-strategy', title: 'Pricing Strategy', competency: 'business-outcome', modalities: SOON_LESSON, status: 'ready' },
+      { id: 'track-packaging-tiers', title: 'Packaging & Tiers', competency: 'business-outcome', modalities: SOON_LESSON, status: 'ready' },
     ],
   },
   {
@@ -416,8 +418,8 @@ const TRACK_SEEDS: TrackSeed[] = [
     label: 'Marketplace',
     summary: 'Two-sided liquidity, matching, and trust.',
     skills: [
-      { id: 'track-marketplace-liquidity', title: 'Liquidity & Matching', competency: 'business-outcome', modalities: SOON_LESSON, status: 'coming-soon' },
-      { id: 'track-marketplace-trust', title: 'Trust & Safety', competency: 'ethics', modalities: SOON_LESSON, status: 'coming-soon' },
+      { id: 'track-marketplace-liquidity', title: 'Liquidity & Matching', competency: 'business-outcome', modalities: SOON_LESSON, status: 'ready' },
+      { id: 'track-marketplace-trust', title: 'Trust & Safety', competency: 'ethics', modalities: SOON_LESSON, status: 'ready' },
     ],
   },
   {
@@ -425,8 +427,8 @@ const TRACK_SEEDS: TrackSeed[] = [
     label: 'B2B / B2C',
     summary: 'How buyer, user, and motion differ across the divide.',
     skills: [
-      { id: 'track-b2b-motion', title: 'B2B Motion', competency: 'business', modalities: SOON_LESSON, status: 'coming-soon' },
-      { id: 'track-b2c-motion', title: 'B2C Motion', competency: 'business', modalities: SOON_LESSON, status: 'coming-soon' },
+      { id: 'track-b2b-motion', title: 'B2B Motion', competency: 'business', modalities: SOON_LESSON, status: 'ready' },
+      { id: 'track-b2c-motion', title: 'B2C Motion', competency: 'business', modalities: SOON_LESSON, status: 'ready' },
     ],
   },
   {
@@ -434,8 +436,8 @@ const TRACK_SEEDS: TrackSeed[] = [
     label: 'Zero-to-One',
     summary: 'Finding product-market fit from nothing.',
     skills: [
-      { id: 'track-finding-pmf', title: 'Finding PMF', competency: 'voice-of-customer', modalities: ['lesson', 'judgment'], status: 'coming-soon' },
-      { id: 'track-first-wedge', title: 'The First Wedge', competency: 'strategic-impact', modalities: SOON_LESSON, status: 'coming-soon' },
+      { id: 'track-finding-pmf', title: 'Finding PMF', competency: 'voice-of-customer', modalities: ['lesson', 'judgment'], status: 'ready' },
+      { id: 'track-first-wedge', title: 'The First Wedge', competency: 'strategic-impact', modalities: SOON_LESSON, status: 'ready' },
     ],
   },
 ];

@@ -257,11 +257,18 @@ describe('navigation helpers', () => {
     }
   });
 
-  it('exposes the seven specialization tracks, all coming-soon', () => {
+  it('exposes the seven specialization tracks, each a ready lesson skill', () => {
     expect(tracks).toHaveLength(7);
     for (const t of tracks) {
       expect(t.skills.length).toBeGreaterThan(0);
-      for (const s of t.skills) expect(s.status).toBe('coming-soon');
+      for (const s of t.skills) {
+        // Track skills now ship a concept lesson: ready, with the 'lesson'
+        // modality, while staying off-ladder (track set, no level).
+        expect(s.status).toBe('ready');
+        expect(s.modalities).toContain('lesson');
+        expect(s.track).toBe(t.id);
+        expect(s.level).toBeUndefined();
+      }
     }
   });
 });

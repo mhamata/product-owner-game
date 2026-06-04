@@ -32,7 +32,7 @@ function ctxFor(id: IndustryId): IndustryContext {
 }
 
 describe('lesson registry', () => {
-  it('exposes a concept lesson for every level of the ladder', () => {
+  it('exposes a concept lesson for every ladder level and every specialization track', () => {
     const ids = ALL_LESSONS.map((l) => l.skillId);
     const expected = [
       // Foundations
@@ -81,10 +81,28 @@ describe('lesson registry', () => {
       'pnl-business-acumen',
       'product-culture',
       'cpo-transition',
+      // Specialization tracks (off-ladder): one concept lesson per track skill.
+      'track-growth-loops',
+      'track-growth-experimentation',
+      'track-platform-thinking',
+      'track-api-as-product',
+      'track-ai-fit-judgment',
+      'track-prompt-context-eng',
+      'track-evals',
+      'track-agents',
+      'track-pricing-strategy',
+      'track-packaging-tiers',
+      'track-marketplace-liquidity',
+      'track-marketplace-trust',
+      'track-b2b-motion',
+      'track-b2c-motion',
+      'track-finding-pmf',
+      'track-first-wedge',
     ];
     expect(ids.sort()).toEqual(expected.sort());
-    // Sanity: the count moved to the full authored set.
-    expect(ids).toHaveLength(40);
+    // Sanity: the full authored set is the 40 ladder lessons plus the 16
+    // specialization-track lessons.
+    expect(ids).toHaveLength(56);
   });
 
   it('has no duplicate skill ids', () => {

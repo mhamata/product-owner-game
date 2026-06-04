@@ -62,6 +62,24 @@ import { pnlBusinessAcumen } from './pnl-business-acumen';
 import { productCulture } from './product-culture';
 import { cpoTransition } from './cpo-transition';
 
+// Specialization tracks (off-ladder). One concept lesson per track skill.
+import { trackGrowthLoops } from './track-growth-loops';
+import { trackGrowthExperimentation } from './track-growth-experimentation';
+import { trackPlatformThinking } from './track-platform-thinking';
+import { trackApiAsProduct } from './track-api-as-product';
+import { trackAiFitJudgment } from './track-ai-fit-judgment';
+import { trackPromptContextEng } from './track-prompt-context-eng';
+import { trackEvals } from './track-evals';
+import { trackAgents } from './track-agents';
+import { trackPricingStrategy } from './track-pricing-strategy';
+import { trackPackagingTiers } from './track-packaging-tiers';
+import { trackMarketplaceLiquidity } from './track-marketplace-liquidity';
+import { trackMarketplaceTrust } from './track-marketplace-trust';
+import { trackB2bMotion } from './track-b2b-motion';
+import { trackB2cMotion } from './track-b2c-motion';
+import { trackFindingPmf } from './track-finding-pmf';
+import { trackFirstWedge } from './track-first-wedge';
+
 /** Every authored concept lesson, in curriculum (level → unit) order. */
 export const ALL_LESSONS: ConceptLessonContent[] = [
   // Foundations
@@ -110,6 +128,30 @@ export const ALL_LESSONS: ConceptLessonContent[] = [
   pnlBusinessAcumen,
   productCulture,
   cpoTransition,
+  // Specialization tracks (off-ladder), in track order from curriculum/data.ts.
+  // Growth
+  trackGrowthLoops,
+  trackGrowthExperimentation,
+  // Platform & API
+  trackPlatformThinking,
+  trackApiAsProduct,
+  // AI / ML
+  trackAiFitJudgment,
+  trackPromptContextEng,
+  trackEvals,
+  trackAgents,
+  // Monetization
+  trackPricingStrategy,
+  trackPackagingTiers,
+  // Marketplace
+  trackMarketplaceLiquidity,
+  trackMarketplaceTrust,
+  // B2B / B2C
+  trackB2bMotion,
+  trackB2cMotion,
+  // Zero-to-One
+  trackFindingPmf,
+  trackFirstWedge,
 ];
 
 /** skillId → concept lesson content. Built once; the source of truth for lookups. */
