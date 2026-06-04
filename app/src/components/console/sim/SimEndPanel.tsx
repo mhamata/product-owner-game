@@ -18,7 +18,7 @@ import {
   TargetIcon,
 } from '../Icon';
 import { DIMENSIONS } from './dimensions';
-import { deriveRunCompetencies } from './competency';
+import { deriveRunCompetencies, deriveArchetype } from './competency';
 import { useSimEvidenceStore } from '@/store/simEvidenceStore';
 import { COMPETENCIES, type Competency } from '@/curriculum/types';
 
@@ -70,6 +70,7 @@ export function SimEndPanel({
   useEffect(() => {
     recordRun(runCompetencies);
   }, [recordRun, runCompetencies]);
+  const archetype = useMemo(() => deriveArchetype(score), [score]);
 
   async function generateRetro() {
     setLoading(true);
@@ -133,6 +134,14 @@ export function SimEndPanel({
           <h1 className="mt-3.5 text-[25px] font-extrabold leading-[1.15] tracking-[-0.02em] text-ink max-[560px]:text-[21px]">
             That&apos;s a wrap on {state.totalIterations} sprints.
           </h1>
+
+          {/* the strategy you actually ran: reinforces that no line dominates */}
+          <div className="mt-3 flex flex-wrap items-center gap-2.5 rounded-console-lg border border-line bg-panel p-[12px_14px]">
+            <span className="mono inline-flex flex-none items-center gap-1.5 rounded-console-sm border border-accent-100 bg-accent-050 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-accent">
+              {archetype.label}
+            </span>
+            <span className="flex-1 text-[13px] leading-snug text-slate">{archetype.blurb}</span>
+          </div>
 
           {/* total + revenue result */}
           <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] gap-4 max-[560px]:grid-cols-1">

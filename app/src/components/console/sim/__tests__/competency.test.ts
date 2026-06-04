@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { GameScore } from '@/engine/score';
-import { deriveRunCompetencies } from '../competency';
+import { deriveRunCompetencies, deriveArchetype } from '../competency';
 import { useSimEvidenceStore } from '@/store/simEvidenceStore';
 
 const score: GameScore = {
@@ -44,5 +44,31 @@ describe('simEvidenceStore', () => {
     expect(scores.delivery).toBe(80); // best of 50 and 80
     expect(scores.quality).toBe(70);
     expect(scores.ux).toBe(30);
+  });
+});
+
+describe('deriveArchetype', () => {
+  it('names the leading dimension when the board is lopsided', () => {
+    const a = deriveArchetype({
+      valueDelivered: 90,
+      customerLoyalty: 40,
+      teamHealth: 40,
+      stakeholderTrust: 45,
+      productIntegrity: 40,
+      total: 51,
+    });
+    expect(a.label).toBe('Growth-first');
+  });
+
+  it('reads a near-even board as a balanced operator', () => {
+    const a = deriveArchetype({
+      valueDelivered: 62,
+      customerLoyalty: 60,
+      teamHealth: 58,
+      stakeholderTrust: 61,
+      productIntegrity: 59,
+      total: 60,
+    });
+    expect(a.label).toBe('Balanced operator');
   });
 });

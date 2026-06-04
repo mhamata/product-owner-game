@@ -49,3 +49,45 @@ export function deriveRunCompetencies(
 
   return out;
 }
+
+/**
+ * Name the strategy the player actually ran, from where their final scoreboard
+ * leans. The point is to reinforce that these scenarios have no single dominant
+ * line: a growth-first run and a foundation-first run are both valid, they just
+ * trade differently. A nearly even board reads as a balanced operator.
+ */
+export interface RunArchetype {
+  label: string;
+  blurb: string;
+}
+
+const ARCHETYPE: Record<
+  Exclude<keyof GameScore, 'total'>,
+  { label: string; phrase: string; foil: string }
+> = {
+  valueDelivered: { label: 'Growth-first', phrase: 'shipping value and revenue', foil: 'a foundation-first' },
+  customerLoyalty: { label: 'Customer-first', phrase: 'keeping customers happy', foil: 'a growth-first' },
+  teamHealth: { label: 'Team-first', phrase: 'protecting the team', foil: 'a growth-first' },
+  stakeholderTrust: { label: 'Trust-first', phrase: 'managing stakeholders', foil: 'a delivery-first' },
+  productIntegrity: { label: 'Foundation-first', phrase: 'paying down debt and quality', foil: 'a growth-first' },
+};
+
+export function deriveArchetype(score: GameScore): RunArchetype {
+  const dims = Object.keys(ARCHETYPE) as Array<Exclude<keyof GameScore, 'total'>>;
+  const sorted = dims.map((d) => ({ d, v: score[d] })).sort((a, b) => b.v - a.v);
+  const spread = sorted[0].v - sorted[sorted.length - 1].v;
+
+  if (spread <= 8) {
+    return {
+      label: 'Balanced operator',
+      blurb:
+        'You spread your attention evenly. No front ran away and none was starved. A sharper bet on one dimension was an equally valid line.',
+    };
+  }
+
+  const top = ARCHETYPE[sorted[0].d];
+  return {
+    label: top.label,
+    blurb: `You leaned hardest on ${top.phrase}. There was no single right line here: ${top.foil} run was just as valid, it would have traded differently.`,
+  };
+}
