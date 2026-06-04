@@ -10,6 +10,8 @@ import {
   isUnitCurrent,
 } from '@/curriculum/data';
 import { useLearnStore } from '@/store/learnStore';
+import { useIndustryStore } from '@/store/industryStore';
+import { INDUSTRIES, DEFAULT_INDUSTRY, isIndustryId } from '@/curriculum/industries';
 import { Topbar } from './Topbar';
 import { SkillCard } from './SkillCard';
 import { ProgressRing } from './ProgressRing';
@@ -37,6 +39,13 @@ export function PracticeMap() {
   const progress = useLearnStore((s) => s.progress);
   const streak = useLearnStore((s) => s.streak);
   const hasHydrated = useLearnStore((s) => s.hasHydrated);
+
+  // Home industry — persisted, SSR-safe. Before hydration we show the default
+  // so server + first client paint agree (mirrors the streak gating above).
+  const industry = useIndustryStore((s) => s.industry);
+  const industryHydrated = useIndustryStore((s) => s.hasHydrated);
+  const setIndustry = useIndustryStore((s) => s.setIndustry);
+  const selectedIndustry = industryHydrated ? industry : DEFAULT_INDUSTRY;
 
   // Derive everything from persisted progress. Before hydration we render the
   // seed-equivalent (server + first client paint agree → no mismatch flash).
@@ -112,14 +121,17 @@ export function PracticeMap() {
             </span>
             <select
               aria-label="Home industry"
-              defaultValue="SaaS"
+              value={selectedIndustry}
+              onChange={(e) => {
+                if (isIndustryId(e.target.value)) setIndustry(e.target.value);
+              }}
               className="cursor-pointer appearance-none border-0 bg-transparent pr-4 text-[13px] font-semibold text-ink focus:outline-none"
             >
-              <option>SaaS</option>
-              <option>Fintech</option>
-              <option>Marketplace</option>
-              <option>Consumer</option>
-              <option>Healthcare</option>
+              {INDUSTRIES.map((opt) => (
+                <option key={opt.id} value={opt.id}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
             <CaretDownIcon
               size={11}

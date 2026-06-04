@@ -5,6 +5,8 @@ import { useState } from 'react';
 import type { GameState, Scenario } from '@/engine/types';
 import type { GameScore } from '@/engine/score';
 import { useGameStore } from '@/store/gameStore';
+import { useIndustryStore } from '@/store/industryStore';
+import { DEFAULT_INDUSTRY } from '@/curriculum/industries';
 import { cn } from '@/lib/cn';
 import { Topbar } from '../Topbar';
 import {
@@ -36,6 +38,11 @@ export function SimEndPanel({
   score: GameScore;
 }) {
   const newGame = useGameStore((s) => s.newGame);
+  // Restart should keep the player's home-industry theme; the assembled scenario
+  // we already hold carries it, so we replay against the same scenario object.
+  const industryHydrated = useIndustryStore((s) => s.hasHydrated);
+  const storedIndustry = useIndustryStore((s) => s.industry);
+  const industry = industryHydrated ? storedIndustry : DEFAULT_INDUSTRY;
   const [retro, setRetro] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [missingKey, setMissingKey] = useState(false);
@@ -229,7 +236,7 @@ export function SimEndPanel({
           <div className="mt-7 flex flex-wrap gap-3 border-t border-line pt-5">
             <button
               type="button"
-              onClick={() => newGame(scenario.id)}
+              onClick={() => newGame(scenario.id, { scenario, industry })}
               className="mono inline-flex items-center gap-2 rounded-console border-0 bg-accent px-4 py-2.5 text-[13px] font-semibold uppercase tracking-[0.06em] text-white transition-[background] duration-150 hover:bg-accent-700"
             >
               <RestartIcon size={14} />

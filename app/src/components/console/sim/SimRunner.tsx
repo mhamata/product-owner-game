@@ -4,9 +4,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { GameScore } from '@/engine/score';
 import type { Action, GameState, IterationOutcome, Scenario } from '@/engine/types';
 import { calculateScore } from '@/engine/score';
-import { getScenario } from '@/scenarios';
+import { getScenarioForIndustry } from '@/scenarios';
 import { useGameStore } from '@/store/gameStore';
 import { useCoachStore } from '@/store/coachStore';
+import { useIndustryStore } from '@/store/industryStore';
+import { DEFAULT_INDUSTRY } from '@/curriculum/industries';
 import { Topbar } from '../Topbar';
 import { CircleDotIcon, RestartIcon } from '../Icon';
 import { SimContextRail } from './SimContextRail';
@@ -50,18 +52,38 @@ import { useHydrated } from './useHydrated';
 export function SimRunner({ scenarioId }: { scenarioId: string }) {
   const state = useGameStore((s) => s.state);
   const currentId = useGameStore((s) => s.scenarioId);
+  const gameIndustry = useGameStore((s) => s.industry);
   const newGame = useGameStore((s) => s.newGame);
   const dispatch = useGameStore((s) => s.dispatch);
   const replayTutorial = useCoachStore((s) => s.replayTutorial);
 
+  // The player's home industry re-skins the capstone. Read it hydration-safely:
+  // until the industry store rehydrates we use the default, matching SSR + the
+  // first client paint (the home-page dropdown gates the same way).
+  const industryHydrated = useIndustryStore((s) => s.hasHydrated);
+  const storedIndustry = useIndustryStore((s) => s.industry);
+  const industry = industryHydrated ? storedIndustry : DEFAULT_INDUSTRY;
+
   const hydrated = useHydrated();
 
+  // Assemble the scenario for the active industry. Structurally identical across
+  // industries (same engine balance); only the displayed story differs.
+  const scenario = useMemo(
+    () => getScenarioForIndustry(scenarioId, industry),
+    [scenarioId, industry],
+  );
+
   // Ensure a game exists for this scenario (mirrors the old GameView bootstrap).
+  // Also rebuild when the player switches home industry, so the running sim and
+  // the engine both reflect the chosen theme. We wait for BOTH stores to
+  // rehydrate so we never clobber a persisted in-progress game with the default.
   useEffect(() => {
-    if (hydrated && (!state || currentId !== scenarioId)) {
-      newGame(scenarioId);
+    if (!hydrated || !industryHydrated || !scenario) return;
+    const needsNewGame = !state || currentId !== scenarioId || gameIndustry !== industry;
+    if (needsNewGame) {
+      newGame(scenarioId, { scenario, industry });
     }
-  }, [hydrated, state, currentId, scenarioId, newGame]);
+  }, [hydrated, industryHydrated, state, currentId, gameIndustry, scenarioId, industry, scenario, newGame]);
 
   // Local step cursor (0..5). Clamped against the engine phase below.
   const [step, setStep] = useState(0);
@@ -73,8 +95,6 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
     state: GameState;
     score: GameScore;
   } | null>(null);
-
-  const scenario = useMemo(() => getScenario(scenarioId), [scenarioId]);
 
   const phase = state?.phase;
   const iteration = state?.iterationNumber;
@@ -243,7 +263,7 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
               type="button"
               onClick={() => {
                 replayTutorial();
-                newGame(scenarioId);
+                newGame(scenarioId, { scenario: sc, industry });
                 setStep(STEP_INDEX.Plan);
                 setSnapshot(null);
               }}
