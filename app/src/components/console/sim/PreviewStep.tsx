@@ -13,6 +13,8 @@ import {
 import { StepHeader } from './StepHeader';
 import { DIMENSIONS } from './dimensions';
 import { previewForecast, projectIteration, type Direction } from './projection';
+import { useCalibrationStore } from '@/store/calibrationStore';
+import { PredictionCard } from './PredictionCard';
 
 /**
  * STEP 2 · PREVIEW: projected consequences BEFORE committing.
@@ -25,6 +27,12 @@ import { previewForecast, projectIteration, type Direction } from './projection'
 export function PreviewStep({ state, score }: { state: GameState; score: GameScore }) {
   const forecast = previewForecast(state);
   const projection = projectIteration(state);
+  const pending = useCalibrationStore((s) => s.pending);
+  const predict = useCalibrationStore((s) => s.predict);
+  const predictions = useCalibrationStore((s) => s.predictions);
+  const hits = useCalibrationStore((s) => s.hits);
+  const calHydrated = useCalibrationStore((s) => s.hasHydrated);
+  const accuracy = calHydrated && predictions > 0 ? Math.round((hits / predictions) * 100) : null;
 
   return (
     <section aria-labelledby="preview-title">
@@ -36,6 +44,17 @@ export function PreviewStep({ state, score }: { state: GameState; score: GameSco
         title={<span id="preview-title">Here&apos;s what will likely happen if you ship this.</span>}
         sub="A projection, not a guarantee. Capacity still rolls within its range on the next step. Review, then decide."
       />
+
+      {projection.committed > 0 && (
+        <PredictionCard
+          committed={projection.committed}
+          lower={projection.lower}
+          upper={projection.upper}
+          value={pending?.iteration === state.iterationNumber ? pending.allShip : null}
+          accuracy={accuracy}
+          onPredict={(allShips) => predict(state.iterationNumber, allShips)}
+        />
+      )}
 
       <div className="mt-[22px] grid grid-cols-2 gap-4 max-[720px]:grid-cols-1">
         {/* projected dimension directions */}

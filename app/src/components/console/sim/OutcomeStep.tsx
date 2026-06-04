@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import type { GameState, IterationOutcome } from '@/engine/types';
 import { cn } from '@/lib/cn';
 import { CheckIcon, DollarIcon, XIcon } from '../Icon';
@@ -7,6 +8,7 @@ import { StepHeader } from './StepHeader';
 import { deriveOutcomeBeats, type OutcomeBeat } from './explain';
 import { useReducedMotion } from './useReducedMotion';
 import { useReveal } from './useReveal';
+import { useCalibrationStore } from '@/store/calibrationStore';
 
 /**
  * STEP 4 · OUTCOME: reveal cause → effect, one beat at a time.
@@ -33,6 +35,23 @@ export function OutcomeStep({
   const beats = deriveOutcomeBeats(outcome, preState, postState.customers);
   // Reveal each beat, then a trailing slot for the revenue banner (+1).
   const shown = useReveal(outcome.iteration, beats.length + 1, 520, reduced);
+
+  // Resolve the player's calibration call for this sprint against reality, once.
+  // After resolve() the pending call is cleared, so a re-render is a no-op; we
+  // keep the resolved call in local state to render the readout.
+  const pending = useCalibrationStore((s) => s.pending);
+  const resolve = useCalibrationStore((s) => s.resolve);
+  const calPredictions = useCalibrationStore((s) => s.predictions);
+  const calHits = useCalibrationStore((s) => s.hits);
+  const [call, setCall] = useState<{ predicted: boolean; actual: boolean } | null>(null);
+  useEffect(() => {
+    if (pending && pending.iteration === outcome.iteration) {
+      const actual = outcome.notDone.length === 0;
+      setCall({ predicted: pending.allShip, actual });
+      resolve(actual);
+    }
+  }, [pending, resolve, outcome.iteration, outcome.notDone.length]);
+  const calAccuracy = calPredictions > 0 ? Math.round((calHits / calPredictions) * 100) : null;
 
   const revenueBefore = preState.economy.revenue;
   const revenueAfter = postState.economy.revenue;
@@ -73,6 +92,39 @@ export function OutcomeStep({
           </>
         )}
       </div>
+
+      {/* calibration: the player's pre-roll call against what actually shipped */}
+      {call && (
+        <div
+          className={cn(
+            'mt-3 flex items-center gap-3 rounded-console-lg border p-[13px_16px]',
+            call.predicted === call.actual ? 'border-good-line bg-good-050' : 'border-bad-line bg-bad-050',
+          )}
+        >
+          <span
+            className={cn(
+              'inline-flex h-7 w-7 flex-none items-center justify-center rounded-full text-white',
+              call.predicted === call.actual ? 'bg-good' : 'bg-bad',
+            )}
+            aria-hidden="true"
+          >
+            {call.predicted === call.actual ? <CheckIcon size={15} /> : <XIcon size={15} />}
+          </span>
+          <span className="text-[13.5px] leading-snug text-ink-2">
+            You called{' '}
+            <b className="font-semibold text-ink">
+              {call.predicted ? 'all of it ships' : 'some would slip'}
+            </b>
+            , and {call.actual ? 'it all shipped' : 'some slipped'}.{' '}
+            {call.predicted === call.actual ? 'Good read.' : 'Off this time.'}
+          </span>
+          {calAccuracy !== null && (
+            <span className="mono ml-auto whitespace-nowrap text-[12px] text-slate">
+              Calibration <b className="font-semibold text-ink">{calAccuracy}%</b>
+            </span>
+          )}
+        </div>
+      )}
 
       {/* beats */}
       <div className="mt-[18px] grid gap-3">

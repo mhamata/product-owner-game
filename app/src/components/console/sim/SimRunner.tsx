@@ -8,6 +8,7 @@ import { getScenarioForIndustry } from '@/scenarios';
 import { useGameStore } from '@/store/gameStore';
 import { useCoachStore } from '@/store/coachStore';
 import { useIndustryStore } from '@/store/industryStore';
+import { useCalibrationStore } from '@/store/calibrationStore';
 import { DEFAULT_INDUSTRY } from '@/curriculum/industries';
 import { Topbar } from '../Topbar';
 import { CircleDotIcon, RestartIcon } from '../Icon';
@@ -56,6 +57,7 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
   const newGame = useGameStore((s) => s.newGame);
   const dispatch = useGameStore((s) => s.dispatch);
   const replayTutorial = useCoachStore((s) => s.replayTutorial);
+  const pendingCall = useCalibrationStore((s) => s.pending);
 
   // The player's home industry re-skins the capstone. Read it hydration-safely:
   // until the industry store rehydrates we use the default, matching SSR + the
@@ -247,6 +249,7 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
     projection,
     hasPendingEvents,
     sprint: game.iterationNumber,
+    hasCalled: projection.committed === 0 || pendingCall?.iteration === game.iterationNumber,
   });
 
   return (
@@ -389,6 +392,7 @@ function dockConfig(
     projection: ReturnType<typeof projectIteration>;
     hasPendingEvents: boolean;
     sprint: number;
+    hasCalled: boolean;
   },
 ): DockState {
   switch (step) {
@@ -402,7 +406,10 @@ function dockConfig(
     case STEP_INDEX.Preview:
       return {
         label: 'Ship it',
-        hint: 'This is a projection. Capacity still rolls on the next step.',
+        hint: ctx.hasCalled
+          ? 'This is a projection. Capacity still rolls on the next step.'
+          : 'Make your call above before you ship.',
+        disabled: !ctx.hasCalled,
         tone: 'accent',
       };
     case STEP_INDEX.Ship:
