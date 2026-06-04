@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { GameState, Scenario } from '@/engine/types';
 import type { GameScore } from '@/engine/score';
 import { useGameStore } from '@/store/gameStore';
@@ -18,6 +18,9 @@ import {
   TargetIcon,
 } from '../Icon';
 import { DIMENSIONS } from './dimensions';
+import { deriveRunCompetencies } from './competency';
+import { useSimEvidenceStore } from '@/store/simEvidenceStore';
+import { COMPETENCIES, type Competency } from '@/curriculum/types';
 
 /**
  * Console-styled end-of-game panel: the final 5-dimension scoreboard, the
@@ -51,6 +54,22 @@ export function SimEndPanel({
   // from a real error (different tone).
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Fold this run's competency read into the simulator-evidence store, once.
+  // The merge keeps the best score per competency, so re-recording is a no-op.
+  const recordRun = useSimEvidenceStore((s) => s.recordRun);
+  const runCompetencies = useMemo(
+    () => deriveRunCompetencies(score, scenario.id),
+    [score, scenario.id],
+  );
+  const sortedRun = useMemo(
+    () =>
+      (Object.entries(runCompetencies) as Array<[Competency, number]>).sort((a, b) => b[1] - a[1]),
+    [runCompetencies],
+  );
+  useEffect(() => {
+    recordRun(runCompetencies);
+  }, [recordRun, runCompetencies]);
 
   async function generateRetro() {
     setLoading(true);
@@ -180,6 +199,43 @@ export function SimEndPanel({
               );
             })}
           </div>
+
+          {/* competency read: what this run demonstrated, saved to /progress */}
+          {sortedRun.length > 0 && (
+            <section className="mt-6 rounded-console-lg border border-line bg-paper p-5">
+              <div className="flex items-center gap-2">
+                <TargetIcon size={15} className="text-accent" />
+                <span className="mono text-[11px] uppercase tracking-[0.12em] text-mute">
+                  Competency read
+                </span>
+              </div>
+              <p className="mt-2 text-[13px] leading-[1.55] text-slate">
+                What this run showed, scored 0 to 100. It is saved to your{' '}
+                <Link
+                  href="/progress"
+                  className="font-semibold text-accent no-underline hover:underline"
+                >
+                  progress
+                </Link>{' '}
+                as evidence from the simulator, separate from skill mastery.
+              </p>
+              <div className="mt-3.5 grid grid-cols-2 gap-2.5 max-[560px]:grid-cols-1">
+                {sortedRun.map(([comp, value]) => (
+                  <div
+                    key={comp}
+                    className="flex items-center justify-between gap-3 rounded-console border border-line bg-panel px-3 py-2"
+                  >
+                    <span className="text-[13px] text-ink-2">
+                      {COMPETENCIES[comp]?.label ?? comp}
+                    </span>
+                    <span className="mono tnum text-[13px] font-semibold text-accent-700">
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* AI retrospective */}
           <section className="mt-6 rounded-console-lg border border-line bg-paper p-5">

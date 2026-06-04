@@ -24,6 +24,7 @@ import {
 import { useLearnStore } from '@/store/learnStore';
 import { Topbar } from './Topbar';
 import { ProgressRing } from './ProgressRing';
+import { SimEvidenceBand } from './SimEvidenceBand';
 import {
   ArrowRightIcon,
   CapIcon,
@@ -387,6 +388,8 @@ export function ProgressView() {
               ))}
             </div>
           </section>
+
+          <SimEvidenceBand />
         </div>
       </main>
     </>
