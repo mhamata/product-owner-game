@@ -15,7 +15,7 @@ export async function generateMetadata({
   const { methodId } = await params;
   const method = getMethod(methodId);
   return {
-    title: method ? `${method.name} — PRAXIS` : 'Method not found',
+    title: method ? `${method.name} | PRAXIS` : 'Method not found',
     description: method?.tldr,
   };
 }

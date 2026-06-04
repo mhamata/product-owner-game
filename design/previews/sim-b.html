@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PRAXIS — Simulation · Direction B · Guided Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     PRAXIS — Simulation redesign · Direction B "Guided Flow"
+     A linear sprint stepper that mirrors PRAXIS's drill-lesson
+     loop: ONE decision per step, just-in-time coachmarks, and
+     consequence previews before commitment. Built on the exact
+     "Console" design system (slate palette, electric indigo,
+     mono metadata, 7px radii, Inter + IBM Plex Mono).
+     ============================================================ */
+
+  :root {
+    /* monochrome slate scale */
+    --ink:        #171717;
+    --ink-2:      #404040;
+    --slate:      #525252;
+    --mute:       #737373;
+    --faint:      #A3A3A3;
+    --line:       #E5E5E5;
+    --line-2:     #EDEDED;
+    --panel:      #FAFAFA;
+    --panel-2:    #F5F5F5;
+    --paper:      #FFFFFF;
+
+    /* one electric accent + semantic state */
+    --accent:     #2563EB;
+    --accent-700: #1D4ED8;
+    --accent-050: #EFF4FF;
+    --accent-100: #DBE6FF;
+    --good:       #16A34A;
+    --good-050:   #ECFDF3;
+    --good-line:  #BBF7D0;
+    --bad:        #DC2626;
+    --bad-050:    #FEF2F2;
+    --bad-line:   #FECACA;
+    --warn:       #B45309;
+    --warn-050:   #FFFBEB;
+    --warn-line:  #FDE68A;
+
+    --radius:     7px;
+    --radius-sm:  5px;
+    --radius-lg:  10px;
+
+    --shadow-sm:  0 1px 2px rgba(15,23,42,0.04);
+    --shadow-md:  0 6px 20px rgba(15,23,42,0.06);
+    --shadow-lg:  0 14px 40px rgba(15,23,42,0.10);
+
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--panel);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    line-height: 1.5;
+  }
+
+  /* faint technical grid */
+  .blueprint {
+    background-image:
+      linear-gradient(rgba(15,23,42,0.030) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,23,42,0.030) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+
+  button { font-family: inherit; cursor: pointer; }
+
+  a:focus-visible,
+  button:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  .mono { font-family: var(--mono); }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ============================================================
+     APP CHROME
+     ============================================================ */
+  .app { min-height: 100vh; display: flex; flex-direction: column; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 30;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: saturate(180%) blur(8px);
+  }
+  .topbar__inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .wordmark {
+    font-family: var(--mono); font-weight: 600; font-size: 15px;
+    letter-spacing: -0.01em; color: var(--ink);
+    text-decoration: none; white-space: nowrap;
+  }
+  .wordmark .dot { color: var(--accent); }
+  .wordmark .v { color: var(--faint); font-size: 11px; font-weight: 500; margin-left: 6px; }
+
+  .topbar__sprint {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--slate);
+    border: 1px solid var(--line); background: var(--paper);
+    padding: 6px 12px; border-radius: 999px;
+  }
+  .topbar__sprint .dotmark { width: 7px; height: 7px; border-radius: 999px; background: var(--accent); flex: none; }
+
+  /* restart button (mockup convenience) */
+  .ghostbtn {
+    appearance: none; border: 1px solid var(--line); background: var(--paper);
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--slate);
+    padding: 7px 12px; border-radius: var(--radius);
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .ghostbtn:hover { border-color: var(--faint); color: var(--ink); }
+  .ghostbtn .ico { width: 13px; height: 13px; }
+
+  /* ============================================================
+     PERSISTENT CONTEXT RAIL — mission + compact scoreboard
+     (always visible across every step)
+     ============================================================ */
+  .context {
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .context__inner {
+    max-width: 1180px; margin: 0 auto;
+    padding: 16px 24px;
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    gap: 24px; align-items: center;
+  }
+
+  /* mission block */
+  .mission { min-width: 0; }
+  .mission__label {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute);
+  }
+  .mission__label .ico { width: 13px; height: 13px; color: var(--accent); flex: none; }
+  .mission__text {
+    margin: 5px 0 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.45;
+  }
+  .mission__text b { color: var(--ink); font-weight: 600; }
+
+  /* unmissable revenue goal progress */
+  .goal { margin-top: 11px; display: flex; align-items: center; gap: 12px; }
+  .goal__track {
+    flex: 1 1 auto; height: 8px; background: var(--line);
+    border-radius: 999px; overflow: hidden; position: relative;
+  }
+  .goal__fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), #3b82f6);
+    border-radius: 999px; width: 48%;
+    transition: width .8s cubic-bezier(.2,.7,.2,1);
+  }
+  .goal__nums {
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .goal__nums small { color: var(--faint); font-weight: 500; }
+
+  /* compact scoreboard : 5 gauges */
+  .board {
+    display: flex; gap: 8px; flex: none;
+  }
+  .gauge {
+    width: 78px; border: 1px solid var(--line); background: var(--panel);
+    border-radius: var(--radius); padding: 9px 8px 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    text-align: center;
+  }
+  .gauge__ico { width: 15px; height: 15px; color: var(--slate); }
+  .gauge__val {
+    font-family: var(--mono); font-size: 15px; font-weight: 600;
+    color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1;
+    display: inline-flex; align-items: baseline; gap: 3px;
+  }
+  .gauge__delta {
+    font-family: var(--mono); font-size: 9.5px; font-weight: 600;
+    line-height: 1; opacity: 0; transition: opacity .4s ease;
+  }
+  .gauge__delta.show { opacity: 1; }
+  .gauge__delta.up { color: var(--good); }
+  .gauge__delta.down { color: var(--bad); }
+  .gauge__delta.flat { color: var(--faint); }
+  .gauge__bar { width: 100%; height: 4px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .gauge__barfill { height: 100%; border-radius: 999px; background: var(--accent); transition: width .7s cubic-bezier(.2,.7,.2,1); }
+  .gauge__k {
+    font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--mute); line-height: 1.2;
+  }
+
+  /* ============================================================
+     STEPPER PROGRESS
+     ============================================================ */
+  .stepper {
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+    position: sticky; top: 49px; z-index: 20;
+  }
+  .stepper__inner {
+    max-width: 1180px; margin: 0 auto; padding: 14px 24px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .step {
+    display: inline-flex; align-items: center; gap: 9px;
+    flex: 1 1 0; min-width: 0;
+  }
+  .step__node {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.02em;
+    color: var(--faint); min-width: 0; white-space: nowrap;
+  }
+  .step__dot {
+    width: 24px; height: 24px; border-radius: 999px; flex: none;
+    border: 1.5px solid var(--line); background: var(--paper);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--faint);
+    transition: all .25s ease;
+  }
+  .step__dot .ico { width: 12px; height: 12px; display: none; }
+  .step__name { overflow: hidden; text-overflow: ellipsis; }
+  .step__line {
+    flex: 1 1 auto; height: 1.5px; background: var(--line); border-radius: 999px;
+    transition: background .35s ease; min-width: 8px;
+  }
+  /* done */
+  .step.is-done .step__dot { background: var(--good); border-color: var(--good); color: #fff; }
+  .step.is-done .step__dot .num { display: none; }
+  .step.is-done .step__dot .ico { display: block; }
+  .step.is-done .step__node { color: var(--slate); }
+  .step.is-done + .step .step__line,
+  .step.is-done .step__line { background: var(--good); }
+  /* current */
+  .step.is-current .step__dot { border-color: var(--accent); color: var(--accent); background: var(--accent-050); box-shadow: 0 0 0 3px var(--accent-050); }
+  .step.is-current .step__node { color: var(--ink); font-weight: 500; }
+
+  /* ============================================================
+     STEP STAGE
+     ============================================================ */
+  main { flex: 1 1 auto; }
+  .stage {
+    max-width: 880px; margin: 0 auto; padding: 30px 24px 160px;
+  }
+  .panel { display: none; }
+  .panel.is-active { display: block; animation: panelIn .34s cubic-bezier(.2,.8,.2,1); }
+  @keyframes panelIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-eyebrow { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+  .step-eyebrow .pill {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent);
+    background: var(--accent-050); border: 1px solid var(--accent-100);
+    padding: 3px 8px; border-radius: var(--radius-sm);
+  }
+  .step-title {
+    margin: 14px 0 0; font-size: 25px; font-weight: 800;
+    letter-spacing: -0.02em; line-height: 1.15; color: var(--ink);
+  }
+  .step-sub { margin: 8px 0 0; color: var(--slate); font-size: 14.5px; max-width: 60ch; }
+
+  /* ============================================================
+     COACHMARK (just-in-time teaching)
+     ============================================================ */
+  .coach {
+    margin-top: 18px;
+    display: flex; gap: 12px; align-items: flex-start;
+    border: 1px solid var(--accent-100);
+    background: linear-gradient(180deg, var(--accent-050), #fff 140%);
+    border-radius: var(--radius-lg); padding: 13px 15px;
+    position: relative;
+  }
+  .coach__icon {
+    width: 28px; height: 28px; border-radius: 999px; flex: none;
+    background: var(--accent); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .coach__icon .ico { width: 15px; height: 15px; }
+  .coach__body { min-width: 0; }
+  .coach__tag {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent); font-weight: 600;
+  }
+  .coach__text { margin: 3px 0 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+  .coach__text b { color: var(--ink); font-weight: 600; }
+  .coach__dismiss {
+    appearance: none; border: 0; background: transparent; color: var(--faint);
+    width: 24px; height: 24px; border-radius: var(--radius-sm); flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin: -4px -6px -4px 0; transition: color .15s ease, background .15s ease;
+  }
+  .coach__dismiss:hover { color: var(--slate); background: rgba(37,99,235,0.08); }
+  .coach__dismiss .ico { width: 14px; height: 14px; }
+
+  /* ============================================================
+     PLAN STEP — capacity meter + backlog picker + forecast
+     ============================================================ */
+  .planlayout { margin-top: 22px; display: grid; grid-template-columns: 1fr; gap: 18px; }
+
+  /* capacity panel */
+  .capacity {
+    border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius-lg); padding: 18px;
+  }
+  .capacity__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .capacity__title {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--mute);
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .capacity__title .ico { width: 14px; height: 14px; color: var(--slate); }
+  .capacity__range {
+    font-family: var(--mono); font-size: 13px; color: var(--ink); font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .capacity__range b { color: var(--accent); }
+
+  /* the range bar : committed fill within a 0..20 scale, with a shaded range band */
+  .capbar {
+    margin-top: 16px; position: relative; height: 38px;
+  }
+  .capbar__scale {
+    position: absolute; left: 0; right: 0; top: 14px; height: 10px;
+    background: var(--line-2); border-radius: 999px;
+  }
+  .capbar__band {
+    position: absolute; top: 14px; height: 10px;
+    background: repeating-linear-gradient(45deg, var(--accent-100), var(--accent-100) 5px, var(--accent-050) 5px, var(--accent-050) 10px);
+    border-left: 1.5px solid var(--accent); border-right: 1.5px solid var(--accent);
+    border-radius: 2px;
+  }
+  .capbar__fill {
+    position: absolute; top: 14px; height: 10px; left: 0;
+    background: var(--accent); border-radius: 999px; width: 0;
+    transition: width .5s cubic-bezier(.2,.7,.2,1), background .25s ease;
+  }
+  .capbar__fill.over { background: var(--bad); }
+  /* likely marker */
+  .capbar__tick {
+    position: absolute; top: 6px; width: 1.5px; height: 26px; background: var(--slate);
+  }
+  .capbar__ticklabel {
+    position: absolute; top: -2px; transform: translateX(-50%);
+    font-family: var(--mono); font-size: 9.5px; color: var(--slate); white-space: nowrap;
+  }
+  .capbar__committed {
+    position: absolute; top: 28px; transform: translateX(-50%);
+    font-family: var(--mono); font-size: 9.5px; font-weight: 600; color: var(--accent);
+    white-space: nowrap; transition: left .5s cubic-bezier(.2,.7,.2,1), color .25s ease;
+  }
+  .capbar__committed.over { color: var(--bad); }
+
+  /* capacity "why" breakdown */
+  .why {
+    margin-top: 18px; padding-top: 15px; border-top: 1px dashed var(--line);
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .why__lead {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--mute); align-self: center; margin-right: 2px;
+  }
+  .chiprow {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 11.5px; color: var(--ink-2);
+    border: 1px solid var(--line); background: var(--panel);
+    padding: 4px 9px; border-radius: 999px; font-variant-numeric: tabular-nums;
+  }
+  .chiprow .ico { width: 12px; height: 12px; flex: none; }
+  .chiprow.neg { color: var(--bad); border-color: var(--bad-line); background: var(--bad-050); }
+  .chiprow.base { color: var(--ink); }
+
+  /* backlog list */
+  .backlog__head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; margin-bottom: 2px;
+  }
+  .backlog__title {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--mute);
+  }
+  .backlog__hint { font-size: 12.5px; color: var(--faint); }
+
+  .item {
+    width: 100%; text-align: left; display: flex; align-items: flex-start; gap: 13px;
+    border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius); padding: 13px 14px; margin-top: 9px;
+    transition: border-color .14s ease, background .14s ease, box-shadow .14s ease, transform .08s ease;
+  }
+  .item:hover { border-color: var(--faint); }
+  .item:active { transform: translateY(1px); }
+  .item__check {
+    width: 22px; height: 22px; border-radius: var(--radius-sm); flex: none; margin-top: 1px;
+    border: 1.5px solid var(--line); background: var(--paper);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; transition: inherit;
+  }
+  .item__check .ico { width: 14px; height: 14px; opacity: 0; transition: opacity .12s ease; }
+  .item__main { flex: 1 1 auto; min-width: 0; }
+  .item__name {
+    font-size: 14.5px; font-weight: 600; color: var(--ink); line-height: 1.3;
+    display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  }
+  .item__pts {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: var(--slate); background: var(--panel-2); border: 1px solid var(--line);
+    padding: 2px 7px; border-radius: 999px; white-space: nowrap;
+  }
+  .item__impact {
+    margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px 10px;
+  }
+  .imp {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.02em;
+    color: var(--mute);
+  }
+  .imp .ico { width: 12px; height: 12px; flex: none; }
+  .imp.good { color: var(--good); }
+  .imp.bad { color: var(--bad); }
+  .imp.accent { color: var(--accent); }
+  .item__tagline {
+    margin-top: 7px; font-size: 12px; color: var(--faint); font-style: italic;
+  }
+  /* the special "Ship a Release" item gets a subtle accent identity */
+  .item.is-release { border-color: var(--accent-100); background: linear-gradient(180deg, var(--accent-050), #fff 70%); }
+  .item.is-release .item__name { color: var(--accent-700); }
+
+  /* selected */
+  .item[aria-pressed="true"] {
+    border-color: var(--accent); background: var(--accent-050);
+    box-shadow: 0 0 0 1px var(--accent) inset;
+  }
+  .item[aria-pressed="true"] .item__check { background: var(--accent); border-color: var(--accent); }
+  .item[aria-pressed="true"] .item__check .ico { opacity: 1; }
+  .item.is-release[aria-pressed="true"] { background: var(--accent-050); }
+
+  /* over-capacity warning state on an item */
+  .item.warn-over { border-color: var(--warn-line); }
+
+  /* ============================================================
+     LIVE FORECAST STRIP (sticky within plan)
+     ============================================================ */
+  .forecast {
+    margin-top: 4px;
+    border: 1px solid var(--line); background: var(--panel);
+    border-radius: var(--radius-lg); padding: 14px 16px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .forecast__label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--mute);
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .forecast__label .ico { width: 14px; height: 14px; color: var(--accent); }
+  .forecast__items { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1 1 auto; }
+  .fc {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 12px; color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .fc .ico { width: 13px; height: 13px; flex: none; }
+  .fc b { color: var(--ink); font-weight: 600; }
+  .fc.good { color: var(--good); }
+  .fc.bad { color: var(--bad); }
+  .fc__sep { width: 1px; height: 14px; background: var(--line); }
+
+  /* ============================================================
+     PREVIEW STEP — projected consequences before commit
+     ============================================================ */
+  .preview-grid {
+    margin-top: 22px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .pcard {
+    border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius-lg); padding: 16px;
+  }
+  .pcard__title {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--mute);
+    display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+  }
+  .pcard__title .ico { width: 14px; height: 14px; color: var(--slate); }
+
+  /* projected dimension deltas */
+  .pdim {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--line-2);
+  }
+  .pdim:last-child { border-bottom: 0; }
+  .pdim__name { font-size: 13.5px; color: var(--ink-2); width: 116px; flex: none; }
+  .pdim__track { flex: 1 1 auto; height: 6px; background: var(--line); border-radius: 999px; position: relative; overflow: hidden; }
+  .pdim__base { position: absolute; top: 0; height: 100%; background: var(--faint); border-radius: 999px; }
+  .pdim__gain { position: absolute; top: 0; height: 100%; background: var(--good); border-radius: 999px; transition: width .6s ease, left .6s ease; }
+  .pdim__gain.neg { background: var(--bad); }
+  .pdim__delta {
+    font-family: var(--mono); font-size: 12px; font-weight: 600; width: 42px; text-align: right;
+    flex: none; font-variant-numeric: tabular-nums;
+  }
+  .pdim__delta.up { color: var(--good); }
+  .pdim__delta.down { color: var(--bad); }
+  .pdim__delta.flat { color: var(--faint); }
+
+  /* character reactions in preview */
+  .react {
+    display: flex; align-items: flex-start; gap: 11px;
+    padding: 11px 0; border-bottom: 1px solid var(--line-2);
+  }
+  .react:last-child { border-bottom: 0; }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 999px; flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 13px; font-weight: 600; color: #fff;
+  }
+  .react__main { flex: 1 1 auto; min-width: 0; }
+  .react__top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .react__name { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .react__delta {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 3px;
+  }
+  .react__delta .ico { width: 11px; height: 11px; }
+  .react__delta.up { color: var(--good); }
+  .react__delta.down { color: var(--bad); }
+  .react__delta.flat { color: var(--faint); }
+  .react__why { margin: 3px 0 0; font-size: 12px; color: var(--mute); line-height: 1.45; }
+
+  .preview-note {
+    margin-top: 16px; display: flex; gap: 10px; align-items: flex-start;
+    font-size: 13px; color: var(--slate);
+    border: 1px dashed var(--line); border-radius: var(--radius); padding: 12px 14px;
+    background: var(--panel);
+  }
+  .preview-note .ico { width: 15px; height: 15px; color: var(--mute); flex: none; margin-top: 1px; }
+
+  /* ============================================================
+     SHIP STEP — the capacity "roll" animation
+     ============================================================ */
+  .ship-stage { margin-top: 30px; text-align: center; }
+  .roll {
+    margin: 0 auto; max-width: 460px;
+    border: 1px solid var(--line); background: var(--paper);
+    border-radius: 14px; padding: 28px 24px; box-shadow: var(--shadow-md);
+  }
+  .roll__label {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--mute);
+  }
+  .roll__num {
+    margin: 10px 0 2px; font-family: var(--mono); font-size: 64px; font-weight: 600;
+    color: var(--accent); line-height: 1; font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .roll__range { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+  .roll__track {
+    margin: 22px 0 0; height: 10px; background: var(--line-2); border-radius: 999px; position: relative; overflow: hidden;
+  }
+  .roll__band {
+    position: absolute; top: 0; height: 100%;
+    background: repeating-linear-gradient(45deg, var(--accent-100), var(--accent-100) 5px, var(--accent-050) 5px, var(--accent-050) 10px);
+  }
+  .roll__fill { position: absolute; top: 0; left: 0; height: 100%; width: 0; background: var(--accent); border-radius: 999px; transition: width .9s cubic-bezier(.3,.8,.3,1); }
+  .roll__result {
+    margin-top: 24px; display: grid; gap: 9px; text-align: left;
+    opacity: 0; transition: opacity .4s ease;
+  }
+  .roll__result.show { opacity: 1; }
+  .fitrow {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13.5px; color: var(--ink-2);
+    border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px;
+  }
+  .fitrow .ico { width: 16px; height: 16px; flex: none; }
+  .fitrow.fit { border-color: var(--good-line); background: var(--good-050); }
+  .fitrow.fit .ico { color: var(--good); }
+  .fitrow.nofit { border-color: var(--bad-line); background: var(--bad-050); }
+  .fitrow.nofit .ico { color: var(--bad); }
+  .fitrow b { color: var(--ink); font-weight: 600; }
+  .fitrow .pts { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--mute); }
+
+  /* ============================================================
+     OUTCOME STEP — cause -> effect, one beat at a time
+     ============================================================ */
+  .outcome-summary {
+    margin-top: 20px;
+    border: 1px solid var(--line); background: var(--panel);
+    border-radius: var(--radius-lg); padding: 14px 16px;
+    display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center;
+  }
+  .osum {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--mono); font-size: 12px; color: var(--ink-2);
+  }
+  .osum .ico { width: 14px; height: 14px; flex: none; }
+  .osum.good .ico { color: var(--good); }
+  .osum.bad .ico { color: var(--bad); }
+  .osum b { color: var(--ink); font-weight: 600; }
+
+  .beats { margin-top: 18px; display: grid; gap: 12px; }
+  .beat {
+    border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius-lg); padding: 15px 16px;
+    display: flex; gap: 13px; align-items: flex-start;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .4s ease, transform .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .beat.show { opacity: 1; transform: translateY(0); }
+  .beat__icon {
+    width: 32px; height: 32px; border-radius: 999px; flex: none;
+    display: inline-flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .beat__icon.good { background: var(--good-050); border: 1px solid var(--good-line); }
+  .beat__icon.bad { background: var(--bad-050); border: 1px solid var(--bad-line); }
+  .beat__main { flex: 1 1 auto; min-width: 0; }
+  .beat__effect {
+    font-size: 14.5px; font-weight: 600; color: var(--ink); line-height: 1.35;
+    display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  }
+  .beat__delta {
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+  }
+  .beat__delta.up { color: var(--good); background: var(--good-050); border: 1px solid var(--good-line); }
+  .beat__delta.down { color: var(--bad); background: var(--bad-050); border: 1px solid var(--bad-line); }
+  .beat__because { margin: 6px 0 0; font-size: 13px; color: var(--slate); line-height: 1.5; }
+  .beat__because .lead {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--mute); margin-right: 6px;
+  }
+
+  .revchange {
+    margin-top: 16px;
+    border: 1px solid var(--good-line); background: var(--good-050);
+    border-radius: var(--radius-lg); padding: 15px 16px;
+    display: flex; align-items: center; gap: 12px;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .4s ease, transform .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .revchange.show { opacity: 1; transform: translateY(0); }
+  .revchange__ico { width: 32px; height: 32px; border-radius: 999px; background: var(--good); color: #fff; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .revchange__ico .ico { width: 17px; height: 17px; }
+  .revchange__txt { font-size: 14px; color: var(--ink-2); }
+  .revchange__txt b { color: var(--ink); font-weight: 700; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .revchange__big {
+    margin-left: auto; font-family: var(--mono); font-weight: 600; font-size: 18px;
+    color: var(--good); font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+
+  /* ============================================================
+     EVENT STEP — telegraphed dilemma
+     ============================================================ */
+  .event-card {
+    margin-top: 22px;
+    border: 1px solid var(--warn-line); background: var(--warn-050);
+    border-radius: var(--radius-lg); padding: 18px;
+  }
+  .event-card__head { display: flex; gap: 12px; align-items: flex-start; }
+  .event-card__icon {
+    width: 36px; height: 36px; border-radius: 999px; flex: none;
+    background: var(--warn); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .event-card__icon .ico { width: 18px; height: 18px; }
+  .event-card__tag {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--warn); font-weight: 600;
+  }
+  .event-card__quote { margin: 4px 0 0; font-size: 16px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+  .event-card__who { margin: 6px 0 0; font-size: 13px; color: var(--slate); }
+
+  .choices { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .choice {
+    text-align: left; border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius-lg); padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+    transition: border-color .14s ease, box-shadow .14s ease, transform .08s ease;
+  }
+  .choice:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .choice:active { transform: translateY(0); }
+  .choice__label { font-size: 15px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+  .choice__effects { display: grid; gap: 7px; }
+  .choice__divider { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
+  .ce { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+  .ce .ico { width: 13px; height: 13px; flex: none; }
+  .ce.good { color: var(--good); }
+  .ce.bad { color: var(--bad); }
+  .choice[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; background: var(--accent-050); }
+
+  /* ============================================================
+     DEBRIEF STEP — full scoreboard + learning
+     ============================================================ */
+  .debrief-board {
+    margin-top: 22px; display: grid;
+    grid-template-columns: repeat(5, 1fr); gap: 12px;
+  }
+  .dgauge {
+    border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius-lg); padding: 16px 14px;
+    display: flex; flex-direction: column; gap: 11px;
+  }
+  .dgauge__head { display: flex; align-items: center; gap: 8px; }
+  .dgauge__ico { width: 16px; height: 16px; color: var(--slate); flex: none; }
+  .dgauge__k { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--mute); line-height: 1.25; }
+  .dgauge__val {
+    font-family: var(--mono); font-size: 28px; font-weight: 600; color: var(--ink);
+    line-height: 1; font-variant-numeric: tabular-nums;
+    display: flex; align-items: baseline; gap: 7px;
+  }
+  .dgauge__delta { font-family: var(--mono); font-size: 12px; font-weight: 600; }
+  .dgauge__delta.up { color: var(--good); }
+  .dgauge__delta.down { color: var(--bad); }
+  .dgauge__delta.flat { color: var(--faint); }
+  .dgauge__bar { height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .dgauge__barfill { height: 100%; border-radius: 999px; background: var(--accent); width: 0; transition: width .8s cubic-bezier(.2,.7,.2,1); }
+
+  .learned {
+    margin-top: 20px; display: flex; gap: 13px; align-items: flex-start;
+    border: 1px solid var(--accent-100);
+    background: linear-gradient(180deg, var(--accent-050), #fff 140%);
+    border-radius: var(--radius-lg); padding: 16px 18px;
+  }
+  .learned__icon { width: 32px; height: 32px; border-radius: 999px; background: var(--accent); color: #fff; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .learned__icon .ico { width: 17px; height: 17px; }
+  .learned__tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+  .learned__text { margin: 4px 0 0; font-size: 14.5px; color: var(--ink); line-height: 1.5; }
+
+  /* ============================================================
+     FIXED ACTION DOCK
+     ============================================================ */
+  .dock {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(250,250,250,0) 0%, var(--panel) 38%);
+  }
+  .dock__inner {
+    max-width: 880px; margin: 0 auto; padding: 18px 24px 20px;
+    display: flex; align-items: center; gap: 12px;
+    pointer-events: auto;
+  }
+  .dock__back {
+    appearance: none; border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius);
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate);
+    padding: 14px 18px; display: inline-flex; align-items: center; gap: 8px;
+    transition: border-color .15s ease, color .15s ease, background .15s ease;
+    white-space: nowrap;
+  }
+  .dock__back:hover { border-color: var(--faint); color: var(--ink); }
+  .dock__back .ico { width: 15px; height: 15px; }
+  .dock__back[hidden] { display: none; }
+
+  .dock__hint {
+    flex: 1 1 auto; min-width: 0; font-size: 12.5px; color: var(--mute);
+    text-align: center; padding: 0 8px;
+  }
+  .dock__hint b { color: var(--slate); font-weight: 600; }
+
+  .primary {
+    flex: none;
+    appearance: none; border: 0; border-radius: var(--radius);
+    font-family: var(--mono); font-size: 14px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: #fff;
+    background: var(--accent); padding: 15px 22px; box-shadow: var(--shadow-md);
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    transition: background .15s ease, transform .07s ease, box-shadow .15s ease, opacity .15s ease;
+    white-space: nowrap;
+  }
+  .primary .ico { width: 16px; height: 16px; }
+  .primary:hover:not(:disabled) { background: var(--accent-700); }
+  .primary:active:not(:disabled) { transform: translateY(1px); box-shadow: var(--shadow-sm); }
+  .primary:disabled { background: var(--panel-2); color: var(--faint); box-shadow: none; cursor: not-allowed; }
+  .primary.is-good { background: var(--good); }
+  .primary.is-good:hover:not(:disabled) { background: #15803D; }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 1080px) {
+    .context__inner { grid-template-columns: 1fr; gap: 16px; }
+    .board { width: 100%; justify-content: space-between; }
+    .gauge { flex: 1 1 0; width: auto; }
+  }
+
+  @media (max-width: 720px) {
+    .preview-grid { grid-template-columns: 1fr; }
+    .choices { grid-template-columns: 1fr; }
+    .debrief-board { grid-template-columns: repeat(2, 1fr); }
+    .stepper__inner { gap: 2px; overflow-x: auto; padding: 12px 16px; }
+    .step__name { display: none; }
+    .step { flex: 0 0 auto; }
+    .step__line { min-width: 14px; flex-basis: 14px; }
+  }
+
+  @media (max-width: 560px) {
+    .topbar__inner { padding: 10px 16px; }
+    .wordmark .v { display: none; }
+    .topbar__sprint { font-size: 10px; padding: 5px 10px; }
+    .context__inner { padding: 14px 16px; }
+    .stage { padding: 22px 16px 150px; }
+    .dock__inner { padding: 14px 16px 16px; }
+    .dock__hint { display: none; }
+    .primary { flex: 1 1 auto; padding: 14px 16px; }
+    .step-title { font-size: 21px; }
+    .board { flex-wrap: wrap; gap: 6px; }
+    .gauge { flex: 1 1 28%; min-width: 0; }
+    .gauge__k { font-size: 8px; }
+    .roll__num { font-size: 52px; }
+    .debrief-board { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.001ms !important;
+      animation-duration: 0.001ms !important;
+    }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body class="blueprint">
+<div class="app">
+
+  <!-- ═══════════════ TOP UTILITY BAR ═══════════════ -->
+  <div class="topbar">
+    <div class="topbar__inner">
+      <a href="#" class="wordmark" aria-label="PRAXIS home">praxis<span class="dot">.</span><span class="v">v0 · simulation</span></a>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span class="topbar__sprint"><span class="dotmark" aria-hidden="true"></span>Sprint 3 / 6</span>
+        <button class="ghostbtn" id="restartBtn" type="button" aria-label="Restart this sprint walkthrough">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          Restart
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PERSISTENT CONTEXT RAIL ═══════════════ -->
+  <div class="context">
+    <div class="context__inner">
+      <!-- mission -->
+      <div class="mission">
+        <span class="mission__label">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.5" fill="currentColor"/></svg>
+          Mission
+        </span>
+        <p class="mission__text"><b>B2B SaaS · Team-collaboration product.</b> Reach <b>$5,000 MRR</b> and keep customers + team healthy by Sprint 6.</p>
+        <div class="goal" aria-label="Revenue progress: $2,400 of $5,000 MRR">
+          <span class="eyebrow" style="white-space:nowrap;">MRR</span>
+          <div class="goal__track"><div class="goal__fill" id="goalFill"></div></div>
+          <span class="goal__nums" id="goalNums">$2,400 <small>/ $5,000</small></span>
+        </div>
+      </div>
+
+      <!-- compact scoreboard : 5 gauges -->
+      <div class="board" id="board" role="group" aria-label="Live scoreboard, five dimensions out of 100">
+        <!-- gauges injected/animated by JS; static fallback below -->
+        <div class="gauge" data-dim="value">
+          <svg class="gauge__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+          <span class="gauge__val">58<span class="gauge__delta" data-delta="value">+0</span></span>
+          <div class="gauge__bar"><div class="gauge__barfill" data-bar="value" style="width:58%"></div></div>
+          <span class="gauge__k">Value<br>Delivered</span>
+        </div>
+        <div class="gauge" data-dim="loyalty">
+          <svg class="gauge__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1Z"/></svg>
+          <span class="gauge__val">62<span class="gauge__delta" data-delta="loyalty">+0</span></span>
+          <div class="gauge__bar"><div class="gauge__barfill" data-bar="loyalty" style="width:62%"></div></div>
+          <span class="gauge__k">Customer<br>Loyalty</span>
+        </div>
+        <div class="gauge" data-dim="team">
+          <svg class="gauge__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg>
+          <span class="gauge__val">70<span class="gauge__delta" data-delta="team">+0</span></span>
+          <div class="gauge__bar"><div class="gauge__barfill" data-bar="team" style="width:70%"></div></div>
+          <span class="gauge__k">Team<br>Health</span>
+        </div>
+        <div class="gauge" data-dim="trust">
+          <svg class="gauge__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5Z"/></svg>
+          <span class="gauge__val">55<span class="gauge__delta" data-delta="trust">+0</span></span>
+          <div class="gauge__bar"><div class="gauge__barfill" data-bar="trust" style="width:55%"></div></div>
+          <span class="gauge__k">Stakeholder<br>Trust</span>
+        </div>
+        <div class="gauge" data-dim="quality">
+          <svg class="gauge__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.5 5.1 5.6.8-4 4 1 5.6L12 21l-5 2.6 1-5.6-4-4 5.6-.8Z"/></svg>
+          <span class="gauge__val">64<span class="gauge__delta" data-delta="quality">+0</span></span>
+          <div class="gauge__bar"><div class="gauge__barfill" data-bar="quality" style="width:64%"></div></div>
+          <span class="gauge__k">Product<br>Quality</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ STEPPER PROGRESS ═══════════════ -->
+  <div class="stepper">
+    <nav class="stepper__inner" id="stepper" aria-label="Sprint progress">
+      <span class="step is-current" data-step="0">
+        <span class="step__node"><span class="step__dot"><span class="num">1</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step__name">Plan</span></span>
+      </span>
+      <span class="step__line" aria-hidden="true"></span>
+      <span class="step" data-step="1">
+        <span class="step__node"><span class="step__dot"><span class="num">2</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step__name">Preview</span></span>
+      </span>
+      <span class="step__line" aria-hidden="true"></span>
+      <span class="step" data-step="2">
+        <span class="step__node"><span class="step__dot"><span class="num">3</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step__name">Ship</span></span>
+      </span>
+      <span class="step__line" aria-hidden="true"></span>
+      <span class="step" data-step="3">
+        <span class="step__node"><span class="step__dot"><span class="num">4</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step__name">Outcome</span></span>
+      </span>
+      <span class="step__line" aria-hidden="true"></span>
+      <span class="step" data-step="4">
+        <span class="step__node"><span class="step__dot"><span class="num">5</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step__name">Event</span></span>
+      </span>
+      <span class="step__line" aria-hidden="true"></span>
+      <span class="step" data-step="5">
+        <span class="step__node"><span class="step__dot"><span class="num">6</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></span><span class="step__name">Debrief</span></span>
+      </span>
+    </nav>
+  </div>
+
+  <main>
+    <div class="stage" id="stage">
+
+      <!-- ════════════ STEP 1 · PLAN ════════════ -->
+      <section class="panel is-active" id="panel-0" aria-labelledby="t0">
+        <div class="step-eyebrow">
+          <span class="pill">Step 1 of 6 · Plan</span>
+          <span class="eyebrow">Commit your sprint</span>
+        </div>
+        <h1 class="step-title" id="t0">What will the team build this sprint?</h1>
+        <p class="step-sub">Pick the work you want to commit. Watch capacity and the live forecast as you go — you can't build everything.</p>
+
+        <!-- coachmark : capacity -->
+        <div class="coach" id="coach-capacity" role="note">
+          <span class="coach__icon" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1h6c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg></span>
+          <div class="coach__body">
+            <span class="coach__tag">Coachmark · Capacity</span>
+            <p class="coach__text">Your team's capacity is a <b>range, not a promise</b> — you can't build everything. Commit close to the likely line and leave a little slack.</p>
+          </div>
+          <button class="coach__dismiss" type="button" aria-label="Dismiss coachmark"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+
+        <div class="planlayout">
+          <!-- capacity panel -->
+          <div class="capacity">
+            <div class="capacity__head">
+              <span class="capacity__title"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12A10 10 0 1 1 12 2"/><path d="M12 12 19 5"/></svg>Capacity this sprint</span>
+              <span class="capacity__range">12–18 pts · likely <b>15</b></span>
+            </div>
+
+            <div class="capbar" aria-hidden="true">
+              <div class="capbar__scale"></div>
+              <!-- band 12..18 on a 0..20 scale = left 60%, width 30% -->
+              <div class="capbar__band" style="left:60%; width:30%;"></div>
+              <!-- likely tick at 15/20 = 75% -->
+              <div class="capbar__tick" style="left:75%;"></div>
+              <div class="capbar__ticklabel" style="left:75%;">likely 15</div>
+              <div class="capbar__fill" id="capFill"></div>
+              <div class="capbar__committed" id="capCommitted" style="left:0%;">0 pts</div>
+            </div>
+
+            <div class="why">
+              <span class="why__lead">Why</span>
+              <span class="chiprow base"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>Base 18</span>
+              <span class="chiprow neg"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg>2 · onboarding a new hire</span>
+              <span class="chiprow neg"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg>1 · tech debt (35)</span>
+            </div>
+          </div>
+
+          <!-- backlog -->
+          <div>
+            <div class="backlog__head">
+              <span class="backlog__title">Backlog</span>
+              <span class="backlog__hint">Tap to add · effort &amp; telegraphed impact shown</span>
+            </div>
+            <div id="backlog" role="group" aria-label="Backlog items — tap to add to the sprint">
+
+              <button class="item" type="button" data-id="onboard" data-pts="5" aria-pressed="false">
+                <span class="item__check" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                <span class="item__main">
+                  <span class="item__name">Onboarding checklist <span class="item__pts">5 pts</span></span>
+                  <span class="item__impact">
+                    <span class="imp good"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg>Priya happiness</span>
+                    <span class="imp good"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>small revenue</span>
+                  </span>
+                  <span class="item__tagline">A gentle first-run experience for trialers.</span>
+                </span>
+              </button>
+
+              <button class="item" type="button" data-id="dash" data-pts="13" aria-pressed="false">
+                <span class="item__check" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                <span class="item__main">
+                  <span class="item__name">Custom dashboards <span class="item__pts">13 pts</span></span>
+                  <span class="item__impact">
+                    <span class="imp good"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left:-9px"><polyline points="6 15 12 9 18 15"/></svg>Maya happiness</span>
+                    <span class="imp good"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>revenue</span>
+                    <span class="imp accent"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>big bet</span>
+                  </span>
+                  <span class="item__tagline">High upside, but it eats most of the sprint.</span>
+                </span>
+              </button>
+
+              <button class="item" type="button" data-id="sso" data-pts="8" aria-pressed="false">
+                <span class="item__check" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                <span class="item__main">
+                  <span class="item__name">SSO &amp; security <span class="item__pts">8 pts</span></span>
+                  <span class="item__impact">
+                    <span class="imp good"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg>VP Growth trust</span>
+                    <span class="imp accent"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>unlocks enterprise</span>
+                  </span>
+                  <span class="item__tagline">The gate to bigger, contract-sized deals.</span>
+                </span>
+              </button>
+
+              <button class="item" type="button" data-id="perf" data-pts="5" aria-pressed="false">
+                <span class="item__check" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                <span class="item__main">
+                  <span class="item__name">Performance hardening <span class="item__pts">5 pts</span></span>
+                  <span class="item__impact">
+                    <span class="imp good"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>tech debt</span>
+                    <span class="imp good"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg>Devon happiness</span>
+                    <span class="imp"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 6 4-4 4 4"/><path d="M12 2v10.3"/><path d="M2.6 12a10 10 0 0 0 18.8 0"/></svg>engineering</span>
+                  </span>
+                  <span class="item__tagline">Pays down the debt that's slowing you down.</span>
+                </span>
+              </button>
+
+              <button class="item is-release" type="button" data-id="release" data-pts="3" aria-pressed="false">
+                <span class="item__check" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+                <span class="item__main">
+                  <span class="item__name">Ship a Release <span class="item__pts">3 pts</span></span>
+                  <span class="item__impact">
+                    <span class="imp accent"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5 3 21l4.5-1.5"/><path d="M14 4s4 0 6 2 2 6 2 6l-7 7-4-1-3-3-1-4Z"/><circle cx="15" cy="9" r="1.6"/></svg>turns finished work into revenue</span>
+                  </span>
+                  <span class="item__tagline">Finished features only earn money when you release.</span>
+                </span>
+              </button>
+
+            </div>
+
+            <!-- live forecast -->
+            <div class="forecast" id="forecast" role="status" aria-live="polite" style="margin-top:14px;">
+              <span class="forecast__label"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><polyline points="19 7 13 13 9 9 4 14"/></svg>Live forecast</span>
+              <div class="forecast__items" id="forecastItems">
+                <span class="fc" id="fcPts"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><b>0</b> / 15 pts</span>
+                <span class="fc__sep" aria-hidden="true"></span>
+                <span class="fc" id="fcRev"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>add a Release to earn</span>
+                <span class="fc__sep" aria-hidden="true"></span>
+                <span class="fc" id="fcTeam"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Team steady</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════ STEP 2 · PREVIEW ════════════ -->
+      <section class="panel" id="panel-1" aria-labelledby="t1" hidden>
+        <div class="step-eyebrow">
+          <span class="pill">Step 2 of 6 · Preview</span>
+          <span class="eyebrow">Before you commit</span>
+        </div>
+        <h1 class="step-title" id="t1">Here's what will likely happen if you ship this.</h1>
+        <p class="step-sub">A projection — not a guarantee. Capacity still rolls within its range on the next step. Review, then decide.</p>
+
+        <div class="preview-grid">
+          <!-- projected dimension deltas -->
+          <div class="pcard">
+            <div class="pcard__title"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>Projected scoreboard</div>
+            <div id="previewDims"><!-- injected --></div>
+          </div>
+
+          <!-- character reactions -->
+          <div class="pcard">
+            <div class="pcard__title"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg>How people react</div>
+            <div id="previewReacts"><!-- injected --></div>
+          </div>
+        </div>
+
+        <div class="preview-note">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h0"/></svg>
+          <span id="previewNote">Looks balanced. If you want more revenue this sprint, make sure a <b>Release</b> is included — finished work only pays out when shipped.</span>
+        </div>
+      </section>
+
+      <!-- ════════════ STEP 3 · SHIP ════════════ -->
+      <section class="panel" id="panel-2" aria-labelledby="t2" hidden>
+        <div class="step-eyebrow">
+          <span class="pill">Step 3 of 6 · Ship</span>
+          <span class="eyebrow">Capacity rolls</span>
+        </div>
+        <h1 class="step-title" id="t2">The sprint runs…</h1>
+        <p class="step-sub">Your real capacity lands somewhere in the 12–18 range. Let's see how many of your committed points actually fit.</p>
+
+        <!-- coachmark : release -->
+        <div class="coach" id="coach-release" role="note">
+          <span class="coach__icon" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5 3 21l4.5-1.5"/><path d="M14 4s4 0 6 2 2 6 2 6l-7 7-4-1-3-3-1-4Z"/><circle cx="15" cy="9" r="1.6"/></svg></span>
+          <div class="coach__body">
+            <span class="coach__tag">Coachmark · Releasing</span>
+            <p class="coach__text">Finished features only earn revenue when you <b>Ship a Release</b>. Building without releasing banks the work — but no money moves yet.</p>
+          </div>
+          <button class="coach__dismiss" type="button" aria-label="Dismiss coachmark"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+
+        <div class="ship-stage">
+          <div class="roll">
+            <div class="roll__label">Capacity rolled</div>
+            <div class="roll__num" id="rollNum">–</div>
+            <div class="roll__range">within 12–18 pts</div>
+            <div class="roll__track" aria-hidden="true">
+              <div class="roll__band" style="left:60%; width:30%;"></div>
+              <div class="roll__fill" id="rollFill"></div>
+            </div>
+            <div class="roll__result" id="rollResult"><!-- fit rows injected --></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════ STEP 4 · OUTCOME ════════════ -->
+      <section class="panel" id="panel-3" aria-labelledby="t3" hidden>
+        <div class="step-eyebrow">
+          <span class="pill">Step 4 of 6 · Outcome</span>
+          <span class="eyebrow">Cause → effect</span>
+        </div>
+        <h1 class="step-title" id="t3">Here's why the numbers moved.</h1>
+        <p class="step-sub">Every change has a reason. Read each beat — this is the judgment the sim is teaching.</p>
+
+        <div class="outcome-summary" id="outcomeSummary">
+          <span class="osum good"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Shipped: <b>Onboarding checklist</b></span>
+          <span class="osum good"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><b>SSO &amp; security</b></span>
+          <span class="osum bad"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Didn't fit: <b>Custom dashboards</b> <span style="color:var(--mute)">(rolled 14)</span></span>
+        </div>
+
+        <div class="beats" id="beats">
+          <div class="beat" data-beat="0">
+            <span class="beat__icon good" aria-hidden="true">🚀</span>
+            <div class="beat__main">
+              <span class="beat__effect">Priya activated <span class="beat__delta up">+5 happiness</span><span class="beat__delta up">+$600</span></span>
+              <p class="beat__because"><span class="lead">Because</span>you shipped the onboarding she needed — and released it, so the value reached her.</p>
+            </div>
+          </div>
+          <div class="beat" data-beat="1">
+            <span class="beat__icon good" aria-hidden="true">🔐</span>
+            <div class="beat__main">
+              <span class="beat__effect">VP Growth trust rises <span class="beat__delta up">+2 trust</span></span>
+              <p class="beat__because"><span class="lead">Because</span>SSO unlocks enterprise deals — exactly the revenue path they care about.</p>
+            </div>
+          </div>
+          <div class="beat" data-beat="2">
+            <span class="beat__icon bad" aria-hidden="true">😓</span>
+            <div class="beat__main">
+              <span class="beat__effect">Team morale dips <span class="beat__delta down">−6 morale</span></span>
+              <p class="beat__because"><span class="lead">Because</span>you committed 13 of 15 pts with no slack — a packed sprint with no breathing room.</p>
+            </div>
+          </div>
+          <div class="beat" data-beat="3">
+            <span class="beat__icon bad" aria-hidden="true">🧱</span>
+            <div class="beat__main">
+              <span class="beat__effect">Tech debt grows <span class="beat__delta down">+5 debt</span></span>
+              <p class="beat__because"><span class="lead">Because</span>no engineering work shipped — the debt you didn't pay down quietly compounds.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="revchange" id="revchange">
+          <span class="revchange__ico" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+          <span class="revchange__txt">Net revenue this sprint: <b>$2,400</b> → <b>$3,000</b> MRR</span>
+          <span class="revchange__big">+$600</span>
+        </div>
+      </section>
+
+      <!-- ════════════ STEP 5 · EVENT ════════════ -->
+      <section class="panel" id="panel-4" aria-labelledby="t4" hidden>
+        <div class="step-eyebrow">
+          <span class="pill">Step 5 of 6 · Event</span>
+          <span class="eyebrow">A curveball</span>
+        </div>
+        <h1 class="step-title" id="t4">Something just landed on your desk.</h1>
+        <p class="step-sub">Each option shows its likely effect up front. There's no free lunch — pick the trade-off you can live with.</p>
+
+        <div class="event-card">
+          <div class="event-card__head">
+            <span class="event-card__icon" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h0"/><path d="M10.3 3.3 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.3a2 2 0 0 0-3.4 0Z"/></svg></span>
+            <div>
+              <span class="event-card__tag">Stakeholder event · telegraphed</span>
+              <p class="event-card__quote">"VP Growth wants a flashy AI demo for next week's board meeting."</p>
+              <p class="event-card__who">VP Growth · Stakeholder · Trust 6/10 — wants enterprise revenue and a story to tell the board.</p>
+            </div>
+          </div>
+
+          <div class="choices" id="choices" role="group" aria-label="Choose how to respond">
+            <button class="choice" type="button" data-id="proto" aria-pressed="false">
+              <span class="choice__label">Build a quick prototype</span>
+              <div class="choice__effects">
+                <span class="choice__divider">Likely effect</span>
+                <span class="ce good"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left:-9px"><polyline points="6 15 12 9 18 15"/></svg>VP Growth trust ↑↑</span>
+                <span class="ce bad"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left:-9px"><polyline points="6 9 12 15 18 9"/></svg>tech debt ↑↑</span>
+              </div>
+            </button>
+            <button class="choice" type="button" data-id="focus" aria-pressed="false">
+              <span class="choice__label">Stay focused on the roadmap</span>
+              <div class="choice__effects">
+                <span class="choice__divider">Likely effect</span>
+                <span class="ce bad"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>VP Growth trust ↓</span>
+                <span class="ce good"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5Z"/></svg>team protected</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════ STEP 6 · DEBRIEF ════════════ -->
+      <section class="panel" id="panel-5" aria-labelledby="t5" hidden>
+        <div class="step-eyebrow">
+          <span class="pill">Step 6 of 6 · Debrief</span>
+          <span class="eyebrow">Sprint 3 complete</span>
+        </div>
+        <h1 class="step-title" id="t5">Where you stand after Sprint 3.</h1>
+        <p class="step-sub">Five dimensions, this sprint's movement called out. Then carry it forward.</p>
+
+        <div class="debrief-board" id="debriefBoard" role="group" aria-label="Full scoreboard with this sprint's deltas">
+          <div class="dgauge" data-dim="value">
+            <div class="dgauge__head"><svg class="dgauge__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg><span class="dgauge__k">Value<br>Delivered</span></div>
+            <div class="dgauge__val">66<span class="dgauge__delta up">+8</span></div>
+            <div class="dgauge__bar"><div class="dgauge__barfill" data-dbar="66"></div></div>
+          </div>
+          <div class="dgauge" data-dim="loyalty">
+            <div class="dgauge__head"><svg class="dgauge__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1Z"/></svg><span class="dgauge__k">Customer<br>Loyalty</span></div>
+            <div class="dgauge__val">69<span class="dgauge__delta up">+7</span></div>
+            <div class="dgauge__bar"><div class="dgauge__barfill" data-dbar="69"></div></div>
+          </div>
+          <div class="dgauge" data-dim="team">
+            <div class="dgauge__head"><svg class="dgauge__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span class="dgauge__k">Team<br>Health</span></div>
+            <div class="dgauge__val">64<span class="dgauge__delta down">−6</span></div>
+            <div class="dgauge__bar"><div class="dgauge__barfill" data-dbar="64"></div></div>
+          </div>
+          <div class="dgauge" data-dim="trust">
+            <div class="dgauge__head"><svg class="dgauge__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5Z"/></svg><span class="dgauge__k">Stakeholder<br>Trust</span></div>
+            <div class="dgauge__val">57<span class="dgauge__delta up">+2</span></div>
+            <div class="dgauge__bar"><div class="dgauge__barfill" data-dbar="57"></div></div>
+          </div>
+          <div class="dgauge" data-dim="quality">
+            <div class="dgauge__head"><svg class="dgauge__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.5 5.1 5.6.8-4 4 1 5.6L12 21l-5 2.6 1-5.6-4-4 5.6-.8Z"/></svg><span class="dgauge__k">Product<br>Quality</span></div>
+            <div class="dgauge__val">59<span class="dgauge__delta down">−5</span></div>
+            <div class="dgauge__bar"><div class="dgauge__barfill" data-dbar="59"></div></div>
+          </div>
+        </div>
+
+        <div class="learned">
+          <span class="learned__icon" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="M6 10.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-5.5"/></svg></span>
+          <div>
+            <span class="learned__tag">What you learned</span>
+            <p class="learned__text">Releasing is what converts effort into revenue — and a packed sprint with no slack costs you team health. Next time, protect a little capacity.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════════ FIXED ACTION DOCK ═══════════════ -->
+<div class="dock">
+  <div class="dock__inner">
+    <button class="dock__back" id="backBtn" type="button" hidden>
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+    <span class="dock__hint" id="dockHint">Pick at least one backlog item to continue.</span>
+    <button class="primary" id="nextBtn" type="button" disabled>
+      <span id="nextText">Next: Preview</span>
+      <svg class="ico" id="nextIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   PRAXIS Simulation · Direction B "Guided Flow"
+   A linear stepper state machine. Plan / Preview / Outcome are
+   fully interactive; Ship / Event / Debrief are lighter but live.
+   ============================================================ */
+(function () {
+  "use strict";
+
+  var doc = document;
+  var byId = function (id) { return doc.getElementById(id); };
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- backlog model ---------- */
+  // per-item projected effects (used by Plan forecast + Preview projections)
+  var ITEMS = {
+    onboard: { pts: 5,  name: 'Onboarding checklist', dims: { value: 4, loyalty: 5, team: 0, trust: 0, quality: 0 }, revenue: 200, releaseRev: 600 },
+    dash:    { pts: 13, name: 'Custom dashboards',    dims: { value: 7, loyalty: 4, team: -2, trust: 0, quality: 1 }, revenue: 700, releaseRev: 700 },
+    sso:     { pts: 8,  name: 'SSO & security',       dims: { value: 3, loyalty: 0, team: 0, trust: 6, quality: 2 }, revenue: 0,  releaseRev: 0 },
+    perf:    { pts: 5,  name: 'Performance hardening', dims: { value: 1, loyalty: 1, team: 4, trust: 0, quality: 6 }, revenue: 0,  releaseRev: 0 },
+    release: { pts: 3,  name: 'Ship a Release',        dims: { value: 2, loyalty: 2, team: 0, trust: 1, quality: 0 }, revenue: 0,  releaseRev: 0, isRelease: true }
+  };
+  var LIKELY = 15;
+
+  // default selection matches the shared OUTCOME scenario (Onboarding + SSO + Release = 16 committed)
+  var selected = { onboard: true, dash: false, sso: true, perf: false, release: true };
+
+  var DIM_LABELS = {
+    value: 'Value Delivered', loyalty: 'Customer Loyalty', team: 'Team Health',
+    trust: 'Stakeholder Trust', quality: 'Product Quality'
+  };
+  var BASE = { value: 58, loyalty: 62, team: 70, trust: 55, quality: 64 };
+
+  /* ============================================================
+     STEPPER NAVIGATION
+     ============================================================ */
+  var STEPS = ['Plan', 'Preview', 'Ship', 'Outcome', 'Event', 'Debrief'];
+  var current = 0;
+  var visited = [true, false, false, false, false, false];
+
+  var panels = STEPS.map(function (_, i) { return byId('panel-' + i); });
+  var stepEls = Array.prototype.slice.call(doc.querySelectorAll('.step'));
+  var lineEls = Array.prototype.slice.call(doc.querySelectorAll('.step__line'));
+
+  var nextBtn = byId('nextBtn');
+  var nextText = byId('nextText');
+  var backBtn = byId('backBtn');
+  var dockHint = byId('dockHint');
+
+  // CTA label + hint per step
+  var CTA = [
+    { text: 'Next: Preview', hint: 'Pick at least one backlog item to continue.' },
+    { text: 'Ship it', hint: 'This is a projection. Capacity still rolls on the next step.' },
+    { text: 'See the outcome', hint: 'Rolling capacity within the 12–18 range…' },
+    { text: 'Continue', hint: 'Read why each number moved.' },
+    { text: 'Continue', hint: 'Choose a response — each previews its effect.' },
+    { text: 'Start Sprint 4', hint: 'Sprint 3 complete. Carry your scoreboard forward.' }
+  ];
+
+  function renderStepper() {
+    stepEls.forEach(function (el, i) {
+      el.classList.toggle('is-current', i === current);
+      el.classList.toggle('is-done', i < current || (visited[i] && i !== current && i < current));
+      // a step is "done" only if we've moved past it
+      el.classList.toggle('is-done', i < current);
+    });
+    lineEls.forEach(function (ln, i) {
+      ln.style.background = (i < current) ? 'var(--good)' : 'var(--line)';
+    });
+  }
+
+  function showStep(i) {
+    current = i;
+    panels.forEach(function (p, idx) {
+      var on = idx === i;
+      p.classList.toggle('is-active', on);
+      if (on) { p.removeAttribute('hidden'); } else { p.setAttribute('hidden', ''); }
+    });
+    visited[i] = true;
+    renderStepper();
+
+    // dock state
+    backBtn.hidden = (i === 0);
+    nextText.textContent = CTA[i].text;
+    dockHint.textContent = CTA[i].hint;
+    nextBtn.classList.toggle('is-good', i === 5);
+
+    // per-step entry hooks
+    if (i === 0) { refreshPlan(); }
+    if (i === 1) { renderPreview(); }
+    if (i === 2) { runRoll(); }
+    if (i === 3) { runOutcome(); }
+    if (i === 4) { /* event waits for a pick, but allow continue */ updateNextEnabled(); }
+    if (i === 5) { runDebrief(); }
+
+    updateNextEnabled();
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+
+  nextBtn.addEventListener('click', function () {
+    if (nextBtn.disabled) return;
+    if (current < STEPS.length - 1) {
+      showStep(current + 1);
+    } else {
+      // Start Sprint 4 -> loop back to Plan for the mockup
+      resetAll();
+      showStep(0);
+    }
+  });
+  backBtn.addEventListener('click', function () {
+    if (current > 0) showStep(current - 1);
+  });
+
+  // allow clicking a *visited* step in the stepper to jump back
+  stepEls.forEach(function (el, i) {
+    el.addEventListener('click', function () {
+      if (visited[i] && i <= current) showStep(i);
+    });
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && visited[i] && i <= current) {
+        e.preventDefault(); showStep(i);
+      }
+    });
+  });
+
+  /* ============================================================
+     GATE: when can NEXT be enabled?
+     ============================================================ */
+  function totalCommitted() {
+    var t = 0;
+    Object.keys(selected).forEach(function (k) { if (selected[k]) t += ITEMS[k].pts; });
+    return t;
+  }
+  function anySelected() {
+    return Object.keys(selected).some(function (k) { return selected[k]; });
+  }
+  var eventPicked = null;
+
+  function updateNextEnabled() {
+    var ok = true;
+    if (current === 0) ok = anySelected();
+    if (current === 4) ok = !!eventPicked; // must choose a response
+    nextBtn.disabled = !ok;
+  }
+
+  /* ============================================================
+     STEP 1 · PLAN — capacity, forecast, scoreboard live preview
+     ============================================================ */
+  var backlogBtns = Array.prototype.slice.call(doc.querySelectorAll('#backlog .item'));
+  var capFill = byId('capFill');
+  var capCommitted = byId('capCommitted');
+  var fcPts = byId('fcPts');
+  var fcRev = byId('fcRev');
+  var fcTeam = byId('fcTeam');
+
+  // scoreboard live elements
+  var gaugeBars = {}, gaugeVals = {}, gaugeDeltas = {};
+  Array.prototype.slice.call(doc.querySelectorAll('#board .gauge')).forEach(function (g) {
+    var dim = g.getAttribute('data-dim');
+    gaugeBars[dim] = g.querySelector('[data-bar]');
+    gaugeVals[dim] = g.querySelector('.gauge__val');
+    gaugeDeltas[dim] = g.querySelector('.gauge__delta');
+  });
+
+  backlogBtns.forEach(function (btn) {
+    var id = btn.getAttribute('data-id');
+    btn.setAttribute('aria-pressed', selected[id] ? 'true' : 'false');
+    btn.addEventListener('click', function () {
+      selected[id] = !selected[id];
+      btn.setAttribute('aria-pressed', selected[id] ? 'true' : 'false');
+      refreshPlan();
+      updateNextEnabled();
+    });
+  });
+
+  // compute projected dimension deltas (raw, before capacity roll) for current selection
+  function projectedDims() {
+    var d = { value: 0, loyalty: 0, team: 0, trust: 0, quality: 0 };
+    var hasRelease = selected.release;
+    Object.keys(selected).forEach(function (k) {
+      if (!selected[k]) return;
+      var it = ITEMS[k];
+      Object.keys(it.dims).forEach(function (dim) { d[dim] += it.dims[dim]; });
+    });
+    // packed-sprint penalty to team if committed is at/above likely with no slack
+    var committed = totalCommitted();
+    if (committed >= LIKELY) d.team -= 4;
+    // release gives a value/loyalty nudge already in its dims; if no release, finished work doesn't pay
+    return { dims: d, hasRelease: hasRelease, committed: committed };
+  }
+
+  function projectedRevenue() {
+    if (!selected.release) return 0;
+    var rev = 0;
+    // released revenue only counts for items that actually generate it
+    if (selected.onboard) rev += ITEMS.onboard.releaseRev;
+    if (selected.dash) rev += 0; // dashboards won't fit in the canonical roll; keep forecast honest-ish
+    return rev;
+  }
+
+  function refreshPlan() {
+    var committed = totalCommitted();
+    // capacity fill on a 0..20 scale (cap visual at 20)
+    var pct = Math.min(committed / 20 * 100, 100);
+    var over = committed > 18;
+    capFill.style.width = pct + '%';
+    capFill.classList.toggle('over', over);
+    capCommitted.style.left = pct + '%';
+    capCommitted.textContent = committed + ' pts';
+    capCommitted.classList.toggle('over', over);
+
+    // mark items that push over capacity (info only)
+    backlogBtns.forEach(function (b) {
+      b.classList.toggle('warn-over', over && selected[b.getAttribute('data-id')]);
+    });
+
+    // forecast
+    fcPts.innerHTML = iconList() + '<b>' + committed + '</b> / ' + LIKELY + ' pts';
+    if (committed > LIKELY) {
+      fcPts.classList.add('bad'); fcPts.classList.remove('good');
+    } else { fcPts.classList.remove('bad'); }
+
+    var rev = projectedRevenue();
+    if (selected.release && rev > 0) {
+      fcRev.className = 'fc good';
+      fcRev.innerHTML = iconDollar() + '+$' + rev + ' if released';
+    } else if (selected.release) {
+      fcRev.className = 'fc';
+      fcRev.innerHTML = iconDollar() + 'Release ready · ship finished work';
+    } else {
+      fcRev.className = 'fc';
+      fcRev.innerHTML = iconDollar() + 'add a Release to earn';
+    }
+
+    var teamDelta = projectedDims().dims.team;
+    if (teamDelta <= -5) {
+      fcTeam.className = 'fc bad';
+      fcTeam.innerHTML = iconTeam() + 'Team ' + teamDelta + ' (packed sprint)';
+    } else if (teamDelta < 0) {
+      fcTeam.className = 'fc';
+      fcTeam.innerHTML = iconTeam() + 'Team ' + teamDelta;
+    } else if (teamDelta > 0) {
+      fcTeam.className = 'fc good';
+      fcTeam.innerHTML = iconTeam() + 'Team +' + teamDelta;
+    } else {
+      fcTeam.className = 'fc';
+      fcTeam.innerHTML = iconTeam() + 'Team steady';
+    }
+
+    // live scoreboard preview: show projected target with delta hint
+    var pd = projectedDims().dims;
+    Object.keys(BASE).forEach(function (dim) {
+      var target = clamp(BASE[dim] + pd[dim], 0, 100);
+      // we don't permanently move the board on Plan; we *hint* via delta + ghost bar
+      gaugeBars[dim].style.width = target + '%';
+      gaugeBars[dim].style.background = pd[dim] < 0 ? 'var(--bad)' : 'var(--accent)';
+      var dl = gaugeDeltas[dim];
+      var sign = pd[dim] > 0 ? '+' : '';
+      dl.textContent = sign + pd[dim];
+      dl.classList.add('show');
+      dl.classList.toggle('up', pd[dim] > 0);
+      dl.classList.toggle('down', pd[dim] < 0);
+      dl.classList.toggle('flat', pd[dim] === 0);
+    });
+  }
+
+  function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+
+  // tiny inline icon helpers (kept consistent with the design system stroke style)
+  function iconList() { return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>'; }
+  function iconDollar() { return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'; }
+  function iconTeam() { return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>'; }
+
+  /* ============================================================
+     STEP 2 · PREVIEW — projected deltas + character reactions
+     ============================================================ */
+  var previewDims = byId('previewDims');
+  var previewReacts = byId('previewReacts');
+  var previewNote = byId('previewNote');
+
+  var CHARACTERS = [
+    { key: 'maya',  name: 'Maya',  role: 'Ops admin',   color: '#7C3AED', driver: ['dash'],    want: 'wants to save hours on reporting' },
+    { key: 'devon', name: 'Devon', role: 'Eng lead',    color: '#0891B2', driver: ['perf'],    want: 'wants reliability' },
+    { key: 'priya', name: 'Priya', role: 'Trialer',     color: '#DB2777', driver: ['onboard'], want: 'wants an easy start' },
+    { key: 'vp',    name: 'VP Growth', role: 'Stakeholder', color: '#0F766E', driver: ['sso'],  want: 'wants enterprise revenue' }
+  ];
+
+  function renderPreview() {
+    var pd = projectedDims().dims;
+    // dimension bars
+    previewDims.innerHTML = Object.keys(DIM_LABELS).map(function (dim) {
+      var delta = pd[dim];
+      var base = BASE[dim];
+      var target = clamp(base + delta, 0, 100);
+      var sign = delta > 0 ? '+' : '';
+      var cls = delta > 0 ? 'up' : (delta < 0 ? 'down' : 'flat');
+      var gainLeft, gainW;
+      if (delta >= 0) { gainLeft = base; gainW = target - base; }
+      else { gainLeft = target; gainW = base - target; }
+      return '' +
+        '<div class="pdim">' +
+          '<span class="pdim__name">' + DIM_LABELS[dim] + '</span>' +
+          '<span class="pdim__track">' +
+            '<span class="pdim__base" style="width:' + base + '%"></span>' +
+            '<span class="pdim__gain ' + (delta < 0 ? 'neg' : '') + '" style="left:' + gainLeft + '%; width:0%" data-w="' + gainW + '"></span>' +
+          '</span>' +
+          '<span class="pdim__delta ' + cls + '">' + sign + delta + '</span>' +
+        '</div>';
+    }).join('');
+
+    // animate gain bars in
+    window.requestAnimationFrame(function () {
+      window.setTimeout(function () {
+        Array.prototype.slice.call(previewDims.querySelectorAll('.pdim__gain')).forEach(function (g) {
+          g.style.width = g.getAttribute('data-w') + '%';
+        });
+      }, reduce ? 0 : 120);
+    });
+
+    // character reactions
+    previewReacts.innerHTML = CHARACTERS.map(function (c) {
+      var driven = c.driver.some(function (d) { return selected[d]; });
+      var dim, why, delta, cls, arrow;
+      if (c.key === 'maya') {
+        if (selected.dash) { delta = '+ happiness'; cls = 'up'; why = 'Custom dashboards save her the reporting hours she keeps asking for.'; }
+        else { delta = 'no change'; cls = 'flat'; why = 'Nothing this sprint touches her reporting pain — she stays where she is.'; }
+      } else if (c.key === 'devon') {
+        if (selected.perf) { delta = '+ happiness'; cls = 'up'; why = 'Performance hardening is exactly the reliability work he wants.'; }
+        else { delta = 'no change'; cls = 'flat'; why = 'No engineering work shipped — reliability is unaddressed.'; }
+      } else if (c.key === 'priya') {
+        if (selected.onboard && selected.release) { delta = '+ activated'; cls = 'up'; why = 'The onboarding she needs ships AND releases — she finally gets going.'; }
+        else if (selected.onboard) { delta = '+ interest'; cls = 'up'; why = 'Onboarding is built — but it only activates her once you release it.'; }
+        else { delta = 'still dormant'; cls = 'down'; why = 'Without an easy start, she has no reason to come back.'; }
+      } else { // vp
+        if (selected.sso) { delta = '+ trust'; cls = 'up'; why = 'SSO unlocks the enterprise deals they care about.'; }
+        else { delta = '− trust'; cls = 'down'; why = 'No enterprise unlock this sprint — their revenue path stalls.'; }
+      }
+      arrow = cls === 'up'
+        ? '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg>'
+        : (cls === 'down'
+          ? '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>'
+          : '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg>');
+      return '' +
+        '<div class="react">' +
+          '<span class="avatar" style="background:' + c.color + '" aria-hidden="true">' + c.name.charAt(0) + '</span>' +
+          '<div class="react__main">' +
+            '<div class="react__top">' +
+              '<span class="react__name">' + c.name + '</span>' +
+              '<span class="react__delta ' + cls + '">' + arrow + delta + '</span>' +
+            '</div>' +
+            '<p class="react__why"><span style="color:var(--faint)">' + c.role + ' · ' + c.want + '.</span> ' + why + '</p>' +
+          '</div>' +
+        '</div>';
+    }).join('');
+
+    // contextual note
+    if (!selected.release) {
+      previewNote.innerHTML = 'Heads up: <b>no Release selected</b>. You\'ll bank the finished work, but no revenue moves this sprint. Add a Release on the Plan step to cash it in.';
+    } else if (totalCommitted() > LIKELY) {
+      previewNote.innerHTML = 'You\'ve committed <b>' + totalCommitted() + ' pts</b> against a likely <b>15</b>. Expect some work to not fit when capacity rolls — and a hit to team health.';
+    } else {
+      previewNote.innerHTML = 'Looks balanced. A <b>Release</b> is included, so finished work will pay out. Capacity still rolls within 12–18 on the next step.';
+    }
+  }
+
+  /* ============================================================
+     STEP 3 · SHIP — capacity roll animation
+     ============================================================ */
+  var rollNum = byId('rollNum');
+  var rollFill = byId('rollFill');
+  var rollResult = byId('rollResult');
+  var ROLLED = 14; // canonical roll from the shared scenario
+
+  function runRoll() {
+    rollResult.classList.remove('show');
+    rollResult.innerHTML = '';
+    rollNum.textContent = '–';
+    rollFill.style.width = '0%';
+
+    if (reduce) {
+      rollNum.textContent = ROLLED;
+      rollFill.style.width = (ROLLED / 20 * 100) + '%';
+      revealFit();
+      return;
+    }
+
+    // quick "rolling" tween through values, settle on ROLLED
+    var ticks = 0;
+    var iv = window.setInterval(function () {
+      ticks++;
+      var v = 12 + Math.floor(Math.random() * 7); // 12..18
+      rollNum.textContent = v;
+      rollFill.style.width = (v / 20 * 100) + '%';
+      if (ticks > 11) {
+        window.clearInterval(iv);
+        rollNum.textContent = ROLLED;
+        rollFill.style.width = (ROLLED / 20 * 100) + '%';
+        window.setTimeout(revealFit, 420);
+      }
+    }, 70);
+  }
+
+  function revealFit() {
+    // greedily fit selected items into ROLLED, preserving the canonical narrative:
+    // onboarding(5) + SSO(8) + release(3) = 16 committed; with 14 rolled, dashboards(13) is the casualty.
+    var order = ['onboard', 'sso', 'perf', 'release', 'dash']; // release prioritized before big bet
+    var remaining = ROLLED;
+    var rows = [];
+    order.forEach(function (k) {
+      if (!selected[k]) return;
+      var it = ITEMS[k];
+      if (it.pts <= remaining) {
+        remaining -= it.pts;
+        rows.push({ name: it.name, pts: it.pts, fit: true });
+      } else {
+        rows.push({ name: it.name, pts: it.pts, fit: false });
+      }
+    });
+    rollResult.innerHTML = rows.map(function (r) {
+      var ico = r.fit
+        ? '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>'
+        : '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      var label = r.fit ? 'Shipped' : 'Didn’t fit';
+      return '<div class="fitrow ' + (r.fit ? 'fit' : 'nofit') + '">' + ico +
+        '<b>' + r.name + '</b><span style="color:var(--mute)">&nbsp;· ' + label + '</span>' +
+        '<span class="pts">' + r.pts + ' pts</span></div>';
+    }).join('');
+    rollResult.classList.add('show');
+  }
+
+  /* ============================================================
+     STEP 4 · OUTCOME — reveal beats one at a time, then move board
+     ============================================================ */
+  var beats = Array.prototype.slice.call(doc.querySelectorAll('#beats .beat'));
+  var revchange = byId('revchange');
+  var goalFill = byId('goalFill');
+  var goalNums = byId('goalNums');
+  var outcomeDone = false;
+
+  // final committed deltas for the canonical outcome (Onboarding + SSO + Release; dashboards didn't fit)
+  var OUTCOME_DELTAS = { value: 8, loyalty: 7, team: -6, trust: 2, quality: -5 };
+
+  function runOutcome() {
+    // reset beats
+    beats.forEach(function (b) { b.classList.remove('show'); });
+    revchange.classList.remove('show');
+
+    if (reduce) {
+      beats.forEach(function (b) { b.classList.add('show'); });
+      revchange.classList.add('show');
+      applyOutcomeToBoard();
+      return;
+    }
+    // stagger the beats
+    beats.forEach(function (b, i) {
+      window.setTimeout(function () { b.classList.add('show'); }, 350 + i * 520);
+    });
+    window.setTimeout(function () {
+      revchange.classList.add('show');
+      applyOutcomeToBoard();
+    }, 350 + beats.length * 520 + 200);
+  }
+
+  function applyOutcomeToBoard() {
+    if (outcomeDone) return;
+    outcomeDone = true;
+    // permanently move the persistent scoreboard to the post-sprint values
+    Object.keys(BASE).forEach(function (dim) {
+      var target = clamp(BASE[dim] + OUTCOME_DELTAS[dim], 0, 100);
+      gaugeBars[dim].style.width = target + '%';
+      gaugeBars[dim].style.background = OUTCOME_DELTAS[dim] < 0 ? 'var(--bad)' : 'var(--accent)';
+      // update the printed value (first text node before the delta span)
+      setGaugeValue(dim, target, OUTCOME_DELTAS[dim]);
+    });
+    // revenue goal: $2,400 -> $3,000 of $5,000
+    goalFill.style.width = (3000 / 5000 * 100) + '%';
+    goalNums.innerHTML = '$3,000 <small>/ $5,000</small>';
+  }
+
+  function setGaugeValue(dim, val, delta) {
+    var el = gaugeVals[dim];
+    var deltaSpan = el.querySelector('.gauge__delta');
+    // rewrite leading number text node
+    el.childNodes[0].nodeValue = String(val);
+    var sign = delta > 0 ? '+' : '';
+    deltaSpan.textContent = sign + delta;
+    deltaSpan.classList.add('show');
+    deltaSpan.classList.toggle('up', delta > 0);
+    deltaSpan.classList.toggle('down', delta < 0);
+    deltaSpan.classList.toggle('flat', delta === 0);
+  }
+
+  /* ============================================================
+     STEP 5 · EVENT — telegraphed dilemma
+     ============================================================ */
+  var choiceBtns = Array.prototype.slice.call(doc.querySelectorAll('#choices .choice'));
+  choiceBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      choiceBtns.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+      btn.setAttribute('aria-pressed', 'true');
+      eventPicked = btn.getAttribute('data-id');
+      dockHint.textContent = eventPicked === 'proto'
+        ? 'Bold. VP trust climbs — but you’ll carry more tech debt into Sprint 4.'
+        : 'Disciplined. The team is protected — VP Growth will be less thrilled.';
+      updateNextEnabled();
+    });
+  });
+
+  /* ============================================================
+     STEP 6 · DEBRIEF — animate the full gauges
+     ============================================================ */
+  function runDebrief() {
+    var bars = Array.prototype.slice.call(doc.querySelectorAll('#debriefBoard .dgauge__barfill'));
+    bars.forEach(function (b) { b.style.width = '0%'; });
+    window.requestAnimationFrame(function () {
+      window.setTimeout(function () {
+        bars.forEach(function (b) { b.style.width = b.getAttribute('data-dbar') + '%'; });
+      }, reduce ? 0 : 140);
+    });
+  }
+
+  /* ============================================================
+     COACHMARK dismiss
+     ============================================================ */
+  Array.prototype.slice.call(doc.querySelectorAll('.coach__dismiss')).forEach(function (b) {
+    b.addEventListener('click', function () {
+      var coach = b.closest('.coach');
+      coach.style.transition = 'opacity .2s ease, transform .2s ease, margin .2s ease, max-height .25s ease, padding .2s ease';
+      coach.style.overflow = 'hidden';
+      coach.style.maxHeight = coach.offsetHeight + 'px';
+      window.requestAnimationFrame(function () {
+        coach.style.opacity = '0';
+        coach.style.transform = 'translateY(-4px)';
+        coach.style.maxHeight = '0px';
+        coach.style.paddingTop = '0'; coach.style.paddingBottom = '0';
+        coach.style.marginTop = '0';
+      });
+      window.setTimeout(function () { coach.style.display = 'none'; }, 260);
+    });
+  });
+
+  /* ============================================================
+     RESTART (mockup convenience) — full reset to Step 1
+     ============================================================ */
+  byId('restartBtn').addEventListener('click', function () {
+    resetAll();
+    showStep(0);
+  });
+
+  function resetAll() {
+    selected = { onboard: true, dash: false, sso: true, perf: false, release: true };
+    backlogBtns.forEach(function (b) {
+      var id = b.getAttribute('data-id');
+      b.setAttribute('aria-pressed', selected[id] ? 'true' : 'false');
+    });
+    eventPicked = null;
+    choiceBtns.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+    outcomeDone = false;
+    visited = [true, false, false, false, false, false];
+    // reset persistent scoreboard to baseline
+    Object.keys(BASE).forEach(function (dim) {
+      gaugeBars[dim].style.width = BASE[dim] + '%';
+      gaugeBars[dim].style.background = 'var(--accent)';
+      gaugeVals[dim].childNodes[0].nodeValue = String(BASE[dim]);
+      var dl = gaugeVals[dim].querySelector('.gauge__delta');
+      dl.textContent = '+0'; dl.classList.remove('show', 'up', 'down', 'flat');
+    });
+    goalFill.style.width = (2400 / 5000 * 100) + '%';
+    goalNums.innerHTML = '$2,400 <small>/ $5,000</small>';
+  }
+
+  /* ---------- initial paint ---------- */
+  // set goal fill to 2400/5000
+  goalFill.style.width = (2400 / 5000 * 100) + '%';
+  refreshPlan();
+  renderStepper();
+  updateNextEnabled();
+
+})();
+</script>
+
+</body>
+</html>

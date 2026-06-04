@@ -1,11 +1,18 @@
 'use client';
+/**
+ * SUPERSEDED: part of the legacy GameView simulation, kept (not deleted) per
+ * the repo's no-silent-deletion rule. This is a helper used only by the old IterationBacklog/EventModal.
+ * No route imports this anymore; the Guided Flow sim under
+ * src/components/console/sim/ is the live capstone. Safe to remove once the
+ * old flow is confirmed retired.
+ */
 
 import { useState } from 'react';
 import { methods } from '@/methods';
 import { cn } from '@/lib/cn';
 
 // Lightweight inline picker: user selects a method ID they claim to have
-// used for this decision. Optional — null is valid.
+// used for this decision. Optional; null is valid.
 export function MethodTagPicker({
   value,
   onChange,
@@ -47,7 +54,7 @@ export function MethodTagPicker({
             : 'border-gray-300 hover:bg-gray-50',
         )}
       >
-        {current ? `✓ ${current.name}` : '— select a method (optional) —'}
+        {current ? `✓ ${current.name}` : 'Select a method (optional)'}
       </button>
       {open && (
         <div className="mt-1 border rounded bg-white shadow-lg max-h-64 overflow-y-auto">

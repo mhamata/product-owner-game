@@ -137,7 +137,7 @@ export function resolveIteration(
       state.economy.interestAccrued + state.economy.revenue * state.economy.interestRate,
   };
 
-  // Decide next-iteration events (just names — UI will render from scenario deck).
+  // Decide next-iteration events (just names; UI will render from scenario deck).
   const nextState: GameState = {
     ...state,
     productBacklog,

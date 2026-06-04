@@ -1,55 +1,53 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { resolveFiveWhysDrill } from '@/curriculum/drills';
+import { useActiveIndustry } from '@/store/industryStore';
 
-const SYMPTOM = 'We failed to settle $2.3M of trades on the T+1 cycle last Tuesday.';
-
-const CANONICAL = [
-  {
-    why: 'The trade-match file from DTCC contained unexpected field deltas.',
-    hint: 'Technical cause. Not the root.',
-  },
-  {
-    why: "DTCC's file format changed as part of their protocol release notes v42.",
-    hint: "We didn't catch the change.",
-  },
-  {
-    why: "We don't subscribe to DTCC's protocol update mailing list.",
-    hint: 'Process cause — getting closer.',
-  },
-  {
-    why: 'There is no designated owner for vendor protocol-change monitoring.',
-    hint: 'Organizational cause.',
-  },
-  {
-    why: 'Vendor management was never staffed in the Canada launch plan — HQ assumed HK ops would cover it.',
-    hint: 'Root: organizational. Fix is hiring + process, not a patch.',
-  },
-];
-
+/**
+ * Library 5-Whys drill. The symptom, canonical chain, and insight come from the
+ * shared engine; the content is industry-aware (resolves for the home industry,
+ * SaaS until the store rehydrates). The canonical surface-to-root ORDER is
+ * shared structure. Only the symptom and cause text change. This surface keeps
+ * the open-ended "write your own whys → compare with canonical" study model; the
+ * deterministic graded variant (order surface → root) lives in the Console loop
+ * at /learn/problem-framing.
+ */
 export function FiveWhysDrill() {
-  const [answers, setAnswers] = useState<string[]>(['', '', '', '', '']);
+  const industry = useActiveIndustry();
+  const fiveWhysDrill = useMemo(() => resolveFiveWhysDrill(industry), [industry]);
+  const canonical = fiveWhysDrill.steps;
+  const [answers, setAnswers] = useState<string[]>(() =>
+    canonical.map(() => ''),
+  );
   const [revealed, setRevealed] = useState(false);
 
   return (
     <div className="space-y-4">
-      <div className="p-3 bg-rose-50 border border-rose-200 rounded">
-        <div className="text-xs font-bold text-rose-900 uppercase tracking-wide mb-1">
+      <div className="rounded-console border border-bad-line bg-bad-050 p-3">
+        <div className="mono mb-1 text-[10.5px] uppercase tracking-[0.12em] text-bad">
           Symptom to investigate
         </div>
-        <p className="text-sm text-rose-950">{SYMPTOM}</p>
+        <p className="text-[13.5px] text-ink">{fiveWhysDrill.symptom}</p>
       </div>
-      <p className="text-sm text-gray-700">
-        Ask <em>why</em> five times, each time going deeper than the surface cause. Stop only
-        when you reach an organizational or systemic root.
+      <p className="text-[13.5px] text-slate">
+        Ask <em>why</em> five times, each time going deeper than the surface
+        cause. Stop only when you reach an organizational or systemic root.
       </p>
       <div className="space-y-2">
         {answers.map((a, i) => (
-          <div key={i} className="bg-white p-3 rounded border">
-            <div className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+          <div
+            key={i}
+            className="rounded-console border border-line bg-paper p-3"
+          >
+            <label
+              htmlFor={`why-${i}`}
+              className="mono text-[10.5px] font-semibold uppercase tracking-[0.1em] text-mute"
+            >
               Why #{i + 1}
-            </div>
+            </label>
             <textarea
+              id={`why-${i}`}
               rows={2}
               disabled={revealed}
               value={a}
@@ -58,14 +56,18 @@ export function FiveWhysDrill() {
                 next[i] = e.target.value;
                 setAnswers(next);
               }}
-              className="w-full mt-1 text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-blue-500"
-              placeholder={i === 0 ? 'Why did the symptom happen?' : 'Why did the previous cause happen?'}
+              className="mt-1 w-full rounded-console-sm border border-line px-2 py-1 text-[13.5px] text-ink focus:border-accent focus:outline-none disabled:bg-panel"
+              placeholder={
+                i === 0
+                  ? 'Why did the symptom happen?'
+                  : 'Why did the previous cause happen?'
+              }
             />
             {revealed && (
-              <div className="mt-2 text-xs p-2 bg-gray-50 rounded text-gray-700">
-                <div className="font-semibold text-gray-900">Canonical:</div>
-                <p>{CANONICAL[i].why}</p>
-                <p className="text-gray-500 italic mt-1">{CANONICAL[i].hint}</p>
+              <div className="mt-2 rounded-console-sm bg-panel p-2 text-[12px] text-slate">
+                <div className="font-semibold text-ink">Canonical</div>
+                <p>{canonical[i].text}</p>
+                <p className="mt-1 italic text-mute">{canonical[i].layer}</p>
               </div>
             )}
           </div>
@@ -73,25 +75,23 @@ export function FiveWhysDrill() {
       </div>
       {!revealed ? (
         <button
+          type="button"
           onClick={() => setRevealed(true)}
           disabled={answers.some((a) => a.trim().length < 5)}
-          className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          className="mono w-full rounded-console bg-accent py-2.5 text-[13px] font-semibold uppercase tracking-[0.06em] text-white transition-colors hover:bg-accent-700 disabled:cursor-not-allowed disabled:bg-panel-2 disabled:text-faint"
         >
           Compare with canonical answer
         </button>
       ) : (
-        <div className="bg-white p-3 rounded border">
-          <p className="text-sm text-gray-700">
-            The hardest discipline: not stopping at the first human-error cause (e.g.,
-            "the dev missed it"). Root causes are almost always organizational or process-level.
-            If your fifth why is still technical, go deeper.
-          </p>
+        <div className="rounded-console border border-line bg-paper p-3">
+          <p className="text-[13px] text-slate">{fiveWhysDrill.insight}</p>
           <button
+            type="button"
             onClick={() => {
-              setAnswers(['', '', '', '', '']);
+              setAnswers(canonical.map(() => ''));
               setRevealed(false);
             }}
-            className="mt-3 text-sm text-blue-600 hover:underline"
+            className="mono mt-3 text-[12px] text-accent underline underline-offset-2 hover:text-accent-700"
           >
             Try again
           </button>

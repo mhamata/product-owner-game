@@ -14,11 +14,13 @@ import { PrFaqDrill } from './PrFaqDrill';
 
 export function DrillLauncher({ drillType }: { drillType: DrillType }) {
   return (
-    <section className="p-5 bg-blue-50 border-2 border-blue-300 rounded-lg">
-      <div className="text-xs font-bold text-blue-900 uppercase tracking-wide mb-1">
-        🎯 Interactive Drill
+    <section className="rounded-console-lg border border-accent-100 bg-accent-050 p-5">
+      <div className="mono mb-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-accent">
+        Interactive drill
       </div>
-      <h3 className="text-lg font-semibold text-blue-950 mb-3">Practice this method</h3>
+      <h3 className="mb-3 text-[17px] font-semibold tracking-[-0.01em] text-ink">
+        Practice this method
+      </h3>
       {drillType === 'rice' && <RiceDrill />}
       {drillType === 'mom-test' && <MomTestDrill />}
       {drillType === 'moscow' && <MoscowDrill />}

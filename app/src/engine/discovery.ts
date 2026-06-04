@@ -17,7 +17,7 @@ export function runDiscovery(
     ...state.productBacklog.map((p) => p.id),
     ...state.iterationBacklog.map((p) => p.id),
     // Also exclude anything that has already been discovered on a prior iter
-    // but has since shipped — check against initialBacklog + any prior
+    // but has since shipped: check against initialBacklog + any prior
     // newlyDiscoveredIds recorded in eventLog via source tag is overkill;
     // we rely on the same-id guard below.
   ]);

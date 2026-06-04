@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PRAXIS — Direction A · Trailhead</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     PRAXIS — Direction A "Trailhead"
+     Warm, friendly, grown-up Duolingo. Muted (never neon) palette.
+     ============================================================ */
+
+  :root {
+    /* Palette */
+    --bg:           #FBFAF7;   /* warm off-white */
+    --surface:      #FFFFFF;
+    --surface-warm: #F4F1EA;   /* soft warm panel */
+    --green:        #2F8F6B;   /* confident muted green (primary + correct) */
+    --green-lip:    #26795A;   /* darker 3D push lip */
+    --green-soft:   #E5F1EB;   /* tint fill */
+    --red:          #E5533D;   /* incorrect */
+    --red-lip:      #C2412E;
+    --red-soft:     #FCEAE6;
+    --amber:        #E0A23A;   /* streak / achievement */
+    --amber-soft:   #FBF1DC;
+    --text:         #2B2B2B;   /* deep slate */
+    --text-soft:    #6B675E;   /* muted body */
+    --locked:       #CBC8C0;   /* locked grey */
+    --locked-soft:  #EAE7DF;
+    --line:         #E7E3DA;   /* hairlines */
+    --shadow-node:  0 4px 0 rgba(0,0,0,0.06);
+    --focus:        #1F6FB2;   /* focus ring (distinct from semantic colors) */
+
+    --r-sm: 10px;
+    --r-md: 16px;
+    --r-lg: 24px;
+    --r-xl: 32px;
+
+    --ease: cubic-bezier(.34, 1.56, .64, 1);  /* gentle overshoot */
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Nunito", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, .display {
+    font-family: "Baloo 2", "Nunito", system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1.15;
+  }
+
+  button { font-family: inherit; cursor: pointer; }
+
+  /* Visible focus everywhere, keyboard-friendly */
+  :focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  /* Don't show the box ring on the round nodes — they get a custom one */
+  .node:focus-visible { outline: none; }
+  .node:focus-visible .node-circle {
+    box-shadow: 0 0 0 4px var(--bg), 0 0 0 7px var(--focus);
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ============================================================
+     APP SHELL — phone-width frame centered on a warm canvas
+     ============================================================ */
+  .canvas {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 22px 16px 40px;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #FFFFFF 0%, rgba(255,255,255,0) 60%),
+      var(--bg);
+  }
+
+  /* Toggle (founder flips Path / Lesson) */
+  .switcher {
+    display: inline-flex;
+    background: var(--surface-warm);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 2px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 5;
+  }
+  .switcher button {
+    border: 0;
+    background: transparent;
+    color: var(--text-soft);
+    font-weight: 800;
+    font-size: 14px;
+    padding: 9px 20px;
+    border-radius: 999px;
+    transition: color .18s ease, background .18s ease;
+  }
+  .switcher button[aria-selected="true"] {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .switcher .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    display: inline-block; margin-right: 7px; vertical-align: middle;
+  }
+
+  .device {
+    width: 100%;
+    max-width: 440px;
+    background: var(--bg);
+    border-radius: var(--r-xl);
+    border: 1px solid var(--line);
+    box-shadow:
+      0 1px 2px rgba(43,43,43,0.04),
+      0 24px 60px -30px rgba(43,43,43,0.30);
+    overflow: hidden;
+    position: relative;
+    min-height: 760px;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: screenIn .32s ease both; }
+  @keyframes screenIn { from { opacity: 0; transform: translateY(6px);} to { opacity:1; transform:none;} }
+
+  /* ============================================================
+     SCREEN 1 — STATUS BAR
+     ============================================================ */
+  .statusbar {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 16px 14px;
+    background: rgba(251,250,247,0.86);
+    backdrop-filter: saturate(140%) blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    white-space: nowrap;
+  }
+  .stat .ic { width: 18px; height: 18px; display: block; flex: none; }
+  .stat-streak { color: var(--amber); background: var(--amber-soft); border-color: #F1E0BC; }
+  .stat-streak .num { color: var(--text); }
+
+  /* Mastery ring */
+  .mastery {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 13px 5px 6px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-weight: 800;
+    font-size: 13.5px;
+    line-height: 1.05;
+  }
+  .ring { width: 30px; height: 30px; flex: none; transform: rotate(-90deg); }
+  .ring .track { fill: none; stroke: var(--locked-soft); stroke-width: 4.5; }
+  .ring .prog  { fill: none; stroke: var(--green); stroke-width: 4.5; stroke-linecap: round; }
+  .mastery .lvl { color: var(--green); }
+  .mastery .sub { display:block; color: var(--text-soft); font-weight: 700; font-size: 10.5px; letter-spacing: .02em; }
+
+  .spacer { flex: 1 1 auto; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text);
+    padding: 8px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface-warm);
+  }
+  .chip .label { color: var(--text-soft); font-weight: 700; }
+  .chip .caret { width: 12px; height: 12px; opacity: .6; }
+
+  /* ============================================================
+     SCREEN 1 — WINDING PATH
+     ============================================================ */
+  .path-scroll {
+    padding: 8px 0 56px;
+    overflow: hidden;
+  }
+
+  .unit { position: relative; padding: 8px 0 18px; }
+
+  /* Unit intro banner */
+  .unit-banner {
+    margin: 18px 18px 6px;
+    border-radius: var(--r-md);
+    padding: 15px 16px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 16px -10px rgba(0,0,0,.5);
+  }
+  .unit-banner .b-icon {
+    width: 42px; height: 42px; flex: none;
+    background: rgba(255,255,255,0.18);
+    border-radius: 12px;
+    display: grid; place-items: center;
+  }
+  .unit-banner .b-icon svg { width: 24px; height: 24px; }
+  .unit-banner .b-kicker {
+    font-size: 11px; font-weight: 800; letter-spacing: .12em;
+    text-transform: uppercase; opacity: .85; display: flex; align-items: center; gap: 6px;
+  }
+  .unit-banner h2 { font-size: 21px; color: #fff; margin-top: 1px; }
+  .unit-banner .b-meta { margin-left: auto; text-align: right; font-weight: 800; font-size: 12px; opacity:.92; }
+
+  .banner-green  { background: linear-gradient(135deg, #369973, #2F8F6B); }
+  .banner-active { background: linear-gradient(135deg, #34A47A, #2F8F6B); }
+  .banner-locked { background: linear-gradient(135deg, #B9B6AD, #A9A69D); }
+
+  /* small "checkmark complete" badge on completed banner */
+  .b-check {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(255,255,255,.25); display: grid; place-items:center;
+  }
+  .b-check svg { width: 12px; height: 12px; }
+
+  /* The nodes column with a drawn connecting path behind */
+  .nodes { position: relative; padding: 14px 0 6px; }
+
+  /* connecting "trail" — dashed soft line behind nodes */
+  .trail {
+    position: absolute;
+    top: 0; bottom: 0; left: 50%;
+    width: 100%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .node-row {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    padding: 13px 0;
+  }
+  /* winding offsets — alternate left/right like a trail */
+  .off-0  { transform: translateX(0); }
+  .off-l1 { transform: translateX(-66px); }
+  .off-l2 { transform: translateX(-104px); }
+  .off-r1 { transform: translateX(66px); }
+  .off-r2 { transform: translateX(104px); }
+
+  .node {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+  }
+
+  .node-circle {
+    width: 68px; height: 68px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    position: relative;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .node-circle svg.glyph { width: 30px; height: 30px; }
+
+  /* completed node — solid green with 3D lip + check */
+  .n-done .node-circle {
+    background: var(--green);
+    box-shadow: 0 6px 0 var(--green-lip);
+    color: #fff;
+  }
+  .n-done:hover .node-circle { transform: translateY(-2px); box-shadow: 0 8px 0 var(--green-lip); }
+  .n-done:active .node-circle { transform: translateY(3px); box-shadow: 0 3px 0 var(--green-lip); }
+
+  /* active node — amber halo + 3D lip, the focal point */
+  .n-active .node-circle {
+    background: var(--green);
+    box-shadow: 0 7px 0 var(--green-lip);
+    color: #fff;
+  }
+  .n-active::before {
+    content: "";
+    position: absolute;
+    top: -8px; left: 50%;
+    width: 84px; height: 84px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    border: 3px solid var(--amber);
+    opacity: .55;
+    animation: halo 2.4s ease-in-out infinite;
+  }
+  @keyframes halo {
+    0%,100% { transform: translateX(-50%) scale(1); opacity: .5; }
+    50%     { transform: translateX(-50%) scale(1.08); opacity: .2; }
+  }
+  .n-active:hover .node-circle { transform: translateY(-2px); box-shadow: 0 9px 0 var(--green-lip); }
+  .n-active:active .node-circle { transform: translateY(4px); box-shadow: 0 3px 0 var(--green-lip); }
+
+  /* locked node — grey, flat, no lip */
+  .n-locked .node-circle {
+    background: var(--locked-soft);
+    color: var(--locked);
+    box-shadow: inset 0 0 0 2px var(--locked-soft);
+  }
+  .n-locked { cursor: not-allowed; }
+  .n-locked .node-label { color: var(--locked); }
+
+  .node-label {
+    font-weight: 800;
+    font-size: 12.5px;
+    color: var(--text);
+    max-width: 130px;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  /* small status pill under each node label (text + icon, never color alone) */
+  .node-status {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-soft);
+  }
+  .node-status svg { width: 11px; height: 11px; }
+  .n-done .node-status { color: var(--green); }
+  .n-locked .node-status { color: var(--locked); }
+
+  /* Bouncing START bubble on the active node */
+  .start-bubble {
+    position: absolute;
+    top: -46px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    color: var(--green);
+    border: 2px solid var(--green);
+    font-weight: 900;
+    font-size: 12px;
+    letter-spacing: .08em;
+    padding: 7px 14px;
+    border-radius: 999px;
+    box-shadow: 0 6px 14px -6px rgba(47,143,107,.6);
+    white-space: nowrap;
+    animation: bob 1.6s ease-in-out infinite;
+  }
+  .start-bubble::after {
+    content: "";
+    position: absolute;
+    bottom: -7px; left: 50%;
+    width: 12px; height: 12px;
+    background: var(--surface);
+    border-right: 2px solid var(--green);
+    border-bottom: 2px solid var(--green);
+    transform: translateX(-50%) rotate(45deg);
+  }
+  @keyframes bob {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50%     { transform: translateX(-50%) translateY(-6px); }
+  }
+
+  /* unit divider — soft "trailhead" marker between units */
+  .unit-sep {
+    display: flex; align-items: center; gap: 12px;
+    margin: 6px 26px 0;
+    color: var(--text-soft);
+    font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+  }
+  .unit-sep::before, .unit-sep::after {
+    content: ""; flex: 1; height: 2px; border-radius: 2px;
+    background: repeating-linear-gradient(90deg, var(--line) 0 8px, transparent 8px 14px);
+  }
+
+  /* ============================================================
+     SCREEN 2 — DRILL / LESSON
+     ============================================================ */
+  .lesson-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 16px 12px;
+    background: var(--bg);
+  }
+  .x-btn {
+    width: 38px; height: 38px; flex: none;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text-soft);
+    display: grid; place-items: center;
+    transition: background .15s ease, color .15s ease;
+  }
+  .x-btn:hover { background: var(--surface-warm); color: var(--text); }
+  .x-btn svg { width: 18px; height: 18px; }
+
+  .pbar {
+    flex: 1;
+    height: 14px;
+    background: var(--locked-soft);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+  }
+  .pbar > i {
+    display: block;
+    height: 100%;
+    width: 60%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #38A079, var(--green));
+    position: relative;
+    transition: width .5s var(--ease);
+  }
+  .pbar > i::after { /* subtle sheen line */
+    content:""; position:absolute; left:6px; right:6px; top:3px; height:3px;
+    background: rgba(255,255,255,.35); border-radius: 999px;
+  }
+
+  .lesson-body {
+    padding: 10px 20px 150px;
+  }
+
+  .skill-tag {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12px; font-weight: 800; letter-spacing: .04em;
+    color: var(--green);
+    background: var(--green-soft);
+    padding: 6px 12px; border-radius: 999px;
+    text-transform: uppercase;
+    margin: 6px 0 16px;
+  }
+  .skill-tag svg { width: 14px; height: 14px; }
+
+  .prompt {
+    font-size: 23px;
+    line-height: 1.28;
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+  .prompt b { color: var(--green); font-weight: 800; }
+
+  /* data table */
+  .tbl {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    margin-bottom: 22px;
+    font-size: 14.5px;
+  }
+  .tbl th, .tbl td { padding: 12px 14px; text-align: left; }
+  .tbl thead th {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 12px; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--text-soft);
+    background: var(--surface-warm);
+    border-bottom: 1px solid var(--line);
+  }
+  .tbl tbody tr + tr td { border-top: 1px solid var(--line); }
+  .tbl td.feat { font-weight: 800; }
+  .tbl .key { color: var(--text-soft); font-weight: 700; font-size: 11px; margin-right: 4px; display:none; }
+
+  /* value/effort tags inside the table — icon + text, not color alone */
+  .vtag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-weight: 800; font-size: 12.5px;
+    padding: 3px 9px; border-radius: 999px;
+  }
+  .vtag svg { width: 12px; height: 12px; }
+  .v-high { background: var(--green-soft); color: var(--green-lip); }
+  .v-low  { background: var(--locked-soft); color: var(--text-soft); }
+
+  /* answer options */
+  .opts {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .opt {
+    appearance: none;
+    text-align: left;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+    border: 2px solid var(--line);
+    border-bottom-width: 4px;
+    border-radius: var(--r-md);
+    padding: 16px 16px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    transition: transform .08s ease, border-color .15s ease, background .15s ease;
+  }
+  .opt:hover { background: var(--surface-warm); }
+  .opt:active { transform: translateY(1px); }
+  .opt .key-badge {
+    width: 30px; height: 30px; flex: none;
+    border-radius: 9px;
+    border: 2px solid var(--line);
+    display: grid; place-items: center;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800; font-size: 15px;
+    color: var(--text-soft);
+    transition: inherit;
+  }
+  .opt[aria-pressed="true"] {
+    border-color: var(--green);
+    background: var(--green-soft);
+    color: var(--green-lip);
+  }
+  .opt[aria-pressed="true"] .key-badge {
+    border-color: var(--green);
+    background: var(--green);
+    color: #fff;
+  }
+  /* locked-in correct / wrong reveal after CHECK */
+  .opt.reveal-correct {
+    border-color: var(--green);
+    background: var(--green-soft);
+    color: var(--green-lip);
+  }
+  .opt.reveal-correct .key-badge { background: var(--green); border-color: var(--green); color:#fff; }
+  .opt.reveal-wrong {
+    border-color: var(--red);
+    background: var(--red-soft);
+    color: var(--red-lip);
+  }
+  .opt.reveal-wrong .key-badge { background: var(--red); border-color: var(--red); color:#fff; }
+  .opt .reveal-ic { margin-left: auto; width: 22px; height: 22px; display: none; }
+  .opt.reveal-correct .reveal-ic.ok,
+  .opt.reveal-wrong .reveal-ic.no { display: block; }
+  .opt:disabled { cursor: default; }
+
+  /* subtle pulse on correct answer (rationed celebration) */
+  @keyframes pulse {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+  .pulse { animation: pulse .45s var(--ease); }
+
+  /* ============================================================
+     3D PUSH BUTTON — the signature control
+     ============================================================ */
+  .footer {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 18px 20px 22px;
+    background: linear-gradient(180deg, rgba(251,250,247,0) 0%, var(--bg) 26%);
+    z-index: 6;
+  }
+
+  .btn3d {
+    width: 100%;
+    border: 0;
+    border-radius: var(--r-md);
+    padding: 16px 20px;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--green);
+    box-shadow: 0 5px 0 var(--green-lip);
+    transition: transform .08s ease, box-shadow .08s ease, background .2s ease;
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  }
+  .btn3d svg { width: 18px; height: 18px; }
+  .btn3d:hover { transform: translateY(-1px); box-shadow: 0 6px 0 var(--green-lip); }
+  .btn3d:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--green-lip); }
+
+  .btn3d:disabled {
+    background: var(--locked-soft);
+    color: #A7A399;
+    box-shadow: 0 5px 0 #D7D3CA;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn3d.is-red   { background: var(--red);   box-shadow: 0 5px 0 var(--red-lip); }
+  .btn3d.is-red:active { box-shadow: 0 1px 0 var(--red-lip); }
+  .btn3d.is-green { background: var(--green); box-shadow: 0 5px 0 var(--green-lip); }
+
+  /* ============================================================
+     FEEDBACK BAR — slides up from bottom
+     ============================================================ */
+  .feedback {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    transform: translateY(110%);
+    transition: transform .4s var(--ease);
+    z-index: 7;
+    border-top-left-radius: var(--r-lg);
+    border-top-right-radius: var(--r-lg);
+    padding: 20px 20px 22px;
+    box-shadow: 0 -16px 40px -24px rgba(0,0,0,.35);
+  }
+  .feedback.show { transform: translateY(0); }
+  .feedback.ok { background: var(--green-soft); }
+  .feedback.no { background: var(--red-soft); }
+
+  .fb-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .fb-badge {
+    width: 40px; height: 40px; flex: none; border-radius: 50%;
+    display: grid; place-items: center; color: #fff;
+  }
+  .fb-badge svg { width: 22px; height: 22px; }
+  .feedback.ok .fb-badge { background: var(--green); }
+  .feedback.no .fb-badge { background: var(--red); }
+  .fb-title { font-family: "Baloo 2", sans-serif; font-size: 22px; font-weight: 800; }
+  .feedback.ok .fb-title { color: var(--green-lip); }
+  .feedback.no .fb-title { color: var(--red-lip); }
+
+  .fb-text { font-size: 14.5px; font-weight: 600; line-height: 1.45; color: var(--text); margin: 0 2px 16px; }
+  .fb-text b { font-weight: 800; }
+
+  .fb-link {
+    background: none; border: 0; padding: 4px 0; margin-left: 2px;
+    font-weight: 800; font-size: 13.5px; color: var(--text-soft);
+    text-decoration: underline; text-underline-offset: 3px;
+  }
+  .feedback.ok .fb-link { color: var(--green-lip); }
+  .feedback.no .fb-link { color: var(--red-lip); }
+  .fb-explain {
+    font-size: 13px; color: var(--text-soft); font-weight: 600;
+    margin: 6px 2px 14px; line-height: 1.45;
+    border-left: 3px solid currentColor; padding-left: 12px;
+    display: none;
+  }
+  .fb-explain.show { display: block; animation: screenIn .3s ease both; }
+  .feedback .btn3d { margin-top: 4px; }
+
+  /* ============================================================
+     LESSON COMPLETE — restrained, rationed bigger moment
+     ============================================================ */
+  .complete {
+    position: absolute; inset: 0;
+    background: var(--bg);
+    z-index: 9;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 28px;
+  }
+  .complete.show { display: flex; animation: screenIn .35s ease both; }
+
+  .medal {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #F6C871, var(--amber));
+    display: grid; place-items: center;
+    box-shadow: 0 12px 30px -10px rgba(224,162,58,.7), inset 0 -6px 0 rgba(0,0,0,.08);
+    margin-bottom: 22px;
+    animation: pop .55s var(--ease) both;
+  }
+  @keyframes pop { 0%{transform:scale(.4);opacity:0;} 60%{transform:scale(1.08);} 100%{transform:scale(1);opacity:1;} }
+  .medal svg { width: 52px; height: 52px; color: #fff; }
+
+  .complete h2 { font-size: 28px; margin-bottom: 6px; }
+  .complete .sub { color: var(--text-soft); font-weight: 700; font-size: 15px; margin-bottom: 22px; }
+
+  .reward-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
+  .reward {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 15px; border-radius: var(--r-md);
+    background: var(--surface); border: 1px solid var(--line);
+    font-weight: 800; font-size: 14px;
+  }
+  .reward svg { width: 18px; height: 18px; flex: none; }
+  .reward.r-mastery { color: var(--green); }
+  .reward.r-streak  { color: var(--amber); }
+  .reward.r-next    { color: var(--text); }
+  .reward .muted { color: var(--text-soft); font-weight: 700; }
+  .complete .btn3d { max-width: 320px; }
+
+  /* confetti layer */
+  .confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 8; }
+  .confetti i {
+    position: absolute; top: -16px; width: 9px; height: 14px; border-radius: 2px;
+    opacity: 0; will-change: transform, opacity;
+  }
+
+  /* ============================================================
+     Footer note + responsive
+     ============================================================ */
+  .note {
+    margin-top: 22px; max-width: 440px; text-align: center;
+    color: var(--text-soft); font-size: 12.5px; font-weight: 700; line-height: 1.5;
+  }
+  .note kbd {
+    font-family: inherit; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 6px; padding: 1px 6px; font-size: 11px; font-weight: 800;
+  }
+
+  @media (max-width: 460px) {
+    .canvas { padding: 16px 8px 30px; }
+    .device { border-radius: 26px; min-height: 720px; }
+    .off-l1 { transform: translateX(-52px); }
+    .off-l2 { transform: translateX(-82px); }
+    .off-r1 { transform: translateX(52px); }
+    .off-r2 { transform: translateX(82px); }
+    .prompt { font-size: 21px; }
+    .stat, .mastery { font-size: 13px; }
+    .chip { font-size: 12px; }
+  }
+
+  /* Honor reduced-motion — disable all non-essential animation */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+    .feedback { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="canvas">
+
+    <!-- Founder screen switcher -->
+    <div class="switcher" role="tablist" aria-label="Switch mockup screen">
+      <button role="tab" id="tab-path" aria-selected="true" aria-controls="screen-path" onclick="showScreen('path')">
+        <span class="dot" style="background:var(--green)"></span>Path
+      </button>
+      <button role="tab" id="tab-lesson" aria-selected="false" aria-controls="screen-lesson" onclick="showScreen('lesson')">
+        <span class="dot" style="background:var(--amber)"></span>Lesson
+      </button>
+    </div>
+
+    <div class="device">
+
+      <!-- ============================================================
+           SCREEN 1 — LEARNING PATH HOME
+           ============================================================ -->
+      <section class="screen active" id="screen-path" role="tabpanel" aria-labelledby="tab-path">
+
+        <header class="statusbar">
+          <!-- (a) flexible consistency streak -->
+          <span class="stat stat-streak" title="Consistency streak — a flexible habit, not a deadline">
+            <svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2c.6 2.3-.4 3.7-1.6 5C8.9 8.7 7 10.3 7 13.5A5 5 0 0 0 17 14c0-1.7-.7-2.8-1.4-3.7.6 2.2-1 3-1 3 .4-2.2-1-3.9-2-4.8.4 2-1 3-1.7 4.2C9.4 14 9 13 9 12c-.8.9-1 2-1 2.5A4 4 0 0 0 12 18a4 4 0 0 0 4-4c0-3-2.4-4.6-2.4-7.5 0-1.9-.8-3.5-1.6-4.5Z"/>
+            </svg>
+            <span><span class="num">12</span></span>
+            <span class="sr-only">day consistency streak</span>
+          </span>
+
+          <!-- (b) mastery — demonstrated competence, not lesson count -->
+          <span class="mastery" title="Mastery — demonstrated competence, not lessons completed">
+            <svg class="ring" viewBox="0 0 36 36" aria-hidden="true">
+              <circle class="track" cx="18" cy="18" r="15"></circle>
+              <!-- ~68% of circumference (2*pi*15 ≈ 94.2) -->
+              <circle class="prog" cx="18" cy="18" r="15" stroke-dasharray="64 94.2"></circle>
+            </svg>
+            <span>
+              <span class="lvl">Level 4</span>
+              <span class="sub">Mastery</span>
+            </span>
+          </span>
+
+          <span class="spacer"></span>
+
+          <!-- (c) home industry chip -->
+          <button class="chip" type="button" title="Choose your home industry flavor">
+            <span class="label">Home:</span> SaaS
+            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+        </header>
+
+        <div class="path-scroll" id="pathScroll">
+
+          <!-- ===== UNIT 1 — Discovery Foundations · COMPLETED ===== -->
+          <div class="unit">
+            <div class="unit-banner banner-green">
+              <span class="b-icon" aria-hidden="true">
+                <!-- compass / discovery -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>
+              </span>
+              <div>
+                <div class="b-kicker">Unit 1
+                  <span class="b-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg></span>
+                </div>
+                <h2>Discovery Foundations</h2>
+              </div>
+              <div class="b-meta">Complete</div>
+            </div>
+
+            <div class="nodes">
+              <div class="node-row off-0">
+                <button class="node n-done" type="button">
+                  <span class="node-circle"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg></span>
+                  <span class="node-label">JTBD</span>
+                  <span class="node-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg>Done</span>
+                </button>
+              </div>
+              <div class="node-row off-r1">
+                <button class="node n-done" type="button">
+                  <span class="node-circle"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg></span>
+                  <span class="node-label">User Interviews</span>
+                  <span class="node-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg>Done</span>
+                </button>
+              </div>
+              <div class="node-row off-l1">
+                <button class="node n-done" type="button">
+                  <span class="node-circle"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg></span>
+                  <span class="node-label">Problem Framing</span>
+                  <span class="node-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg>Done</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="unit-sep">Trailhead</div>
+
+          <!-- ===== UNIT 2 — Prioritization · CURRENT ===== -->
+          <div class="unit">
+            <div class="unit-banner banner-active">
+              <span class="b-icon" aria-hidden="true">
+                <!-- sliders / prioritization -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><circle cx="4" cy="12" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="20" cy="14" r="2"/></svg>
+              </span>
+              <div>
+                <div class="b-kicker">Unit 2 · In progress</div>
+                <h2>Prioritization</h2>
+              </div>
+              <div class="b-meta">1 / 4</div>
+            </div>
+
+            <div class="nodes">
+              <!-- ACTIVE node — opens the lesson -->
+              <div class="node-row off-0">
+                <button class="node n-active" type="button" id="activeNode" onclick="openLesson()" aria-label="Start lesson: Value vs Effort — active">
+                  <span class="start-bubble" aria-hidden="true">START</span>
+                  <span class="node-circle">
+                    <svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  </span>
+                  <span class="node-label">Value vs Effort</span>
+                  <span class="node-status" style="color:var(--green)">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Active
+                  </span>
+                </button>
+              </div>
+
+              <div class="node-row off-r1">
+                <button class="node n-locked" type="button" disabled aria-label="RICE — locked, complete Value vs Effort first">
+                  <span class="node-circle"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+                  <span class="node-label">RICE</span>
+                  <span class="node-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Locked</span>
+                </button>
+              </div>
+
+              <div class="node-row off-l1">
+                <button class="node n-locked" type="button" disabled aria-label="Kano and MoSCoW — locked">
+                  <span class="node-circle"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+                  <span class="node-label">Kano &amp; MoSCoW</span>
+                  <span class="node-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Locked</span>
+                </button>
+              </div>
+
+              <div class="node-row off-0">
+                <button class="node n-locked" type="button" disabled aria-label="Cost of Delay — locked">
+                  <span class="node-circle"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+                  <span class="node-label">Cost of Delay</span>
+                  <span class="node-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Locked</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="unit-sep">Locked ahead</div>
+
+          <!-- ===== UNIT 3 — Metrics Fundamentals · LOCKED ===== -->
+          <div class="unit">
+            <div class="unit-banner banner-locked">
+              <span class="b-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 16v-4M12 16V8M16 16v-7"/></svg>
+              </span>
+              <div>
+                <div class="b-kicker">Unit 3 · Locked</div>
+                <h2>Metrics Fundamentals</h2>
+              </div>
+              <div class="b-meta"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+            </div>
+            <div class="nodes">
+              <div class="node-row off-r1">
+                <button class="node n-locked" type="button" disabled aria-label="AARRR Funnel — locked">
+                  <span class="node-circle"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+                  <span class="node-label">AARRR Funnel</span>
+                  <span class="node-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Locked</span>
+                </button>
+              </div>
+              <div class="node-row off-l1">
+                <button class="node n-locked" type="button" disabled aria-label="Activation and Retention — locked">
+                  <span class="node-circle"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+                  <span class="node-label">Activation &amp; Retention</span>
+                  <span class="node-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Locked</span>
+                </button>
+              </div>
+              <div class="node-row off-0">
+                <button class="node n-locked" type="button" disabled aria-label="North Star — locked">
+                  <span class="node-circle"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+                  <span class="node-label">North Star</span>
+                  <span class="node-status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Locked</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== UNITS 4–7 — compact locked banners ===== -->
+          <div class="unit">
+            <div class="unit-banner banner-locked">
+              <span class="b-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/><circle cx="18" cy="17" r="2.4"/></svg></span>
+              <div><div class="b-kicker">Unit 4 · Locked</div><h2>Execution &amp; Delivery</h2></div>
+              <div class="b-meta"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+            </div>
+          </div>
+
+          <div class="unit">
+            <div class="unit-banner banner-locked">
+              <span class="b-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3.2"/></svg></span>
+              <div><div class="b-kicker">Unit 5 · Locked</div><h2>Strategy &amp; Vision</h2></div>
+              <div class="b-meta"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+            </div>
+          </div>
+
+          <div class="unit">
+            <div class="unit-banner banner-locked">
+              <span class="b-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v4l-2 2v5l3 4H8l3-4V9L9 7Z"/></svg></span>
+              <div><div class="b-kicker">Unit 6 · Locked</div><h2>Experimentation</h2></div>
+              <div class="b-meta"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+            </div>
+          </div>
+
+          <div class="unit">
+            <div class="unit-banner banner-locked">
+              <span class="b-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.1 7.5L3 21l2-5.9A8.4 8.4 0 1 1 21 11.5Z"/></svg></span>
+              <div><div class="b-kicker">Unit 7 · Locked</div><h2>Communication &amp; Risk</h2></div>
+              <div class="b-meta"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SCREEN 2 — DRILL / LESSON
+           ============================================================ -->
+      <section class="screen" id="screen-lesson" role="tabpanel" aria-labelledby="tab-lesson">
+
+        <div class="lesson-top">
+          <button class="x-btn" type="button" onclick="closeLesson()" aria-label="Close lesson and return to path">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+          <div class="pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60" aria-label="Lesson progress">
+            <i id="pbarFill"></i>
+          </div>
+        </div>
+
+        <div class="lesson-body">
+          <span class="skill-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            Value vs Effort
+          </span>
+
+          <p class="prompt">Your team can ship one thing this sprint. Which is the best <b>quick win</b>?</p>
+
+          <table class="tbl">
+            <caption class="sr-only">Three candidate features with their value and effort ratings</caption>
+            <thead>
+              <tr><th scope="col">Feature</th><th scope="col">Value</th><th scope="col">Effort</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="feat">A · Onboarding checklist</td>
+                <td><span class="vtag v-high"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>High</span></td>
+                <td><span class="vtag v-low"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>Low</span></td>
+              </tr>
+              <tr>
+                <td class="feat">B · Custom dashboards</td>
+                <td><span class="vtag v-high"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>High</span></td>
+                <td><span class="vtag v-high"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>High</span></td>
+              </tr>
+              <tr>
+                <td class="feat">C · Dark mode</td>
+                <td><span class="vtag v-low"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>Low</span></td>
+                <td><span class="vtag v-low"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>Low</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="opts" role="group" aria-label="Choose the best quick win">
+            <button class="opt" type="button" data-choice="A" onclick="selectOpt(this)" aria-pressed="false">
+              <span class="key-badge">A</span> Onboarding checklist
+              <svg class="reveal-ic ok" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg>
+              <svg class="reveal-ic no" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+            <button class="opt" type="button" data-choice="B" onclick="selectOpt(this)" aria-pressed="false">
+              <span class="key-badge">B</span> Custom dashboards
+              <svg class="reveal-ic ok" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg>
+              <svg class="reveal-ic no" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+            <button class="opt" type="button" data-choice="C" onclick="selectOpt(this)" aria-pressed="false">
+              <span class="key-badge">C</span> Dark mode
+              <svg class="reveal-ic ok" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg>
+              <svg class="reveal-ic no" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+            <button class="opt" type="button" data-choice="ALL" onclick="selectOpt(this)" aria-pressed="false">
+              <span class="key-badge">∑</span> Ship all three
+              <svg class="reveal-ic ok" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg>
+              <svg class="reveal-ic no" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- primary action / CHECK → CONTINUE -->
+        <div class="footer" id="lessonFooter">
+          <button class="btn3d" id="checkBtn" type="button" disabled onclick="onCheck()">Check</button>
+        </div>
+
+        <!-- feedback bar (slides up) -->
+        <div class="feedback" id="feedback" role="status" aria-live="polite">
+          <div class="fb-head">
+            <span class="fb-badge" id="fbBadge" aria-hidden="true"></span>
+            <span class="fb-title" id="fbTitle"></span>
+          </div>
+          <p class="fb-text" id="fbText"></p>
+          <p class="fb-explain" id="fbExplain"></p>
+          <button class="fb-link" type="button" id="fbLink" onclick="toggleExplain()">Explain my answer</button>
+          <button class="btn3d" id="continueBtn" type="button" onclick="onContinue()">Continue</button>
+        </div>
+
+        <!-- lesson complete (rationed bigger moment) -->
+        <div class="complete" id="complete" role="dialog" aria-modal="true" aria-labelledby="completeTitle">
+          <div class="confetti" id="confetti" aria-hidden="true"></div>
+          <div class="medal" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg>
+          </div>
+          <h2 id="completeTitle">Value vs Effort <span style="color:var(--green)">&check;</span></h2>
+          <p class="sub">Skill demonstrated. Nicely done.</p>
+
+          <div class="reward-row">
+            <span class="reward r-mastery">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3Z"/></svg>
+              +1 mastery
+            </span>
+            <span class="reward r-streak">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c.6 2.3-.4 3.7-1.6 5C8.9 8.7 7 10.3 7 13.5A5 5 0 0 0 17 14c0-1.7-.7-2.8-1.4-3.7.6 2.2-1 3-1 3 .4-2.2-1-3.9-2-4.8.4 2-1 3-1.7 4.2C9.4 14 9 13 9 12c-.8.9-1 2-1 2.5A4 4 0 0 0 12 18a4 4 0 0 0 4-4c0-3-2.4-4.6-2.4-7.5 0-1.9-.8-3.5-1.6-4.5Z"/></svg>
+              Streak kept <span class="muted">· 12</span>
+            </span>
+            <span class="reward r-next">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              Next up <span class="muted">· RICE</span>
+            </span>
+          </div>
+
+          <button class="btn3d is-green" type="button" onclick="finishLesson()">Continue</button>
+        </div>
+
+      </section>
+    </div>
+
+    <p class="note">
+      Clickable mockup — <b>Direction A · Trailhead</b>. Use the toggle above to flip screens, or click the
+      glowing <b>START</b> node on the Path. Keyboard: <kbd>Tab</kbd> to focus, <kbd>Enter</kbd>/<kbd>Space</kbd> to activate.
+    </p>
+  </div>
+
+<script>
+  "use strict";
+
+  /* ---------- prefers-reduced-motion guard ---------- */
+  const REDUCE = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ============================================================
+     Screen switching (toggle tabs + node-driven nav)
+     ============================================================ */
+  const screens = {
+    path:   document.getElementById("screen-path"),
+    lesson: document.getElementById("screen-lesson"),
+  };
+  const tabs = {
+    path:   document.getElementById("tab-path"),
+    lesson: document.getElementById("tab-lesson"),
+  };
+
+  function showScreen(name) {
+    Object.keys(screens).forEach(k => {
+      const on = k === name;
+      screens[k].classList.toggle("active", on);
+      tabs[k].setAttribute("aria-selected", on ? "true" : "false");
+    });
+    // jump device into view on small screens
+    document.querySelector(".device").scrollIntoView({ behavior: REDUCE ? "auto" : "smooth", block: "nearest" });
+  }
+
+  function openLesson() {
+    resetLesson();
+    showScreen("lesson");
+  }
+  function closeLesson() {
+    showScreen("path");
+  }
+
+  /* ============================================================
+     Drill logic
+     ============================================================ */
+  const CORRECT = "A";
+  let selected = null;
+  let answered = false;
+
+  const checkBtn    = document.getElementById("checkBtn");
+  const continueBtn = document.getElementById("continueBtn");
+  const feedback    = document.getElementById("feedback");
+  const fbBadge     = document.getElementById("fbBadge");
+  const fbTitle     = document.getElementById("fbTitle");
+  const fbText      = document.getElementById("fbText");
+  const fbExplain   = document.getElementById("fbExplain");
+  const fbLink      = document.getElementById("fbLink");
+  const completeEl  = document.getElementById("complete");
+  const footerEl    = document.getElementById("lessonFooter");
+  const pbarFill    = document.getElementById("pbarFill");
+
+  const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg>';
+  const ICON_X     = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+
+  function selectOpt(btn) {
+    if (answered) return;
+    selected = btn.dataset.choice;
+    document.querySelectorAll(".opt").forEach(o => o.setAttribute("aria-pressed", "false"));
+    btn.setAttribute("aria-pressed", "true");
+    checkBtn.disabled = false;
+  }
+
+  function onCheck() {
+    if (!selected || answered) return;
+    answered = true;
+    const isCorrect = selected === CORRECT;
+
+    // lock options + reveal correctness (icon + color + text, never color alone)
+    document.querySelectorAll(".opt").forEach(o => {
+      o.disabled = true;
+      if (o.dataset.choice === CORRECT) o.classList.add("reveal-correct");
+      else if (o.dataset.choice === selected) o.classList.add("reveal-wrong");
+    });
+
+    if (isCorrect) {
+      // subtle, rationed pulse on the correct answer
+      const win = document.querySelector('.opt[data-choice="A"]');
+      if (!REDUCE) { win.classList.add("pulse"); win.addEventListener("animationend", () => win.classList.remove("pulse"), { once: true }); }
+
+      feedback.className = "feedback ok";
+      fbBadge.innerHTML = ICON_CHECK;
+      fbTitle.textContent = "Correct!";
+      fbText.innerHTML = "A quick win is <b>HIGH value, LOW effort</b> — Feature A.";
+      fbExplain.textContent = "B (Custom dashboards) is high value but high effort — that's a 'big bet' for later planning. C (Dark mode) is low effort but low value — 'maybe later.' Only A sits in the high-value / low-effort quadrant, so it delivers the most impact this sprint.";
+    } else {
+      feedback.className = "feedback no";
+      fbBadge.innerHTML = ICON_X;
+      fbTitle.textContent = "Not quite";
+      fbText.innerHTML = wrongReason(selected) + " The quick win is <b>A — Onboarding checklist</b> (high value, low effort).";
+      fbExplain.textContent = "Quick wins live in the high-value / low-effort quadrant. A is the only feature there. B is high effort (a big bet), and C is low value (maybe later) — so neither is the best single thing to ship this sprint.";
+    }
+
+    // morph CHECK → CONTINUE (color matches result), reveal feedback bar
+    footerEl.style.display = "none";
+    continueBtn.className = "btn3d " + (isCorrect ? "is-green" : "is-red");
+    continueBtn.textContent = "Continue";
+    fbExplain.classList.remove("show");
+    fbLink.textContent = "Explain my answer";
+    feedback.classList.add("show");
+    continueBtn.focus({ preventScroll: true });
+  }
+
+  function wrongReason(choice) {
+    if (choice === "B") return "Custom dashboards are high value but <b>high effort</b> — a big bet, not a quick win.";
+    if (choice === "C") return "Dark mode is low effort but <b>low value</b> — nice-to-have, maybe later.";
+    if (choice === "ALL") return "One sprint, one focus — shipping all three isn't picking the quick win.";
+    return "";
+  }
+
+  function toggleExplain() {
+    const open = fbExplain.classList.toggle("show");
+    fbLink.textContent = open ? "Hide explanation" : "Explain my answer";
+    fbExplain.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function onContinue() {
+    // advance progress bar, then show the rationed lesson-complete moment
+    pbarFill.style.width = "100%";
+    feedback.classList.remove("show");
+    setTimeout(() => {
+      completeEl.classList.add("show");
+      fireConfetti();
+      // move focus to the complete dialog's CTA
+      completeEl.querySelector(".btn3d").focus({ preventScroll: true });
+    }, REDUCE ? 0 : 260);
+  }
+
+  function finishLesson() {
+    completeEl.classList.remove("show");
+    resetLesson();
+    showScreen("path");
+  }
+
+  function resetLesson() {
+    selected = null;
+    answered = false;
+    checkBtn.disabled = true;
+    footerEl.style.display = "";
+    feedback.classList.remove("show");
+    completeEl.classList.remove("show");
+    fbExplain.classList.remove("show");
+    fbLink.textContent = "Explain my answer";
+    pbarFill.style.width = "60%";
+    document.querySelectorAll(".opt").forEach(o => {
+      o.disabled = false;
+      o.setAttribute("aria-pressed", "false");
+      o.classList.remove("reveal-correct", "reveal-wrong", "pulse");
+    });
+    clearConfetti();
+  }
+
+  /* ============================================================
+     Confetti — tasteful, one burst, reduced-motion aware
+     ============================================================ */
+  const confettiEl = document.getElementById("confetti");
+  const CONFETTI_COLORS = ["#2F8F6B", "#E0A23A", "#E5533D", "#38A079", "#F6C871"];
+
+  function fireConfetti() {
+    clearConfetti();
+    if (REDUCE) return;                  // honor reduced-motion: no confetti
+    const N = 28;
+    for (let i = 0; i < N; i++) {
+      const p = document.createElement("i");
+      const left = Math.random() * 100;
+      const color = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
+      const dx = (Math.random() * 120 - 60).toFixed(0);
+      const rot = (Math.random() * 540 - 270).toFixed(0);
+      const dur = (1100 + Math.random() * 900).toFixed(0);
+      const delay = (Math.random() * 180).toFixed(0);
+      p.style.left = left + "%";
+      p.style.background = color;
+      if (i % 3 === 0) p.style.borderRadius = "50%";
+      p.style.animation = `fall ${dur}ms cubic-bezier(.2,.6,.3,1) ${delay}ms forwards`;
+      p.style.setProperty("--dx", dx + "px");
+      p.style.setProperty("--rot", rot + "deg");
+      confettiEl.appendChild(p);
+    }
+  }
+  function clearConfetti() { confettiEl.innerHTML = ""; }
+
+  // confetti keyframes injected (uses per-particle --dx / --rot)
+  const kf = document.createElement("style");
+  kf.textContent =
+    "@keyframes fall {" +
+    "0% { opacity: 0; transform: translateY(-10px) translateX(0) rotate(0); }" +
+    "12% { opacity: 1; }" +
+    "100% { opacity: 0; transform: translateY(560px) translateX(var(--dx)) rotate(var(--rot)); } }";
+  document.head.appendChild(kf);
+
+  /* ============================================================
+     Keyboard niceties:
+     - 1/2 toggle screens
+     - A/B/C while in the drill select options
+     - Enter checks when armed
+     ============================================================ */
+  document.addEventListener("keydown", (e) => {
+    const onLesson = screens.lesson.classList.contains("active");
+    if (e.key === "1") showScreen("path");
+    if (e.key === "2") showScreen("lesson");
+    if (!onLesson || answered) return;
+    const map = { a: "A", b: "B", c: "C" };
+    const k = e.key.toLowerCase();
+    if (map[k]) {
+      const btn = document.querySelector('.opt[data-choice="' + map[k] + '"]');
+      if (btn) selectOpt(btn);
+    }
+    if (e.key === "Enter" && !checkBtn.disabled) onCheck();
+  });
+</script>
+</body>
+</html>

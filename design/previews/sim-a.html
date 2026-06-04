@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PRAXIS — Simulation · Direction A · Cockpit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     PRAXIS — SIMULATION · Direction A "Cockpit"
+     One clarified command screen. Everything legible at once:
+     mission, capacity-as-range, ship-to-earn, live scoreboard,
+     characters, cause->effect. Reuses the "Console" design system
+     (slate palette, electric indigo, mono metadata, 7px radii).
+     ============================================================ */
+
+  :root {
+    /* monochrome slate scale */
+    --ink:        #171717;
+    --ink-2:      #404040;
+    --slate:      #525252;
+    --mute:       #737373;
+    --faint:      #A3A3A3;
+    --line:       #E5E5E5;
+    --line-2:     #EDEDED;
+    --panel:      #FAFAFA;
+    --panel-2:    #F5F5F5;
+    --paper:      #FFFFFF;
+
+    /* one electric accent + semantic state */
+    --accent:     #2563EB;
+    --accent-700: #1D4ED8;
+    --accent-050: #EFF4FF;
+    --accent-100: #DBE6FF;
+    --good:       #16A34A;
+    --good-050:   #ECFDF3;
+    --good-line:  #BBF7D0;
+    --bad:        #DC2626;
+    --bad-050:    #FEF2F2;
+    --bad-line:   #FECACA;
+    --warn:       #D97706;
+    --warn-050:   #FFFBEB;
+    --warn-line:  #FDE68A;
+
+    --radius:     7px;
+    --radius-sm:  5px;
+    --radius-lg:  10px;
+
+    --shadow-sm:  0 1px 2px rgba(15,23,42,0.04);
+    --shadow-md:  0 6px 20px rgba(15,23,42,0.06);
+    --shadow-lg:  0 14px 40px rgba(15,23,42,0.10);
+
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--panel);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    line-height: 1.5;
+  }
+
+  /* faint technical grid (matches portfolio .blueprint-light) */
+  .blueprint {
+    background-image:
+      linear-gradient(rgba(15,23,42,0.030) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,23,42,0.030) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+
+  button { font-family: inherit; cursor: pointer; }
+
+  a:focus-visible,
+  button:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  .mono { font-family: var(--mono); }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ============================================================
+     APP CHROME — top utility bar
+     ============================================================ */
+  .app { min-height: 100vh; display: flex; flex-direction: column; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 60;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: saturate(180%) blur(8px);
+  }
+  .topbar__inner {
+    max-width: 1320px; margin: 0 auto;
+    padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .wordmark {
+    font-family: var(--mono); font-weight: 600; font-size: 15px;
+    letter-spacing: -0.01em; color: var(--ink);
+    text-decoration: none; white-space: nowrap;
+  }
+  .wordmark .dot { color: var(--accent); }
+  .wordmark .v   { color: var(--faint); font-size: 11px; font-weight: 500; margin-left: 6px; }
+
+  /* segmented screen toggle (Plan | Outcome) */
+  .seg {
+    display: inline-flex; background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 3px; gap: 2px;
+  }
+  .seg__btn {
+    appearance: none; border: 0; background: transparent;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em;
+    color: var(--slate); padding: 6px 14px; border-radius: var(--radius-sm);
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: color .15s ease, background .15s ease;
+  }
+  .seg__btn:hover { color: var(--ink); }
+  .seg__btn[aria-selected="true"] {
+    background: var(--paper); color: var(--ink);
+    box-shadow: var(--shadow-sm); border: 1px solid var(--line); margin: -1px;
+  }
+  .seg__btn .ico { width: 14px; height: 14px; flex: none; }
+
+  /* tiny "restart onboarding" ghost button */
+  .ghostbtn {
+    appearance: none; border: 1px solid var(--line); background: var(--paper);
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--slate);
+    padding: 7px 11px; border-radius: var(--radius);
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .ghostbtn:hover { border-color: var(--faint); color: var(--ink); }
+  .ghostbtn .ico { width: 13px; height: 13px; flex: none; }
+
+  /* ============================================================
+     SCREEN PLUMBING
+     ============================================================ */
+  .screen { display: none; }
+  .screen.is-active { display: block; }
+  main { flex: 1 1 auto; }
+
+  /* ============================================================
+     MISSION BAR — objective + revenue progress + sprint
+     ============================================================ */
+  .mission {
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .mission__inner {
+    max-width: 1320px; margin: 0 auto; padding: 16px 24px;
+    display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+  }
+  .mission__obj { display: flex; align-items: center; gap: 13px; min-width: 0; }
+  .mission__badge {
+    width: 38px; height: 38px; flex: none; border-radius: var(--radius);
+    background: var(--accent-050); border: 1px solid var(--accent-100);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--accent);
+  }
+  .mission__badge .ico { width: 20px; height: 20px; }
+  .mission__txt { min-width: 0; }
+  .mission__k {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--mute); line-height: 1.2;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .mission__pin {
+    color: var(--accent); background: var(--accent-050);
+    border: 1px solid var(--accent-100); border-radius: 999px;
+    padding: 1px 7px; letter-spacing: 0.1em;
+  }
+  .mission__goal {
+    font-size: 15px; font-weight: 600; color: var(--ink);
+    letter-spacing: -0.01em; line-height: 1.35; margin-top: 3px;
+  }
+  .mission__goal b { color: var(--accent); }
+
+  .mission__spacer { flex: 1 1 auto; }
+
+  /* revenue progress (the headline metric — toward $5,000) */
+  .revblock { min-width: 230px; }
+  .revblock__row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  }
+  .revblock__lab {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--mute);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .revblock__lab .ico { width: 13px; height: 13px; color: var(--good); flex: none; }
+  .revblock__val {
+    font-family: var(--mono); font-size: 14px; font-weight: 600;
+    color: var(--ink); font-variant-numeric: tabular-nums;
+  }
+  .revblock__val small { color: var(--faint); font-weight: 500; }
+  .revbar {
+    margin-top: 8px; height: 8px; background: var(--line);
+    border-radius: 999px; overflow: hidden; position: relative;
+  }
+  .revbar__fill {
+    height: 100%; width: 48%;
+    background: linear-gradient(90deg, var(--good), #22C55E);
+    border-radius: 999px;
+    transition: width 1s cubic-bezier(.2,.7,.2,1);
+  }
+  /* goal tick marker on the revenue bar */
+  .revbar__goal {
+    position: absolute; top: -3px; bottom: -3px; right: 0; width: 2px;
+    background: var(--good); border-radius: 2px; opacity: .55;
+  }
+  .revblock__sub {
+    margin-top: 6px; font-family: var(--mono); font-size: 10.5px;
+    color: var(--faint); letter-spacing: 0.02em;
+  }
+
+  /* sprint stepper */
+  .sprint { display: flex; align-items: center; gap: 11px; }
+  .sprint__lab {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--mute);
+  }
+  .sprint__dots { display: inline-flex; gap: 5px; }
+  .sprint__dot {
+    width: 9px; height: 9px; border-radius: 999px;
+    background: var(--line); border: 1px solid var(--line);
+  }
+  .sprint__dot.is-done { background: var(--accent); border-color: var(--accent); }
+  .sprint__dot.is-cur {
+    background: var(--paper); border: 2px solid var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-050);
+  }
+  .sprint__no {
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .sprint__no small { color: var(--faint); font-weight: 500; }
+
+  /* ============================================================
+     COCKPIT GRID — three columns
+     ============================================================ */
+  .cockpit {
+    max-width: 1320px; margin: 0 auto; padding: 22px 24px 56px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr) 312px;
+    gap: 18px;
+    align-items: start;
+  }
+
+  .col__head {
+    display: flex; align-items: center; gap: 9px; margin-bottom: 12px;
+  }
+  .col__head .ico { width: 15px; height: 15px; color: var(--slate); flex: none; }
+  .col__title {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink); font-weight: 600;
+  }
+  .col__count {
+    margin-left: auto; font-family: var(--mono); font-size: 11px;
+    color: var(--faint); font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- generic panel ---- */
+  .panel {
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+  }
+
+  /* ============================================================
+     LEFT COLUMN — PRODUCT BACKLOG (draggable-feeling cards)
+     ============================================================ */
+  .backlog { display: flex; flex-direction: column; gap: 11px; }
+
+  .bcard {
+    position: relative; text-align: left; width: 100%;
+    border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius-lg); padding: 13px 14px;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, opacity .2s ease;
+  }
+  .bcard:hover {
+    transform: translateY(-2px); border-color: var(--faint);
+    box-shadow: var(--shadow-md);
+  }
+  .bcard:active { transform: translateY(0); }
+  .bcard__top {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+  }
+  .bcard__name {
+    font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em;
+    color: var(--ink); line-height: 1.3;
+  }
+  /* effort chip (points) */
+  .effort {
+    flex: none; font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: var(--slate); background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: var(--radius-sm);
+    padding: 3px 8px; white-space: nowrap; font-variant-numeric: tabular-nums;
+  }
+  /* telegraphed impact row — icon + text, never colour alone */
+  .impacts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .imp {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.02em;
+    color: var(--slate); background: var(--panel);
+    border: 1px solid var(--line-2); border-radius: 999px; padding: 3px 8px;
+  }
+  .imp .ico { width: 12px; height: 12px; flex: none; }
+  .imp.up   { color: var(--good); border-color: var(--good-line); background: var(--good-050); }
+  .imp.rev  { color: var(--accent); border-color: var(--accent-100); background: var(--accent-050); }
+  .imp.down { color: var(--warn); border-color: var(--warn-line); background: var(--warn-050); }
+  .imp.bet  { color: var(--ink-2); border-color: var(--line); background: var(--panel-2); }
+
+  .bcard__add {
+    margin-top: 2px; display: inline-flex; align-items: center; justify-content: center;
+    gap: 7px; width: 100%;
+    font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-050);
+    border: 1px solid var(--accent-100); border-radius: var(--radius);
+    padding: 8px; transition: background .15s ease, color .15s ease;
+  }
+  .bcard:hover .bcard__add { background: var(--accent-100); }
+  .bcard__add .ico { width: 13px; height: 13px; }
+
+  /* the Release card gets Von Restorff emphasis (ship-to-earn) */
+  .bcard.is-release {
+    border-color: rgba(22,163,74,0.4);
+    background: linear-gradient(180deg, var(--good-050), #fff 75%);
+  }
+  .bcard.is-release .bcard__add {
+    color: #fff; background: var(--good); border-color: var(--good);
+  }
+  .bcard.is-release:hover .bcard__add { background: #15803D; }
+  .bcard__flag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--good); font-weight: 600;
+  }
+  .bcard__flag .ico { width: 13px; height: 13px; }
+
+  /* card after it's been added to the sprint (ghosted in backlog) */
+  .bcard.is-used {
+    opacity: .5; pointer-events: none;
+  }
+  .bcard.is-used .bcard__add { visibility: hidden; }
+  .bcard__used-tag {
+    position: absolute; top: 13px; right: 14px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--good);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .bcard__used-tag .ico { width: 13px; height: 13px; }
+  .bcard.is-used .effort { display: none; }
+
+  /* ============================================================
+     CENTER COLUMN — THIS SPRINT plan
+     ============================================================ */
+  .plan { display: flex; flex-direction: column; gap: 16px; }
+
+  /* CAPACITY BUDGET gauge */
+  .capacity { padding: 18px 18px 16px; }
+  .capacity__row {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  }
+  .capacity__lab {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--mute);
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .capacity__lab .ico { width: 14px; height: 14px; color: var(--slate); flex: none; }
+  .capacity__read {
+    text-align: right; font-variant-numeric: tabular-nums;
+  }
+  .capacity__used {
+    font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--ink);
+    line-height: 1;
+  }
+  .capacity__used.over { color: var(--bad); }
+  .capacity__range {
+    font-family: var(--mono); font-size: 11px; color: var(--mute); margin-top: 3px;
+  }
+
+  /* the range track : a band (12–18) with a "likely 15" tick + committed fill */
+  .gauge {
+    position: relative; margin-top: 14px;
+    height: 16px; border-radius: 999px;
+    background: var(--line-2); overflow: visible;
+  }
+  /* the plausible capacity band 12..18 (of 0..20 scale) */
+  .gauge__band {
+    position: absolute; top: 0; bottom: 0;
+    left: 60%; right: 10%;  /* 12/20 .. 18/20 */
+    background: repeating-linear-gradient(
+      -45deg, var(--accent-050), var(--accent-050) 5px, #fff 5px, #fff 10px);
+    border-left: 1px dashed var(--accent-100);
+    border-right: 1px dashed var(--accent-100);
+  }
+  /* committed work fill */
+  .gauge__fill {
+    position: absolute; top: 0; bottom: 0; left: 0; width: 0%;
+    background: var(--accent); border-radius: 999px 0 0 999px;
+    transition: width .5s cubic-bezier(.2,.7,.2,1), background .3s ease;
+  }
+  .gauge__fill.over { background: var(--bad); }
+  /* "likely 15" marker */
+  .gauge__likely {
+    position: absolute; top: -5px; bottom: -5px; left: 75%; width: 2px;
+    background: var(--ink); border-radius: 2px;
+  }
+  .gauge__likely::after {
+    content: "likely 15"; position: absolute; top: -17px; left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em;
+    color: var(--slate); white-space: nowrap;
+  }
+  .gauge__scale {
+    display: flex; justify-content: space-between; margin-top: 9px;
+    font-family: var(--mono); font-size: 9.5px; color: var(--faint);
+  }
+
+  /* expandable "why" capacity breakdown */
+  .why {
+    margin-top: 13px; border-top: 1px dashed var(--line); padding-top: 11px;
+  }
+  .why__toggle {
+    appearance: none; background: none; border: 0; padding: 0;
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+  .why__toggle:hover { color: var(--accent-700); }
+  .why__toggle .ico { width: 12px; height: 12px; transition: transform .2s ease; }
+  .why__toggle[aria-expanded="true"] .ico { transform: rotate(90deg); }
+  .why__body { display: none; margin-top: 11px; }
+  .why__body.is-open { display: block; }
+  .why__line {
+    display: flex; align-items: center; gap: 10px; padding: 5px 0;
+    font-size: 12.5px; color: var(--ink-2);
+  }
+  .why__line .op {
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    width: 26px; flex: none; text-align: center;
+    border-radius: var(--radius-sm); padding: 2px 0;
+  }
+  .why__line .op.base { color: var(--slate); background: var(--panel-2); }
+  .why__line .op.minus { color: var(--warn); background: var(--warn-050); }
+  .why__line .val {
+    margin-left: auto; font-family: var(--mono); font-size: 12px;
+    color: var(--ink); font-variant-numeric: tabular-nums;
+  }
+  .why__total {
+    display: flex; align-items: center; gap: 10px; margin-top: 6px;
+    padding-top: 9px; border-top: 1px solid var(--line-2);
+    font-size: 12.5px; font-weight: 600; color: var(--ink);
+  }
+  .why__total .val {
+    margin-left: auto; font-family: var(--mono); color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- THIS SPRINT dropzone / committed cards ---- */
+  .sprintbox { padding: 16px; }
+  .dropzone {
+    border: 1.5px dashed var(--line); border-radius: var(--radius);
+    min-height: 96px; padding: 12px;
+    display: flex; flex-direction: column; gap: 9px;
+    transition: border-color .2s ease, background .2s ease;
+  }
+  .dropzone.is-empty {
+    align-items: center; justify-content: center; text-align: center;
+  }
+  .dropzone__hint {
+    font-size: 13px; color: var(--mute); max-width: 30ch;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .dropzone__hint .ico { width: 22px; height: 22px; color: var(--faint); }
+
+  .scard {
+    display: flex; align-items: center; gap: 11px;
+    border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius); padding: 10px 12px;
+    animation: pop .32s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(-6px) scale(.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .scard.is-release { border-color: var(--good-line); background: var(--good-050); }
+  .scard__pts {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: var(--slate); background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: var(--radius-sm); padding: 3px 7px; flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .scard.is-release .scard__pts { color: var(--good); background: #fff; border-color: var(--good-line); }
+  .scard__name { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .scard__rm {
+    margin-left: auto; appearance: none; border: 1px solid var(--line);
+    background: var(--paper); width: 26px; height: 26px; border-radius: var(--radius-sm);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--mute); flex: none; transition: border-color .15s ease, color .15s ease;
+  }
+  .scard__rm:hover { border-color: var(--bad-line); color: var(--bad); }
+  .scard__rm .ico { width: 14px; height: 14px; }
+
+  /* ---- LIVE FORECAST strip ---- */
+  .forecast {
+    margin-top: 14px; border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--panel); padding: 12px 13px;
+  }
+  .forecast__lab {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--mute);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .forecast__lab .ico { width: 13px; height: 13px; color: var(--accent); flex: none; }
+  .forecast__grid {
+    margin-top: 9px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px;
+  }
+  .fc {
+    display: flex; flex-direction: column; gap: 3px;
+    padding: 8px 9px; border-radius: var(--radius-sm);
+    background: var(--paper); border: 1px solid var(--line-2);
+  }
+  .fc__k {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--faint);
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .fc__k .ico { width: 11px; height: 11px; flex: none; }
+  .fc__v {
+    font-family: var(--mono); font-size: 14px; font-weight: 600;
+    color: var(--ink); font-variant-numeric: tabular-nums;
+  }
+  .fc__v.good { color: var(--good); }
+  .fc__v.bad  { color: var(--bad); }
+  .fc__v.accent { color: var(--accent); }
+
+  /* plain-language "because" line under the forecast */
+  .fc-because {
+    margin-top: 10px; display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12.5px; color: var(--ink-2); line-height: 1.5;
+  }
+  .fc-because .ico { width: 14px; height: 14px; color: var(--accent); flex: none; margin-top: 2px; }
+  .fc-because b { color: var(--ink); font-weight: 600; }
+
+  /* ---- primary SHIP SPRINT button ---- */
+  .ship {
+    width: 100%; appearance: none; border: 0; border-radius: var(--radius);
+    font-family: var(--mono); font-size: 14px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: #fff;
+    background: var(--accent); padding: 15px 18px; box-shadow: var(--shadow-md);
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    transition: background .15s ease, transform .07s ease, box-shadow .15s ease, opacity .15s ease;
+  }
+  .ship .ico { width: 17px; height: 17px; }
+  .ship:hover:not(:disabled) { background: var(--accent-700); }
+  .ship:active:not(:disabled) { transform: translateY(1px); box-shadow: var(--shadow-sm); }
+  .ship:disabled { background: var(--panel-2); color: var(--faint); box-shadow: none; cursor: not-allowed; }
+  /* warn the player when a release isn't queued (ship-to-earn nudge) */
+  .ship-note {
+    margin-top: 10px; display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12px; line-height: 1.5; color: var(--warn);
+    background: var(--warn-050); border: 1px solid var(--warn-line);
+    border-radius: var(--radius); padding: 9px 11px;
+  }
+  .ship-note.hidden { display: none; }
+  .ship-note .ico { width: 14px; height: 14px; flex: none; margin-top: 2px; }
+  .ship-note b { font-weight: 600; }
+
+  /* ============================================================
+     RIGHT RAIL — scoreboard + characters
+     ============================================================ */
+  .rail { display: flex; flex-direction: column; gap: 18px; }
+
+  /* live 5-dimension scoreboard */
+  .scoreboard { padding: 16px; }
+  .gauges { display: flex; flex-direction: column; gap: 13px; margin-top: 4px; }
+  .g {
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 10px;
+    align-items: center;
+  }
+  .g__name {
+    font-size: 12.5px; font-weight: 500; color: var(--ink-2);
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .g__name .ico { width: 13px; height: 13px; color: var(--slate); flex: none; }
+  .g__val {
+    font-family: var(--mono); font-size: 12.5px; font-weight: 600;
+    color: var(--ink); font-variant-numeric: tabular-nums; text-align: right;
+  }
+  .g__bar {
+    grid-column: 1 / -1; height: 6px; background: var(--line);
+    border-radius: 999px; overflow: hidden;
+  }
+  .g__fill {
+    height: 100%; border-radius: 999px; width: 0%;
+    transition: width .8s cubic-bezier(.2,.7,.2,1);
+  }
+  /* each dimension keeps a stable hue; all AA on white, paired w/ text labels */
+  .g__fill.d-value  { background: var(--accent); }
+  .g__fill.d-loyal  { background: #7C3AED; }
+  .g__fill.d-team   { background: var(--good); }
+  .g__fill.d-trust  { background: #0891B2; }
+  .g__fill.d-qual   { background: #D97706; }
+
+  /* character cards */
+  .chars { display: flex; flex-direction: column; gap: 10px; }
+  .char {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--paper); padding: 11px 12px;
+  }
+  .char__top { display: flex; align-items: center; gap: 10px; }
+  .char__ava {
+    width: 30px; height: 30px; flex: none; border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: #fff;
+  }
+  .char__id { min-width: 0; }
+  .char__name {
+    font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.2;
+  }
+  .char__role {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--faint); margin-top: 1px;
+  }
+  /* mood : icon + text + dots, never colour alone */
+  .char__mood {
+    margin-left: auto; flex: none; text-align: right;
+  }
+  .mood-state {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.06em;
+    text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .mood-state .ico { width: 11px; height: 11px; }
+  .mood-state.s-active { color: var(--good); }
+  .mood-state.s-interest { color: var(--accent); }
+  .mood-state.s-dormant { color: var(--mute); }
+  .mood-dots { display: inline-flex; gap: 2px; margin-top: 4px; justify-content: flex-end; }
+  .mood-dots .d {
+    width: 6px; height: 6px; border-radius: 999px; background: var(--line);
+  }
+  .mood-dots .d.on { background: var(--slate); }
+  .char__want {
+    margin-top: 9px; font-size: 12px; color: var(--slate); line-height: 1.45;
+    display: flex; align-items: flex-start; gap: 7px;
+  }
+  .char__want .ico { width: 13px; height: 13px; color: var(--faint); flex: none; margin-top: 2px; }
+
+  /* ============================================================
+     COACHMARKS (just-in-time onboarding)
+     ============================================================ */
+  .coach {
+    position: absolute; z-index: 50; width: 268px;
+    background: var(--ink); color: #fff;
+    border-radius: var(--radius-lg); padding: 14px 15px;
+    box-shadow: var(--shadow-lg);
+    animation: coachIn .34s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes coachIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .coach.hidden { display: none; }
+  .coach__eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #93C5FD;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .coach__eyebrow .ico { width: 13px; height: 13px; }
+  .coach__body {
+    margin: 8px 0 0; font-size: 13px; line-height: 1.55; color: #E5E5E5;
+  }
+  .coach__body b { color: #fff; font-weight: 600; }
+  .coach__foot {
+    margin-top: 13px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .coach__step { font-family: var(--mono); font-size: 10.5px; color: #A3A3A3; letter-spacing: 0.04em; }
+  .coach__btns { display: flex; gap: 8px; }
+  .coach__skip {
+    appearance: none; background: none; border: 0; color: #A3A3A3;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em;
+    padding: 6px 8px; border-radius: var(--radius-sm);
+  }
+  .coach__skip:hover { color: #fff; }
+  .coach__next {
+    appearance: none; border: 0; background: var(--accent); color: #fff;
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 7px 13px; border-radius: var(--radius-sm);
+    transition: background .15s ease;
+  }
+  .coach__next:hover { background: var(--accent-700); }
+  /* little pointer arrow */
+  .coach__arrow {
+    position: absolute; width: 12px; height: 12px; background: var(--ink);
+    transform: rotate(45deg);
+  }
+  /* dimmer behind coachmarks */
+  .coach-scrim {
+    position: fixed; inset: 0; z-index: 45;
+    background: rgba(15,23,42,0.28); backdrop-filter: blur(1px);
+  }
+  .coach-scrim.hidden { display: none; }
+  /* element being taught gets lifted above the scrim */
+  .coach-target {
+    position: relative; z-index: 48;
+    box-shadow: 0 0 0 3px var(--accent), var(--shadow-lg);
+    border-radius: var(--radius-lg);
+  }
+
+  /* ============================================================
+     OUTCOME REVEAL — sequenced "because" overlay
+     ============================================================ */
+  .outcome-wrap {
+    max-width: 760px; margin: 0 auto; padding: 28px 24px 80px;
+  }
+  .outcome-head { text-align: center; }
+  .outcome-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent);
+    background: var(--accent-050); border: 1px solid var(--accent-100);
+    padding: 6px 13px; border-radius: 999px;
+  }
+  .outcome-chip .ico { width: 13px; height: 13px; }
+  .outcome-head h2 {
+    margin: 16px 0 0; font-size: 26px; font-weight: 800;
+    letter-spacing: -0.02em; line-height: 1.15;
+  }
+  .outcome-head p {
+    margin: 9px auto 0; color: var(--slate); font-size: 14.5px; max-width: 48ch;
+  }
+
+  /* shipped / didn't fit summary */
+  .ship-summary {
+    margin: 22px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .ss {
+    border: 1px solid var(--line); border-radius: var(--radius-lg);
+    background: var(--paper); padding: 14px 15px;
+  }
+  .ss__lab {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--mute);
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .ss__lab .ico { width: 13px; height: 13px; flex: none; }
+  .ss.shipped .ss__lab { color: var(--good); }
+  .ss.missed .ss__lab { color: var(--warn); }
+  .ss__item {
+    display: flex; align-items: center; gap: 8px; margin-top: 9px;
+    font-size: 13.5px; color: var(--ink-2);
+  }
+  .ss__item .ico { width: 15px; height: 15px; flex: none; }
+  .ss.shipped .ss__item .ico { color: var(--good); }
+  .ss.missed .ss__item .ico { color: var(--warn); }
+  .ss__item .pts { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--faint); }
+
+  /* the cause->effect lines, revealed in sequence */
+  .effects { margin: 24px 0 0; display: flex; flex-direction: column; gap: 11px; }
+  .efx {
+    display: flex; align-items: flex-start; gap: 13px;
+    border: 1px solid var(--line); border-radius: var(--radius-lg);
+    background: var(--paper); padding: 14px 15px;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .45s ease, transform .45s cubic-bezier(.2,.8,.2,1);
+  }
+  .efx.is-in { opacity: 1; transform: translateY(0); }
+  .efx__ico {
+    width: 34px; height: 34px; flex: none; border-radius: var(--radius);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .efx__ico .ico { width: 18px; height: 18px; }
+  .efx.good .efx__ico { background: var(--good-050); color: var(--good); border: 1px solid var(--good-line); }
+  .efx.accent .efx__ico { background: var(--accent-050); color: var(--accent); border: 1px solid var(--accent-100); }
+  .efx.warn .efx__ico { background: var(--warn-050); color: var(--warn); border: 1px solid var(--warn-line); }
+  .efx__body { min-width: 0; }
+  .efx__head {
+    font-size: 14.5px; font-weight: 600; color: var(--ink); line-height: 1.35;
+    display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap;
+  }
+  .efx__delta {
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    padding: 2px 7px; border-radius: var(--radius-sm); font-variant-numeric: tabular-nums;
+  }
+  .efx.good .efx__delta { color: var(--good); background: var(--good-050); }
+  .efx.accent .efx__delta { color: var(--accent); background: var(--accent-050); }
+  .efx.warn .efx__delta { color: var(--warn); background: var(--warn-050); }
+  .efx__why {
+    margin-top: 5px; font-size: 13px; line-height: 1.55; color: var(--slate);
+  }
+  .efx__why b { color: var(--ink-2); font-weight: 600; }
+
+  /* net revenue result band */
+  .net {
+    margin: 22px 0 0; border: 1px solid var(--good-line);
+    background: var(--good-050); border-radius: var(--radius-lg);
+    padding: 18px 20px; display: flex; align-items: center; gap: 18px;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .45s ease, transform .45s cubic-bezier(.2,.8,.2,1);
+  }
+  .net.is-in { opacity: 1; transform: translateY(0); }
+  .net__ico {
+    width: 42px; height: 42px; flex: none; border-radius: var(--radius);
+    background: var(--good); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .net__ico .ico { width: 22px; height: 22px; }
+  .net__lab {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--good);
+  }
+  .net__fig {
+    font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--ink);
+    margin-top: 3px; font-variant-numeric: tabular-nums;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .net__fig .arrow { color: var(--good); }
+  .net__fig .to { color: var(--good); }
+  .net__spacer { flex: 1 1 auto; }
+  .net__mrr {
+    text-align: right; font-family: var(--mono); font-size: 11px; color: var(--slate);
+  }
+  .net__mrr b { color: var(--good); font-size: 13px; }
+
+  .outcome-actions {
+    margin: 26px 0 0; display: flex; gap: 12px; justify-content: center;
+    opacity: 0; transition: opacity .4s ease;
+  }
+  .outcome-actions.is-in { opacity: 1; }
+  .btn-secondary {
+    appearance: none; border: 1px solid var(--line); background: var(--paper);
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2);
+    padding: 13px 20px; border-radius: var(--radius);
+    display: inline-flex; align-items: center; gap: 9px;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .btn-secondary:hover { border-color: var(--faint); color: var(--ink); }
+  .btn-secondary .ico { width: 15px; height: 15px; }
+  .btn-primary {
+    appearance: none; border: 0; background: var(--accent); color: #fff;
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 13px 22px; border-radius: var(--radius); box-shadow: var(--shadow-sm);
+    display: inline-flex; align-items: center; gap: 9px;
+    transition: background .15s ease, transform .07s ease;
+  }
+  .btn-primary:hover { background: var(--accent-700); }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-primary .ico { width: 15px; height: 15px; }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 1080px) {
+    .cockpit { grid-template-columns: 1fr 1fr; }
+    .rail { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+    .rail > .panel { flex: 1 1 320px; }
+  }
+
+  @media (max-width: 760px) {
+    .topbar__inner { padding: 10px 16px; }
+    .wordmark .v { display: none; }
+    .mission__inner { padding: 14px 16px; gap: 14px; }
+    .mission__spacer { display: none; }
+    .revblock { min-width: 0; flex: 1 1 100%; order: 3; }
+    .sprint { order: 2; }
+    .cockpit {
+      grid-template-columns: 1fr; padding: 16px 16px 48px; gap: 16px;
+    }
+    .rail { flex-direction: column; }
+    .ship-summary { grid-template-columns: 1fr; }
+    .net { flex-wrap: wrap; }
+    .outcome-actions { flex-direction: column; }
+    .outcome-actions button { width: 100%; justify-content: center; }
+    .coach { width: calc(100vw - 48px); max-width: 300px; }
+    .forecast__grid { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.001ms !important;
+      animation-duration: 0.001ms !important;
+    }
+    html { scroll-behavior: auto; }
+  }
+
+  @media (max-width: 520px) {
+    .hide-narrow { display: none; }
+  }
+</style>
+</head>
+<body class="blueprint">
+<div class="app">
+
+  <!-- ═══════════════ TOP UTILITY BAR ═══════════════ -->
+  <div class="topbar">
+    <div class="topbar__inner">
+      <a href="#" class="wordmark" aria-label="PRAXIS home">praxis<span class="dot">.</span><span class="v">v0 · simulation</span></a>
+
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="seg" role="tablist" aria-label="Switch screen">
+          <button class="seg__btn" id="tab-plan" role="tab" aria-selected="true" aria-controls="screen-plan" data-screen="plan">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+            Plan
+          </button>
+          <button class="seg__btn" id="tab-outcome" role="tab" aria-selected="false" aria-controls="screen-outcome" data-screen="outcome">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 14 3-3 3 3 5-6"/></svg>
+            Outcome
+          </button>
+        </div>
+        <button class="ghostbtn" id="restartCoach" type="button" title="Replay the in-context onboarding">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          <span class="hide-narrow">Tutorial</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SCREEN 1 — PLAN  (the cockpit)
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="screen is-active" id="screen-plan" role="tabpanel" aria-labelledby="tab-plan">
+
+      <!-- ── MISSION BAR ── -->
+      <div class="mission">
+        <div class="mission__inner">
+          <div class="mission__obj">
+            <span class="mission__badge" aria-hidden="true">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg>
+            </span>
+            <div class="mission__txt">
+              <div class="mission__k">Mission <span class="mission__pin">B2B SaaS · team collaboration</span></div>
+              <div class="mission__goal">Reach <b>$5,000 MRR</b> &amp; keep customers + team healthy by Sprint 6.</div>
+            </div>
+          </div>
+
+          <div class="mission__spacer"></div>
+
+          <!-- revenue progress toward $5,000 -->
+          <div class="revblock">
+            <div class="revblock__row">
+              <span class="revblock__lab"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Revenue · MRR</span>
+              <span class="revblock__val" id="revVal">$2,400 <small>/ $5,000</small></span>
+            </div>
+            <div class="revbar" role="img" aria-label="Revenue 2400 of 5000 dollars, 48 percent to goal">
+              <div class="revbar__fill" id="revFill" style="width:48%"></div>
+              <span class="revbar__goal" title="Goal: $5,000"></span>
+            </div>
+            <div class="revblock__sub" id="revSub">48% to goal · 3 sprints left</div>
+          </div>
+
+          <!-- sprint stepper -->
+          <div class="sprint">
+            <span class="sprint__lab">Sprint</span>
+            <span class="sprint__dots" aria-hidden="true">
+              <span class="sprint__dot is-done"></span>
+              <span class="sprint__dot is-done"></span>
+              <span class="sprint__dot is-cur"></span>
+              <span class="sprint__dot"></span>
+              <span class="sprint__dot"></span>
+              <span class="sprint__dot"></span>
+            </span>
+            <span class="sprint__no">3<small> / 6</small></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── COCKPIT : three columns ── -->
+      <div class="cockpit">
+
+        <!-- ░░░░░░░░ LEFT — PRODUCT BACKLOG ░░░░░░░░ -->
+        <div class="col-backlog">
+          <div class="col__head">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <span class="col__title">Product Backlog</span>
+            <span class="col__count">5 items</span>
+          </div>
+
+          <div class="backlog" id="backlog">
+            <!-- backlog cards injected by JS so add/remove stays in sync -->
+          </div>
+        </div>
+
+        <!-- ░░░░░░░░ CENTER — THIS SPRINT ░░░░░░░░ -->
+        <div class="plan">
+          <!-- CAPACITY BUDGET gauge -->
+          <div class="panel capacity" id="capacityPanel">
+            <div class="capacity__row">
+              <span class="capacity__lab">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12A10 10 0 1 1 12 2"/><path d="M12 12 17 7"/><path d="M12 2v4"/></svg>
+                Capacity Budget
+              </span>
+              <span class="capacity__read">
+                <span class="capacity__used" id="capUsed">0</span>
+                <span class="capacity__range" id="capRange">committed of 12–18 pts</span>
+              </span>
+            </div>
+
+            <div class="gauge" role="img" aria-label="Capacity gauge: plausible range 12 to 18 points, likely 15. 0 points committed.">
+              <div class="gauge__band"></div>
+              <div class="gauge__fill" id="gaugeFill"></div>
+              <div class="gauge__likely"></div>
+            </div>
+            <div class="gauge__scale" aria-hidden="true">
+              <span>0</span><span>5</span><span>10</span><span>15</span><span>20</span>
+            </div>
+
+            <!-- expandable WHY breakdown -->
+            <div class="why">
+              <button class="why__toggle" id="whyToggle" type="button" aria-expanded="false" aria-controls="whyBody">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                Why a range, not a number?
+              </button>
+              <div class="why__body" id="whyBody">
+                <div class="why__line">
+                  <span class="op base">18</span> Base team velocity
+                  <span class="val">18 pts</span>
+                </div>
+                <div class="why__line">
+                  <span class="op minus">−2</span> Onboarding a new hire
+                  <span class="val">−2 pts</span>
+                </div>
+                <div class="why__line">
+                  <span class="op minus">−1</span> Tech debt drag (debt&nbsp;35)
+                  <span class="val">−1 pt</span>
+                </div>
+                <div class="why__total">
+                  Likely delivery this sprint
+                  <span class="val">≈ 15 pts</span>
+                </div>
+                <p style="margin:11px 0 0; font-size:12px; color:var(--mute); line-height:1.55;">
+                  Real velocity fluctuates ±3. Plan to the <b style="color:var(--ink-2)">likely 15</b>, leave slack for the unexpected.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- THIS SPRINT plan box -->
+          <div class="panel sprintbox">
+            <div class="col__head" style="margin-bottom:11px;">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              <span class="col__title">This Sprint</span>
+              <span class="col__count" id="sprintCount">0 pts queued</span>
+            </div>
+
+            <div class="dropzone is-empty" id="dropzone" aria-live="polite">
+              <div class="dropzone__hint" id="dropHint">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+                Add backlog items here to plan your sprint.
+              </div>
+            </div>
+
+            <!-- LIVE FORECAST -->
+            <div class="forecast" id="forecast">
+              <span class="forecast__lab">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><polyline points="19 9 13 15 9 11 5 15"/></svg>
+                Live Forecast
+              </span>
+              <div class="forecast__grid">
+                <div class="fc">
+                  <span class="fc__k"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Load</span>
+                  <span class="fc__v" id="fcLoad">0 / 15 pts</span>
+                </div>
+                <div class="fc">
+                  <span class="fc__k"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>If released</span>
+                  <span class="fc__v accent" id="fcRev">+$0</span>
+                </div>
+                <div class="fc">
+                  <span class="fc__k"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>Team</span>
+                  <span class="fc__v" id="fcTeam">0</span>
+                </div>
+              </div>
+              <div class="fc-because" id="fcBecause">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <span id="fcBecauseTxt">Your sprint is empty. Add work, then queue a <b>Release</b> to turn finished features into revenue.</span>
+              </div>
+            </div>
+
+            <!-- SHIP SPRINT -->
+            <div style="margin-top:16px;">
+              <button class="ship" id="shipBtn" type="button" disabled>
+                Ship Sprint
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </button>
+              <div class="ship-note hidden" id="shipNote">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span><b>No Release queued.</b> Finished features earn <b>$0</b> until you ship a Release this sprint.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ░░░░░░░░ RIGHT — SCOREBOARD + CHARACTERS ░░░░░░░░ -->
+        <div class="rail">
+          <!-- LIVE 5-DIMENSION SCOREBOARD -->
+          <div class="panel scoreboard">
+            <div class="col__head" style="margin-bottom:14px;">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20v-6"/><path d="M6 20v-3"/><path d="M18 20v-9"/><path d="M3 20h18"/></svg>
+              <span class="col__title">Scoreboard</span>
+              <span class="col__count">live</span>
+            </div>
+            <div class="gauges">
+              <div class="g">
+                <span class="g__name"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/></svg>Value Delivered</span>
+                <span class="g__val">58</span>
+                <div class="g__bar"><div class="g__fill d-value" data-score="58"></div></div>
+              </div>
+              <div class="g">
+                <span class="g__name"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1L12 21l7.7-7.6 1.1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>Customer Loyalty</span>
+                <span class="g__val">62</span>
+                <div class="g__bar"><div class="g__fill d-loyal" data-score="62"></div></div>
+              </div>
+              <div class="g">
+                <span class="g__name"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Team Health</span>
+                <span class="g__val" id="sbTeam">70</span>
+                <div class="g__bar"><div class="g__fill d-team" id="sbTeamBar" data-score="70"></div></div>
+              </div>
+              <div class="g">
+                <span class="g__name"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Stakeholder Trust</span>
+                <span class="g__val">55</span>
+                <div class="g__bar"><div class="g__fill d-trust" data-score="55"></div></div>
+              </div>
+              <div class="g">
+                <span class="g__name"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/></svg>Product Quality</span>
+                <span class="g__val">64</span>
+                <div class="g__bar"><div class="g__fill d-qual" data-score="64"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CHARACTERS -->
+          <div class="panel scoreboard" style="padding-top:16px;">
+            <div class="col__head" style="margin-bottom:13px;">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span class="col__title">People</span>
+              <span class="col__count">4</span>
+            </div>
+            <div class="chars">
+
+              <!-- Maya -->
+              <div class="char">
+                <div class="char__top">
+                  <span class="char__ava" style="background:var(--accent)" aria-hidden="true">M</span>
+                  <div class="char__id">
+                    <div class="char__name">Maya</div>
+                    <div class="char__role">Ops admin · customer</div>
+                  </div>
+                  <div class="char__mood">
+                    <span class="mood-state s-active"><svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>Active</span>
+                    <span class="mood-dots" aria-label="Happiness 7 of 10">
+                      <span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d"></span><span class="d"></span><span class="d"></span>
+                    </span>
+                  </div>
+                </div>
+                <div class="char__want"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>Wants to save hours on reporting.</div>
+              </div>
+
+              <!-- Devon -->
+              <div class="char">
+                <div class="char__top">
+                  <span class="char__ava" style="background:#7C3AED" aria-hidden="true">D</span>
+                  <div class="char__id">
+                    <div class="char__name">Devon</div>
+                    <div class="char__role">Eng lead · team</div>
+                  </div>
+                  <div class="char__mood">
+                    <span class="mood-state s-interest"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>Interested</span>
+                    <span class="mood-dots" aria-label="Happiness 5 of 10">
+                      <span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d"></span><span class="d"></span><span class="d"></span><span class="d"></span><span class="d"></span>
+                    </span>
+                  </div>
+                </div>
+                <div class="char__want"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>Wants reliability — fears growing tech debt.</div>
+              </div>
+
+              <!-- Priya -->
+              <div class="char" id="charPriya">
+                <div class="char__top">
+                  <span class="char__ava" style="background:var(--mute)" aria-hidden="true">P</span>
+                  <div class="char__id">
+                    <div class="char__name">Priya</div>
+                    <div class="char__role">Trialer · prospect</div>
+                  </div>
+                  <div class="char__mood">
+                    <span class="mood-state s-dormant"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 15s1.5-2 4-2 4 2 4 2"/><path d="M9 9h.01"/><path d="M15 9h.01"/></svg>Dormant</span>
+                    <span class="mood-dots" id="priyaDots" aria-label="Happiness 4 of 10">
+                      <span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d"></span><span class="d"></span><span class="d"></span><span class="d"></span><span class="d"></span><span class="d"></span>
+                    </span>
+                  </div>
+                </div>
+                <div class="char__want"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>Wants an easy start — stuck in setup.</div>
+              </div>
+
+              <!-- VP Growth -->
+              <div class="char">
+                <div class="char__top">
+                  <span class="char__ava" style="background:#0891B2" aria-hidden="true">V</span>
+                  <div class="char__id">
+                    <div class="char__name">VP Growth</div>
+                    <div class="char__role">Stakeholder · exec</div>
+                  </div>
+                  <div class="char__mood">
+                    <span class="mood-state s-interest"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Trust 6/10</span>
+                    <span class="mood-dots" aria-label="Trust 6 of 10">
+                      <span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d on"></span><span class="d"></span><span class="d"></span><span class="d"></span><span class="d"></span>
+                    </span>
+                  </div>
+                </div>
+                <div class="char__want"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>Wants enterprise revenue — chasing big deals.</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SCREEN 2 — OUTCOME  (cause -> effect reveal)
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="screen" id="screen-outcome" role="tabpanel" aria-labelledby="tab-outcome">
+      <div class="outcome-wrap">
+        <div class="outcome-head">
+          <span class="outcome-chip">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.9 9.4 9.5 13 13l7-8"/><path d="M14 5h6v6"/></svg>
+            Sprint 3 · Results
+          </span>
+          <h2>Here's what your decisions did.</h2>
+          <p>Capacity rolled <b>14 pts</b> this sprint — a little under the likely 15. Every change below traces back to a choice you made.</p>
+        </div>
+
+        <!-- shipped vs didn't fit -->
+        <div class="ship-summary">
+          <div class="ss shipped">
+            <span class="ss__lab"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Shipped</span>
+            <div class="ss__item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Onboarding checklist <span class="pts">5 pts</span></div>
+            <div class="ss__item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>SSO &amp; security <span class="pts">8 pts</span></div>
+            <div class="ss__item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-9"/></svg>Release shipped <span class="pts">1 pt</span></div>
+          </div>
+          <div class="ss missed">
+            <span class="ss__lab"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Didn't fit</span>
+            <div class="ss__item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Custom dashboards <span class="pts">13 pts</span></div>
+            <p style="margin:10px 0 0; font-size:12.5px; color:var(--mute); line-height:1.55;">
+              You committed 13 pts but velocity rolled <b style="color:var(--ink-2)">14</b> — the 13-pt big bet didn't fit alongside the rest. It rolls to your backlog.
+            </p>
+          </div>
+        </div>
+
+        <!-- cause -> effect lines (revealed in sequence) -->
+        <div class="effects" id="effects">
+          <div class="efx good" data-seq="0">
+            <span class="efx__ico" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5 3 22l5.5-1.5"/><path d="M15 6.5 17.5 9"/><path d="m21.5 2.5-9 9-2 6 6-2 9-9a2.1 2.1 0 0 0-3-3z"/></svg></span>
+            <div class="efx__body">
+              <div class="efx__head">Released → Priya activated <span class="efx__delta">+5 happiness · +$600</span></div>
+              <p class="efx__why">Because you <b>shipped the onboarding she needed</b> — and bundled it into a Release, so it actually reached her. Dormant → Active.</p>
+            </div>
+          </div>
+
+          <div class="efx accent" data-seq="1">
+            <span class="efx__ico" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+            <div class="efx__body">
+              <div class="efx__head">VP Growth trust <span class="efx__delta">+2</span></div>
+              <p class="efx__why">Because <b>SSO unlocks the enterprise deals she's chasing</b>. You moved on what the stakeholder values most.</p>
+            </div>
+          </div>
+
+          <div class="efx warn" data-seq="2">
+            <span class="efx__ico" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span>
+            <div class="efx__body">
+              <div class="efx__head">Team morale <span class="efx__delta">−6</span></div>
+              <p class="efx__why">Because you <b>committed 13 of 15 pts with no slack</b>. A packed sprint with zero buffer burns the team — watch Devon.</p>
+            </div>
+          </div>
+
+          <div class="efx warn" data-seq="3">
+            <span class="efx__ico" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg></span>
+            <div class="efx__body">
+              <div class="efx__head">Tech debt <span class="efx__delta">+5</span></div>
+              <p class="efx__why">Because <b>no engineering work shipped</b> — you skipped Performance hardening. Debt slows next sprint's capacity.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- net revenue band -->
+        <div class="net" id="netBand">
+          <span class="net__ico" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+        <div>
+            <div class="net__lab">Net revenue this sprint</div>
+            <div class="net__fig">$2,400 <span class="arrow" aria-hidden="true">→</span> <span class="to">$3,000</span> <span class="efx__delta" style="color:var(--good);background:#fff;border:1px solid var(--good-line)">+$600</span></div>
+          </div>
+          <div class="net__spacer"></div>
+          <div class="net__mrr">
+            Toward goal<br><b>$3,000 / $5,000</b>
+          </div>
+        </div>
+
+        <div class="outcome-actions" id="outcomeActions">
+          <button class="btn-secondary" id="replayBtn" type="button">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+            Replan Sprint 3
+          </button>
+          <button class="btn-primary" id="nextSprintBtn" type="button">
+            Start Sprint 4
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═══════════════ COACHMARK LAYER ═══════════════ -->
+<div class="coach-scrim hidden" id="coachScrim"></div>
+<div class="coach hidden" id="coach" role="dialog" aria-modal="false" aria-labelledby="coachBody">
+  <div class="coach__arrow" id="coachArrow"></div>
+  <div class="coach__eyebrow">
+    <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/><path d="M9 21h6"/></svg>
+    <span id="coachEyebrow">Getting started · 1 of 2</span>
+  </div>
+  <p class="coach__body" id="coachBody"></p>
+  <div class="coach__foot">
+    <span class="coach__step" id="coachStep">1 / 2</span>
+    <div class="coach__btns">
+      <button class="coach__skip" id="coachSkip" type="button">Skip tour</button>
+      <button class="coach__next" id="coachNext" type="button">Got it</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ============================================================
+     PRAXIS Sim · Direction A "Cockpit" — vanilla JS
+     State machine: plan the sprint (live capacity + forecast +
+     scoreboard) -> ship -> sequenced cause/effect outcome.
+     ============================================================ */
+  (function () {
+    "use strict";
+
+    var doc = document;
+    var byId = function (id) { return doc.getElementById(id); };
+    var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ---------- backlog source data (telegraphed impact) ---------- */
+    /* impact icons reuse the shared semantic palette; every chip pairs an icon WITH text */
+    var ICON = {
+      up:   '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg>',
+      up2:  '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="5 16 12 9 19 16"/><polyline points="5 11 12 4 19 11"/></svg>',
+      down: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>',
+      rev:  '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+      bet:  '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>',
+      ship: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 13.5 12 4l10 9.5"/><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M9 20v-5h6v5"/></svg>'
+    };
+
+    var BACKLOG = [
+      { id:'onboard', name:'Onboarding checklist', pts:5,
+        impacts:[ {c:'up', i:ICON.up, t:'Priya happiness'}, {c:'rev', i:ICON.rev, t:'small revenue'} ],
+        rev:600, team:-2 },
+      { id:'dash', name:'Custom dashboards', pts:13,
+        impacts:[ {c:'up', i:ICON.up2, t:'Maya happiness'}, {c:'rev', i:ICON.rev, t:'revenue'}, {c:'bet', i:ICON.bet, t:'big bet'} ],
+        rev:900, team:-5 },
+      { id:'sso', name:'SSO & security', pts:8,
+        impacts:[ {c:'up', i:ICON.up, t:'VP Growth trust'}, {c:'bet', i:ICON.bet, t:'unlocks enterprise'} ],
+        rev:300, team:-3 },
+      { id:'perf', name:'Performance hardening', pts:5,
+        impacts:[ {c:'down', i:ICON.down, t:'tech debt'}, {c:'up', i:ICON.up, t:'Devon happiness'} ],
+        rev:0, team:2 },
+      { id:'release', name:'Ship a Release', pts:3, isRelease:true,
+        impacts:[ {c:'rev', i:ICON.ship, t:'turns finished work into revenue'} ],
+        rev:0, team:-1 }
+    ];
+
+    var LIKELY = 15;        // likely capacity this sprint
+    var BASE_TEAM = 70;     // scoreboard Team Health baseline
+
+    /* committed sprint = array of backlog ids, in add order */
+    var sprint = [];
+
+    /* ---------- render the backlog column ---------- */
+    var backlogEl = byId('backlog');
+
+    function impactChip(im) {
+      return '<span class="imp ' + im.c + '">' + im.i + im.t + '</span>';
+    }
+
+    function renderBacklog() {
+      backlogEl.innerHTML = '';
+      BACKLOG.forEach(function (item) {
+        var used = sprint.indexOf(item.id) !== -1;
+        var card = doc.createElement(used ? 'div' : 'button');
+        card.className = 'bcard' + (item.isRelease ? ' is-release' : '') + (used ? ' is-used' : '');
+        card.setAttribute('data-id', item.id);
+        if (!used) {
+          card.type = 'button';
+          card.setAttribute('aria-label', 'Add ' + item.name + ' to this sprint, ' + item.pts + ' points');
+        }
+
+        var flag = item.isRelease
+          ? '<span class="bcard__flag">' + ICON.ship + 'Ship to earn</span>'
+          : '';
+
+        var addLabel = item.isRelease ? 'Queue Release' : 'Add to sprint';
+
+        var usedTag = used
+          ? '<span class="bcard__used-tag">' +
+              '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>In sprint</span>'
+          : '';
+
+        card.innerHTML =
+          usedTag +
+          '<div class="bcard__top">' +
+            '<span class="bcard__name">' + item.name + '</span>' +
+            '<span class="effort">' + item.pts + ' pts</span>' +
+          '</div>' +
+          (flag ? '<div>' + flag + '</div>' : '') +
+          '<div class="impacts">' + item.impacts.map(impactChip).join('') + '</div>' +
+          '<span class="bcard__add">' +
+            '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+            addLabel +
+          '</span>';
+
+        if (!used) {
+          card.addEventListener('click', function () { addToSprint(item.id); });
+        }
+        backlogEl.appendChild(card);
+      });
+    }
+
+    /* ---------- THIS SPRINT dropzone ---------- */
+    var dropzone = byId('dropzone');
+    var dropHint = byId('dropHint');
+
+    function findItem(id) {
+      for (var i = 0; i < BACKLOG.length; i++) if (BACKLOG[i].id === id) return BACKLOG[i];
+      return null;
+    }
+
+    function renderSprint() {
+      // clear existing scards (keep the hint node)
+      Array.prototype.slice.call(dropzone.querySelectorAll('.scard')).forEach(function (n) { n.remove(); });
+
+      if (sprint.length === 0) {
+        dropzone.classList.add('is-empty');
+        dropHint.style.display = '';
+        return;
+      }
+      dropzone.classList.remove('is-empty');
+      dropHint.style.display = 'none';
+
+      sprint.forEach(function (id) {
+        var item = findItem(id);
+        var row = doc.createElement('div');
+        row.className = 'scard' + (item.isRelease ? ' is-release' : '');
+        row.innerHTML =
+          '<span class="scard__pts">' + item.pts + '</span>' +
+          '<span class="scard__name">' + item.name + '</span>' +
+          '<button class="scard__rm" type="button" aria-label="Remove ' + item.name + ' from sprint">' +
+            '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+          '</button>';
+        row.querySelector('.scard__rm').addEventListener('click', function () { removeFromSprint(id); });
+        dropzone.appendChild(row);
+      });
+    }
+
+    /* ---------- live derived totals ---------- */
+    function totals() {
+      var pts = 0, rev = 0, team = 0, hasRelease = false, hasWork = false;
+      sprint.forEach(function (id) {
+        var it = findItem(id);
+        pts += it.pts;
+        team += it.team;
+        if (it.isRelease) hasRelease = true;
+        else { rev += it.rev; hasWork = true; }
+      });
+      return { pts: pts, rev: hasRelease ? rev : 0, rawRev: rev, team: team, hasRelease: hasRelease, hasWork: hasWork };
+    }
+
+    /* ---------- update gauge + forecast + scoreboard ---------- */
+    var capUsed = byId('capUsed');
+    var gaugeFill = byId('gaugeFill');
+    var sprintCount = byId('sprintCount');
+    var fcLoad = byId('fcLoad');
+    var fcRev = byId('fcRev');
+    var fcTeam = byId('fcTeam');
+    var fcBecauseTxt = byId('fcBecauseTxt');
+    var shipBtn = byId('shipBtn');
+    var shipNote = byId('shipNote');
+    var sbTeam = byId('sbTeam');
+    var sbTeamBar = byId('sbTeamBar');
+
+    function update() {
+      var t = totals();
+
+      // capacity gauge (scale 0..20 -> 0..100%)
+      capUsed.textContent = t.pts;
+      var pct = Math.min(100, (t.pts / 20) * 100);
+      gaugeFill.style.width = pct + '%';
+      var over = t.pts > 18;
+      gaugeFill.classList.toggle('over', over);
+      capUsed.classList.toggle('over', over);
+
+      sprintCount.textContent = t.pts + ' pts queued';
+
+      // forecast tiles
+      fcLoad.textContent = t.pts + ' / ' + LIKELY + ' pts';
+      fcLoad.className = 'fc__v' + (t.pts > LIKELY ? ' bad' : (t.pts > 0 ? ' accent' : ''));
+
+      fcRev.textContent = (t.rev > 0 ? '+$' + t.rev.toLocaleString() : '+$0');
+      fcRev.className = 'fc__v' + (t.rev > 0 ? ' good' : ' accent');
+
+      var teamSign = t.team > 0 ? '+' : '';
+      fcTeam.textContent = t.team === 0 ? '0' : teamSign + t.team;
+      fcTeam.className = 'fc__v' + (t.team < 0 ? ' bad' : (t.team > 0 ? ' good' : ''));
+
+      // live "because" line — plain language, cause->effect
+      fcBecauseTxt.innerHTML = becauseLine(t);
+
+      // ship-to-earn nudge: enable ship only with work queued; warn if no release
+      shipBtn.disabled = !t.hasWork && !t.hasRelease;
+      var needsRelease = t.hasWork && !t.hasRelease;
+      shipNote.classList.toggle('hidden', !needsRelease);
+
+      // reflect packed-sprint cost live on the Team Health gauge
+      var projTeam = Math.max(0, Math.min(100, BASE_TEAM + t.team));
+      sbTeam.textContent = projTeam;
+      sbTeamBar.style.width = projTeam + '%';
+      sbTeamBar.setAttribute('data-score', projTeam);
+
+      // a11y: keep the gauge label honest
+      gaugeFill.parentElement.setAttribute('aria-label',
+        'Capacity gauge: plausible range 12 to 18 points, likely 15. ' + t.pts + ' points committed.');
+    }
+
+    function becauseLine(t) {
+      if (t.pts === 0) {
+        return 'Your sprint is empty. Add work, then queue a <b>Release</b> to turn finished features into revenue.';
+      }
+      if (t.hasWork && !t.hasRelease) {
+        return 'You’ve queued ' + t.rawRev.toLocaleString() + '$ of finished value — but it earns <b>$0</b> until you add <b>Ship a Release</b>.';
+      }
+      if (t.pts > LIKELY) {
+        var slack = t.pts - LIKELY;
+        return 'Forecast <b>' + t.pts + ' / ' + LIKELY + ' pts</b> — that’s ' + slack + ' over likely capacity. <b>Team morale will dip</b> from the overload.';
+      }
+      if (t.hasRelease && t.hasWork) {
+        return 'Forecast <b>' + t.pts + ' / ' + LIKELY + ' pts · +$' + t.rev.toLocaleString() + ' if released</b>. Because work is bundled in a Release, it reaches customers.';
+      }
+      if (t.hasRelease && !t.hasWork) {
+        return 'A Release with no finished features ships nothing new — add some work for it to deliver.';
+      }
+      return '';
+    }
+
+    /* ---------- add / remove with animation hook ---------- */
+    function addToSprint(id) {
+      if (sprint.indexOf(id) !== -1) return;
+      sprint.push(id);
+      renderBacklog();
+      renderSprint();
+      update();
+      // advance coachmark step 2 the first time a non-release item is added
+      maybeAdvanceCoachFromAdd(id);
+    }
+
+    function removeFromSprint(id) {
+      var i = sprint.indexOf(id);
+      if (i === -1) return;
+      sprint.splice(i, 1);
+      renderBacklog();
+      renderSprint();
+      update();
+    }
+
+    /* ============================================================
+       SCOREBOARD bar fill on first paint
+       ============================================================ */
+    function paintScoreboard() {
+      Array.prototype.slice.call(doc.querySelectorAll('.g__fill')).forEach(function (bar) {
+        var s = parseInt(bar.getAttribute('data-score'), 10) || 0;
+        window.requestAnimationFrame(function () {
+          window.setTimeout(function () { bar.style.width = s + '%'; }, 120);
+        });
+      });
+    }
+
+    /* revenue bar in the mission header */
+    function paintRevenue() {
+      var fill = byId('revFill');
+      window.requestAnimationFrame(function () {
+        window.setTimeout(function () { fill.style.width = '48%'; }, 140);
+      });
+    }
+
+    /* ============================================================
+       SCREEN SWITCHING (Plan | Outcome)
+       ============================================================ */
+    var tabs = [byId('tab-plan'), byId('tab-outcome')];
+    var screens = { plan: byId('screen-plan'), outcome: byId('screen-outcome') };
+
+    function showScreen(name) {
+      Object.keys(screens).forEach(function (k) {
+        screens[k].classList.toggle('is-active', k === name);
+      });
+      tabs.forEach(function (t) {
+        t.setAttribute('aria-selected', t.getAttribute('data-screen') === name ? 'true' : 'false');
+      });
+      window.scrollTo(0, 0);
+      if (name === 'outcome') runOutcomeReveal();
+    }
+
+    tabs.forEach(function (t) {
+      t.addEventListener('click', function () { showScreen(t.getAttribute('data-screen')); });
+    });
+
+    /* arrow-key support on the tablist */
+    doc.querySelector('.seg').addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      var cur = doc.activeElement === tabs[1] ? 1 : 0;
+      var nextI = cur === 0 ? 1 : 0;
+      tabs[nextI].focus();
+      showScreen(tabs[nextI].getAttribute('data-screen'));
+    });
+
+    /* ---------- Ship Sprint -> Outcome ---------- */
+    shipBtn.addEventListener('click', function () {
+      if (shipBtn.disabled) return;
+      showScreen('outcome');
+      tabs[1].focus();
+    });
+
+    /* ============================================================
+       OUTCOME REVEAL — sequence the cause->effect cards in
+       ============================================================ */
+    var effects = Array.prototype.slice.call(doc.querySelectorAll('.efx'));
+    var netBand = byId('netBand');
+    var outcomeActions = byId('outcomeActions');
+    var revealed = false;
+
+    function runOutcomeReveal() {
+      // reset
+      effects.forEach(function (e) { e.classList.remove('is-in'); });
+      netBand.classList.remove('is-in');
+      outcomeActions.classList.remove('is-in');
+
+      if (prefersReduced) {
+        effects.forEach(function (e) { e.classList.add('is-in'); });
+        netBand.classList.add('is-in');
+        outcomeActions.classList.add('is-in');
+        return;
+      }
+
+      var delay = 220;
+      effects.forEach(function (e, idx) {
+        window.setTimeout(function () { e.classList.add('is-in'); }, delay + idx * 520);
+      });
+      window.setTimeout(function () { netBand.classList.add('is-in'); }, delay + effects.length * 520 + 120);
+      window.setTimeout(function () { outcomeActions.classList.add('is-in'); }, delay + effects.length * 520 + 360);
+    }
+
+    byId('replayBtn').addEventListener('click', function () {
+      showScreen('plan');
+      tabs[0].focus();
+    });
+    byId('nextSprintBtn').addEventListener('click', function () {
+      // demo loop: reset the sprint, bump nothing irreversible, return to Plan
+      sprint = [];
+      renderBacklog(); renderSprint(); update();
+      showScreen('plan');
+      tabs[0].focus();
+    });
+
+    /* ============================================================
+       COACHMARKS — two-step just-in-time onboarding
+       (1) capacity gauge   (2) the Release card
+       ============================================================ */
+    var coach = byId('coach');
+    var coachScrim = byId('coachScrim');
+    var coachArrow = byId('coachArrow');
+    var coachBody = byId('coachBody');
+    var coachStep = byId('coachStep');
+    var coachEyebrow = byId('coachEyebrow');
+    var coachNext = byId('coachNext');
+    var coachSkip = byId('coachSkip');
+
+    var STEPS = [
+      { targetId: 'capacityPanel',
+        body: 'This is your team’s capacity — <b>a range, not a promise</b>. You can’t build everything; pick what matters most.',
+        next: 'Got it' },
+      { targetId: null, // resolved to the Release card at show time
+        releaseCard: true,
+        body: 'Finished features only earn revenue when you <b>Ship a Release</b>. Don’t skip it.',
+        next: 'Start planning' }
+    ];
+    var coachIdx = -1;
+    var coachTargetEl = null;
+
+    function clearCoachTarget() {
+      if (coachTargetEl) { coachTargetEl.classList.remove('coach-target'); coachTargetEl = null; }
+    }
+
+    function positionCoach(target) {
+      var r = target.getBoundingClientRect();
+      var cw = coach.offsetWidth;
+      var ch = coach.offsetHeight;
+      var gap = 14;
+      var vw = window.innerWidth;
+      var top, left, arrowSide;
+
+      // prefer placing to the right; fall back to below on narrow screens
+      if (vw > 900 && r.right + gap + cw < vw) {
+        left = r.right + gap;
+        top = Math.max(12, r.top + r.height / 2 - ch / 2);
+        arrowSide = 'left';
+      } else {
+        left = Math.min(Math.max(12, r.left), vw - cw - 12);
+        top = r.bottom + gap;
+        arrowSide = 'top';
+      }
+      coach.style.top = (top + window.scrollY) + 'px';
+      coach.style.left = (left + window.scrollX) + 'px';
+
+      // arrow
+      if (arrowSide === 'left') {
+        coachArrow.style.left = '-6px';
+        coachArrow.style.top = (ch / 2 - 6) + 'px';
+      } else {
+        var ax = Math.min(Math.max(18, r.left + r.width / 2 - left), cw - 18);
+        coachArrow.style.left = (ax - 6) + 'px';
+        coachArrow.style.top = '-6px';
+      }
+    }
+
+    function showCoachStep(i) {
+      clearCoachTarget();
+      coachIdx = i;
+      var step = STEPS[i];
+
+      var target;
+      if (step.releaseCard) {
+        target = backlogEl.querySelector('.bcard.is-release');
+      } else {
+        target = byId(step.targetId);
+      }
+      if (!target) { endCoach(); return; }
+
+      coachBody.innerHTML = step.body;
+      coachStep.textContent = (i + 1) + ' / ' + STEPS.length;
+      coachEyebrow.textContent = 'Getting started · ' + (i + 1) + ' of ' + STEPS.length;
+      coachNext.textContent = step.next;
+
+      coachScrim.classList.remove('hidden');
+      coach.classList.remove('hidden');
+      target.classList.add('coach-target');
+      coachTargetEl = target;
+
+      // position after layout
+      window.requestAnimationFrame(function () { positionCoach(target); });
+      coachNext.focus();
+    }
+
+    function startCoach() {
+      showScreen('plan');
+      showCoachStep(0);
+    }
+
+    function endCoach() {
+      clearCoachTarget();
+      coach.classList.add('hidden');
+      coachScrim.classList.add('hidden');
+      coachIdx = -1;
+    }
+
+    coachNext.addEventListener('click', function () {
+      if (coachIdx + 1 < STEPS.length) showCoachStep(coachIdx + 1);
+      else endCoach();
+    });
+    coachSkip.addEventListener('click', endCoach);
+    coachScrim.addEventListener('click', endCoach);
+    doc.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !coach.classList.contains('hidden')) endCoach();
+    });
+    window.addEventListener('resize', function () {
+      if (coachTargetEl) positionCoach(coachTargetEl);
+    });
+
+    // if the player adds a non-release item while the gauge coachmark is up, nudge to step 2
+    function maybeAdvanceCoachFromAdd(id) {
+      if (coachIdx === 0 && id !== 'release') showCoachStep(1);
+    }
+
+    byId('restartCoach').addEventListener('click', startCoach);
+
+    /* ============================================================
+       INIT
+       ============================================================ */
+    renderBacklog();
+    renderSprint();
+    update();
+    paintScoreboard();
+    paintRevenue();
+
+    // launch onboarding shortly after first paint (just-in-time, dismissible)
+    window.setTimeout(startCoach, prefersReduced ? 0 : 480);
+  })();
+</script>
+
+</body>
+</html>

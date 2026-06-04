@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PRAXIS — Simulation · Direction C · Board / Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     PRAXIS — SIMULATION · Direction C "Board / Journey"
+     The most visual / spatial / game-like of the three sim
+     directions, built on the same "Console" design system as
+     direction-b.html (slate scale + one electric indigo accent,
+     mono metadata, 7px radii, 1px borders, Inter + IBM Plex Mono).
+     Gamification = meaningful tradeoffs + visible stakes, never
+     points / badges / leaderboards. Adult, not juvenile.
+     ============================================================ */
+
+  :root {
+    /* monochrome slate scale — identical to Console */
+    --ink:        #171717;
+    --ink-2:      #404040;
+    --slate:      #525252;
+    --mute:       #737373;
+    --faint:      #A3A3A3;
+    --line:       #E5E5E5;
+    --line-2:     #EDEDED;
+    --panel:      #FAFAFA;
+    --panel-2:    #F5F5F5;
+    --paper:      #FFFFFF;
+
+    /* one electric accent + semantic state */
+    --accent:     #2563EB;
+    --accent-700: #1D4ED8;
+    --accent-050: #EFF4FF;
+    --accent-100: #DBE6FF;
+    --good:       #16A34A;
+    --good-050:   #ECFDF3;
+    --good-100:   #D1FAE0;
+    --good-line:  #BBF7D0;
+    --bad:        #DC2626;
+    --bad-050:    #FEF2F2;
+    --bad-line:   #FECACA;
+    --warn:       #D97706;
+    --warn-050:   #FFFBEB;
+    --warn-line:  #FDE68A;
+
+    --radius:     7px;
+    --radius-sm:  5px;
+    --radius-lg:  10px;
+    --radius-xl:  14px;
+
+    --shadow-sm:  0 1px 2px rgba(15,23,42,0.04);
+    --shadow-md:  0 6px 20px rgba(15,23,42,0.06);
+    --shadow-lg:  0 14px 40px rgba(15,23,42,0.10);
+
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--panel);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    line-height: 1.5;
+  }
+
+  /* faint technical grid (matches portfolio .blueprint-light) */
+  .blueprint {
+    background-image:
+      linear-gradient(rgba(15,23,42,0.030) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,23,42,0.030) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+
+  button { font-family: inherit; cursor: pointer; }
+
+  a:focus-visible,
+  button:focus-visible,
+  [tabindex]:focus-visible,
+  [draggable]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  .mono { font-family: var(--mono); }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mute);
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ============================================================
+     APP CHROME — shared with Console
+     ============================================================ */
+  .app { min-height: 100vh; display: flex; flex-direction: column; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 30;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: saturate(180%) blur(8px);
+  }
+  .topbar__inner {
+    max-width: 1280px; margin: 0 auto;
+    padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .wordmark {
+    font-family: var(--mono); font-weight: 600; font-size: 15px;
+    letter-spacing: -0.01em; color: var(--ink);
+    text-decoration: none; white-space: nowrap;
+  }
+  .wordmark .dot { color: var(--accent); }
+  .wordmark .v { color: var(--faint); font-size: 11px; font-weight: 500; margin-left: 6px; }
+
+  /* segmented screen toggle (Plan | Outcome) */
+  .seg {
+    display: inline-flex; background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 3px; gap: 2px;
+  }
+  .seg__btn {
+    appearance: none; border: 0; background: transparent;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em;
+    color: var(--slate); padding: 6px 14px; border-radius: var(--radius-sm);
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: color .15s ease, background .15s ease;
+  }
+  .seg__btn:hover { color: var(--ink); }
+  .seg__btn[aria-selected="true"] {
+    background: var(--paper); color: var(--ink);
+    box-shadow: var(--shadow-sm); border: 1px solid var(--line); margin: -1px;
+  }
+  .seg__btn .ico { width: 14px; height: 14px; flex: none; }
+  .seg__btn .step { color: var(--faint); }
+
+  /* screen plumbing */
+  .screen { display: none; }
+  .screen.is-active { display: block; }
+  main { flex: 1 1 auto; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+  /* ============================================================
+     JOURNEY TIMELINE — the 6-sprint header rail
+     ============================================================ */
+  .journey {
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .journey__inner { max-width: 1280px; margin: 0 auto; padding: 18px 24px 20px; }
+
+  .journey__top {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 20px; flex-wrap: wrap;
+  }
+  .mission {
+    display: flex; align-items: flex-start; gap: 12px; min-width: 0;
+  }
+  .mission__flag {
+    width: 34px; height: 34px; border-radius: var(--radius);
+    background: var(--accent-050); border: 1px solid var(--accent-100);
+    color: var(--accent); flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .mission__flag .ico { width: 18px; height: 18px; }
+  .mission__k {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--mute);
+  }
+  .mission__txt {
+    margin-top: 2px; font-size: 14px; font-weight: 600; color: var(--ink);
+    letter-spacing: -0.01em; line-height: 1.35; max-width: 56ch;
+  }
+  .mission__txt b { color: var(--accent); }
+
+  /* revenue progress toward the $5k goal */
+  .revbox { flex: none; min-width: 240px; }
+  .revbox__row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  }
+  .revbox__k {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--mute);
+  }
+  .revbox__v {
+    font-family: var(--mono); font-size: 13px; color: var(--slate);
+    font-variant-numeric: tabular-nums;
+  }
+  .revbox__v b { color: var(--ink); font-weight: 600; font-size: 15px; }
+  .revbar {
+    margin-top: 8px; height: 9px; background: var(--line);
+    border-radius: 999px; overflow: hidden; position: relative;
+  }
+  .revbar__fill {
+    height: 100%; width: 48%;
+    background: linear-gradient(90deg, var(--good), #22C55E);
+    border-radius: 999px;
+    transition: width .8s cubic-bezier(.2,.7,.2,1);
+  }
+  .revbar__goal {
+    position: absolute; top: -3px; bottom: -3px; right: 0; width: 2px;
+    background: var(--ink); opacity: .25;
+  }
+
+  /* the sprint stepper */
+  .steps {
+    margin-top: 18px; display: flex; align-items: stretch; gap: 0;
+    list-style: none; padding: 0;
+  }
+  .step-node {
+    position: relative; flex: 1 1 0; text-align: center;
+    padding-top: 30px; min-width: 0;
+  }
+  /* connector line behind the dots */
+  .step-node::before {
+    content: ""; position: absolute; top: 13px; left: -50%; width: 100%;
+    height: 2px; background: var(--line); z-index: 0;
+  }
+  .step-node:first-child::before { display: none; }
+  .step-node.is-done::before { background: var(--good); }
+  .step-node.is-active::before { background: linear-gradient(90deg, var(--good), var(--accent)); }
+  .step-dot {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 28px; height: 28px; border-radius: 999px;
+    background: var(--paper); border: 2px solid var(--line);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--faint); z-index: 1;
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+  }
+  .step-dot .ico { width: 14px; height: 14px; }
+  .step-node.is-done .step-dot {
+    background: var(--good); border-color: var(--good); color: #fff;
+  }
+  .step-node.is-active .step-dot {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+    box-shadow: 0 0 0 4px var(--accent-050);
+  }
+  .step-label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--mute); white-space: nowrap;
+  }
+  .step-node.is-active .step-label { color: var(--accent); font-weight: 600; }
+  .step-sub {
+    margin-top: 2px; font-size: 11px; color: var(--faint);
+    font-variant-numeric: tabular-nums;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .step-node.is-active .step-sub { color: var(--slate); }
+  .step-node.is-active .step-here {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-top: 4px; font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+  }
+  .step-here .ico { width: 10px; height: 10px; }
+  .step-node:not(.is-active) .step-here { display: none; }
+
+  /* ============================================================
+     PLAN SCREEN — the working grid
+     left: backlog · center: sprint board + capacity · right: cast + scoreboard
+     ============================================================ */
+  .plan { padding: 24px 0 120px; }
+
+  .board {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 0.92fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  /* generic column panel */
+  .col__head {
+    display: flex; align-items: center; gap: 9px; margin-bottom: 12px;
+  }
+  .col__head .ico { width: 15px; height: 15px; color: var(--slate); flex: none; }
+  .col__title {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ink-2); font-weight: 600;
+  }
+  .col__count {
+    margin-left: auto; font-family: var(--mono); font-size: 11px;
+    color: var(--faint); font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- backlog cards (draggable source) ---- */
+  .stack { display: flex; flex-direction: column; gap: 11px; }
+
+  .pcard {
+    position: relative; text-align: left; width: 100%;
+    border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius-lg); padding: 13px 14px;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, opacity .2s ease;
+  }
+  .pcard[draggable="true"] { cursor: grab; }
+  .pcard[draggable="true"]:hover {
+    border-color: var(--faint); box-shadow: var(--shadow-sm); transform: translateY(-1px);
+  }
+  .pcard.is-dragging { opacity: .4; cursor: grabbing; }
+  .pcard.is-committed { opacity: .45; }
+  .pcard.is-committed .pcard__add { pointer-events: none; }
+
+  .pcard__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .pcard__grip { color: var(--faint); width: 14px; height: 14px; flex: none; margin-top: 2px; }
+  .pcard__name {
+    font-size: 14px; font-weight: 600; letter-spacing: -0.01em;
+    color: var(--ink); line-height: 1.3;
+  }
+  .pcard__eff {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: var(--ink-2); background: var(--panel-2); border: 1px solid var(--line);
+    padding: 3px 8px; border-radius: var(--radius-sm); white-space: nowrap;
+    font-variant-numeric: tabular-nums; flex: none;
+  }
+  .pcard.release { border-color: var(--accent-100); background: linear-gradient(180deg, var(--accent-050), #fff 70%); }
+  .pcard.release .pcard__eff { color: var(--accent); border-color: var(--accent-100); background: var(--paper); }
+
+  /* telegraphed impact chips — icon + text, never colour alone */
+  .impacts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .imp {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.03em;
+    padding: 3px 7px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--slate); background: var(--panel);
+    white-space: nowrap;
+  }
+  .imp .ico { width: 11px; height: 11px; flex: none; }
+  .imp.up { color: var(--good); background: var(--good-050); border-color: var(--good-line); }
+  .imp.down { color: var(--bad); background: var(--bad-050); border-color: var(--bad-line); }
+  .imp.trust { color: var(--accent); background: var(--accent-050); border-color: var(--accent-100); }
+
+  .pcard__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .pcard__who {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--faint);
+  }
+  /* add / remove fallback button (keyboard + reduced-motion path) */
+  .pcard__add {
+    appearance: none; border: 1px solid var(--line); background: var(--paper);
+    color: var(--accent); font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.04em; padding: 5px 10px; border-radius: var(--radius-sm);
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: background .14s ease, border-color .14s ease, color .14s ease;
+  }
+  .pcard__add .ico { width: 12px; height: 12px; }
+  .pcard__add:hover { background: var(--accent-050); border-color: var(--accent-100); }
+  .pcard__add.remove { color: var(--bad); }
+  .pcard__add.remove:hover { background: var(--bad-050); border-color: var(--bad-line); }
+
+  /* backlog empty hint when everything's committed */
+  .stack__empty {
+    border: 1px dashed var(--line); border-radius: var(--radius-lg);
+    padding: 18px 14px; text-align: center; color: var(--faint);
+    font-size: 13px; display: none;
+  }
+  .stack__empty.is-shown { display: block; }
+
+  /* ============================================================
+     CENTER — SPRINT BOARD (drop-zone) + CAPACITY CANISTER
+     ============================================================ */
+  .center { position: sticky; top: 70px; }
+
+  /* the drop-zone */
+  .dropzone {
+    border: 1.5px dashed var(--line); border-radius: var(--radius-xl);
+    background: var(--panel); padding: 14px;
+    min-height: 188px;
+    transition: border-color .18s ease, background .18s ease;
+    display: flex; flex-direction: column; gap: 11px;
+  }
+  .dropzone.is-over {
+    border-color: var(--accent); background: var(--accent-050);
+  }
+  .dropzone__hint {
+    flex: 1 1 auto; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 9px;
+    text-align: center; color: var(--faint); padding: 18px 12px;
+  }
+  .dropzone__hint .ico { width: 26px; height: 26px; color: var(--faint); }
+  .dropzone__hint b { color: var(--slate); font-weight: 600; font-size: 14px; }
+  .dropzone__hint span { font-size: 12.5px; max-width: 30ch; }
+  .dropzone.has-cards .dropzone__hint { display: none; }
+
+  /* committed cards inside the zone are compact */
+  .pcard.in-sprint { background: var(--paper); border-color: var(--line); }
+  .pcard.in-sprint .impacts { display: none; }
+  .pcard.in-sprint .pcard__who { display: none; }
+
+  /* capacity canister + meter */
+  .capacity {
+    margin-top: 16px;
+    border: 1px solid var(--line); border-radius: var(--radius-xl);
+    background: var(--paper); padding: 16px; box-shadow: var(--shadow-sm);
+  }
+  .capacity__head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  }
+  .capacity__k {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--mute);
+  }
+  .capacity__read {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 13px; color: var(--slate);
+  }
+  .capacity__read b { font-size: 20px; color: var(--ink); font-weight: 700; }
+  .capacity__read .of { color: var(--faint); }
+
+  /* the loading bar: a range track with a "likely" tick */
+  .capbar {
+    margin-top: 14px; position: relative;
+    height: 30px; border-radius: var(--radius); overflow: hidden;
+    background: var(--panel-2); border: 1px solid var(--line);
+  }
+  /* the 12–18 "comfortable range" band */
+  .capbar__range {
+    position: absolute; top: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      45deg, rgba(22,163,74,0.10), rgba(22,163,74,0.10) 6px,
+      rgba(22,163,74,0.04) 6px, rgba(22,163,74,0.04) 12px);
+    border-left: 1px dashed var(--good-line);
+    border-right: 1px dashed var(--good-line);
+  }
+  /* the actual fill that loads as cards land */
+  .capbar__fill {
+    position: absolute; top: 0; bottom: 0; left: 0; width: 0%;
+    background: var(--accent);
+    transition: width .5s cubic-bezier(.2,.7,.2,1), background .3s ease;
+  }
+  .capbar__fill.warn { background: var(--warn); }
+  .capbar__fill.over { background: var(--bad); }
+  /* the "likely 15" line */
+  .capbar__likely {
+    position: absolute; top: -4px; bottom: -4px; width: 2px;
+    background: var(--ink); opacity: .55; z-index: 3;
+  }
+  .capbar__likely::after {
+    content: "likely 15"; position: absolute; top: -16px; left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em;
+    color: var(--slate); white-space: nowrap;
+  }
+  .capbar__val {
+    position: absolute; z-index: 4; top: 50%; transform: translateY(-50%);
+    left: 9px; font-family: var(--mono); font-size: 12px; font-weight: 600;
+    color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.25);
+    font-variant-numeric: tabular-nums; transition: left .5s cubic-bezier(.2,.7,.2,1);
+  }
+
+  /* status line under the bar — never colour alone */
+  .capstatus {
+    margin-top: 10px; display: flex; align-items: center; gap: 7px;
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.02em;
+  }
+  .capstatus .ico { width: 13px; height: 13px; flex: none; }
+  .capstatus.ok { color: var(--good); }
+  .capstatus.warn { color: var(--warn); }
+  .capstatus.over { color: var(--bad); }
+  .capstatus.empty { color: var(--mute); }
+
+  /* the "why" capacity breakdown */
+  .why {
+    margin-top: 13px; padding-top: 13px; border-top: 1px dashed var(--line);
+    display: grid; gap: 7px;
+  }
+  .why__row {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 12.5px; color: var(--slate);
+  }
+  .why__row .ico { width: 13px; height: 13px; flex: none; color: var(--faint); }
+  .why__row b { font-family: var(--mono); color: var(--ink); font-weight: 600; }
+  .why__op {
+    font-family: var(--mono); font-size: 12px; width: 30px; flex: none;
+    color: var(--mute); text-align: right; font-variant-numeric: tabular-nums;
+  }
+  .why__op.minus { color: var(--bad); }
+  .why__op.base { color: var(--ink); }
+
+  /* live forecast strip */
+  .forecast {
+    margin-top: 14px; border: 1px solid var(--accent-100);
+    background: var(--accent-050); border-radius: var(--radius);
+    padding: 12px 13px;
+  }
+  .forecast__k {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .forecast__k .ico { width: 12px; height: 12px; }
+  .forecast__metrics {
+    margin-top: 9px; display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .fmetric {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums;
+    color: var(--ink-2); background: var(--paper);
+    border: 1px solid var(--accent-100); border-radius: var(--radius-sm);
+    padding: 5px 9px;
+  }
+  .fmetric .ico { width: 12px; height: 12px; flex: none; }
+  .fmetric b { color: var(--ink); font-weight: 600; }
+  .fmetric.good { color: var(--good); } .fmetric.good b { color: var(--good); }
+  .fmetric.bad  { color: var(--bad); }  .fmetric.bad b { color: var(--bad); }
+
+  /* the "ship to earn revenue" unmissable callout */
+  .shipnote {
+    margin-top: 12px; display: flex; align-items: flex-start; gap: 9px;
+    font-size: 12.5px; color: var(--ink-2); line-height: 1.5;
+    background: var(--good-050); border: 1px solid var(--good-line);
+    border-radius: var(--radius); padding: 11px 12px;
+  }
+  .shipnote .ico { width: 16px; height: 16px; color: var(--good); flex: none; margin-top: 1px; }
+  .shipnote b { color: var(--ink); font-weight: 600; }
+
+  /* SHIP SPRINT primary action */
+  .shipbtn {
+    margin-top: 14px; width: 100%; appearance: none; border: 0;
+    border-radius: var(--radius);
+    font-family: var(--mono); font-size: 14px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: #fff;
+    background: var(--accent); padding: 15px 18px; box-shadow: var(--shadow-md);
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    transition: background .15s ease, transform .07s ease, box-shadow .15s ease;
+  }
+  .shipbtn .ico { width: 17px; height: 17px; }
+  .shipbtn:hover:not(:disabled) { background: var(--accent-700); }
+  .shipbtn:active:not(:disabled) { transform: translateY(1px); box-shadow: var(--shadow-sm); }
+  .shipbtn:disabled { background: var(--panel-2); color: var(--faint); box-shadow: none; cursor: not-allowed; }
+
+  /* ============================================================
+     RIGHT — CAST (character portraits) + SCOREBOARD
+     ============================================================ */
+  .cast { display: flex; flex-direction: column; gap: 10px; }
+
+  .person {
+    border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius-lg); padding: 12px 13px;
+    display: flex; gap: 12px; align-items: flex-start;
+    transition: border-color .2s ease, box-shadow .2s ease, background .3s ease;
+  }
+  .person.is-reacting { border-color: var(--accent-100); box-shadow: var(--shadow-sm); }
+
+  /* portrait = monogram disc with a mood face overlaid (icon + text mood label) */
+  .portrait {
+    position: relative; width: 44px; height: 44px; flex: none;
+    border-radius: 999px; background: var(--panel-2);
+    border: 1px solid var(--line);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-weight: 600; font-size: 15px; color: var(--slate);
+    transition: background .3s ease, color .3s ease, border-color .3s ease;
+  }
+  .portrait__face {
+    position: absolute; right: -3px; bottom: -3px;
+    width: 19px; height: 19px; border-radius: 999px;
+    background: var(--paper); border: 1.5px solid var(--line);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--mute);
+  }
+  .portrait__face .ico { width: 12px; height: 12px; }
+  /* mood tints — paired with a text label below, never colour alone */
+  .person.m-happy   .portrait { background: var(--good-050); border-color: var(--good-line); color: var(--good); }
+  .person.m-happy   .portrait__face { color: var(--good); border-color: var(--good-line); }
+  .person.m-neutral .portrait { background: var(--panel-2); }
+  .person.m-low     .portrait { background: var(--warn-050); border-color: var(--warn-line); color: var(--warn); }
+  .person.m-low     .portrait__face { color: var(--warn); border-color: var(--warn-line); }
+
+  .person__body { min-width: 0; flex: 1 1 auto; }
+  .person__row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .person__name { font-size: 13.5px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+  .person__role {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--faint);
+  }
+  .person__want { margin-top: 3px; font-size: 12px; color: var(--slate); line-height: 1.4; }
+  .person__meter { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+  .person__track {
+    flex: 1 1 auto; height: 5px; background: var(--line);
+    border-radius: 999px; overflow: hidden;
+  }
+  .person__fill { height: 100%; border-radius: 999px; transition: width .8s cubic-bezier(.2,.7,.2,1), background .3s ease; }
+  .person__fill.hi { background: var(--good); }
+  .person__fill.mid { background: var(--accent); }
+  .person__fill.lo { background: var(--warn); }
+  .person__stat {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--mute); white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .person__stat .ico { width: 11px; height: 11px; flex: none; }
+  .person__stat b { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+  /* per-person reaction callout (appears in outcome) */
+  .person__react {
+    margin-top: 9px; font-size: 11.5px; line-height: 1.45;
+    border-radius: var(--radius-sm); padding: 8px 9px;
+    display: none; gap: 7px; align-items: flex-start;
+  }
+  .person__react.is-shown { display: flex; }
+  .person__react .ico { width: 13px; height: 13px; flex: none; margin-top: 1px; }
+  .person__react.up { background: var(--good-050); color: #166534; border: 1px solid var(--good-line); }
+  .person__react.up .ico { color: var(--good); }
+  .person__react.down { background: var(--bad-050); color: #991B1B; border: 1px solid var(--bad-line); }
+  .person__react.down .ico { color: var(--bad); }
+  .person__react b { font-weight: 600; }
+  .person__delta {
+    margin-left: auto; font-family: var(--mono); font-weight: 600;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+
+  /* ---- compact 5-dimension scoreboard ---- */
+  .score {
+    margin-top: 4px; border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius-lg); padding: 14px;
+  }
+  .gauge { display: flex; align-items: center; gap: 11px; padding: 7px 0; }
+  .gauge + .gauge { border-top: 1px solid var(--line-2); }
+  .gauge__ico {
+    width: 26px; height: 26px; flex: none; border-radius: var(--radius-sm);
+    background: var(--panel-2); border: 1px solid var(--line);
+    display: inline-flex; align-items: center; justify-content: center; color: var(--slate);
+  }
+  .gauge__ico .ico { width: 14px; height: 14px; }
+  .gauge__body { flex: 1 1 auto; min-width: 0; }
+  .gauge__row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .gauge__name {
+    font-size: 12px; font-weight: 500; color: var(--ink-2);
+  }
+  .gauge__val {
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .gauge__val .chg { font-size: 10px; margin-left: 5px; font-weight: 600; }
+  .gauge__val .chg.up { color: var(--good); }
+  .gauge__val .chg.down { color: var(--bad); }
+  .gauge__track {
+    margin-top: 5px; height: 5px; background: var(--line);
+    border-radius: 999px; overflow: hidden;
+  }
+  .gauge__fill {
+    height: 100%; background: var(--accent); border-radius: 999px;
+    transition: width .9s cubic-bezier(.2,.7,.2,1);
+  }
+
+  /* ============================================================
+     ONBOARDING COACHMARKS — teach in-context
+     ============================================================ */
+  .coach {
+    position: relative;
+    border: 1px solid var(--accent-100); background: var(--paper);
+    border-radius: var(--radius); padding: 11px 12px 11px 13px;
+    box-shadow: var(--shadow-md);
+    display: flex; gap: 10px; align-items: flex-start;
+    border-left: 3px solid var(--accent);
+  }
+  .coach.is-dismissed { display: none; }
+  .coach__ico {
+    width: 22px; height: 22px; flex: none; border-radius: 999px;
+    background: var(--accent-050); color: var(--accent);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .coach__ico .ico { width: 13px; height: 13px; }
+  .coach__body { flex: 1 1 auto; min-width: 0; }
+  .coach__k {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .coach__txt { margin-top: 3px; font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
+  .coach__x {
+    appearance: none; border: 0; background: transparent; color: var(--faint);
+    width: 22px; height: 22px; border-radius: var(--radius-sm); flex: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: color .14s ease, background .14s ease;
+  }
+  .coach__x:hover { color: var(--ink); background: var(--panel-2); }
+  .coach__x .ico { width: 13px; height: 13px; }
+  .coach--inline { margin-bottom: 13px; }
+
+  /* ============================================================
+     OUTCOME SCREEN — the results beat
+     ============================================================ */
+  .outcome { padding: 26px 0 100px; }
+
+  .outcome__head { text-align: left; max-width: 720px; }
+  .outcome__head h1 {
+    margin: 10px 0 0; font-size: 26px; font-weight: 800;
+    letter-spacing: -0.02em; line-height: 1.12;
+  }
+  .outcome__head p { margin: 8px 0 0; color: var(--slate); font-size: 14.5px; }
+
+  /* sprint summary banner */
+  .summary {
+    margin-top: 20px; border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius-xl); padding: 16px 18px;
+    display: flex; flex-wrap: wrap; gap: 18px; align-items: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .summary__rev { display: flex; align-items: baseline; gap: 10px; }
+  .summary__rev .k {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--mute);
+  }
+  .summary__rev .v {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 15px; color: var(--faint); text-decoration: line-through;
+  }
+  .summary__rev .arrow { color: var(--good); width: 16px; height: 16px; }
+  .summary__rev .v2 {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 22px; font-weight: 700; color: var(--good);
+  }
+  .summary__sep { width: 1px; align-self: stretch; background: var(--line); }
+  .summary__roll {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--mono); font-size: 12px; color: var(--slate);
+  }
+  .summary__roll .ico { width: 14px; height: 14px; color: var(--accent); flex: none; }
+  .summary__roll b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  /* lanes: Done vs Didn't fit */
+  .lanes {
+    margin-top: 18px; display: grid; gap: 16px;
+    grid-template-columns: 1fr 1fr;
+  }
+  .lane {
+    border: 1px solid var(--line); border-radius: var(--radius-xl);
+    background: var(--paper); padding: 15px; min-height: 120px;
+  }
+  .lane.done { border-color: var(--good-line); background: linear-gradient(180deg, var(--good-050), #fff 60%); }
+  .lane.miss { border-color: var(--line); background: var(--panel); }
+  .lane__head {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; font-weight: 600;
+  }
+  .lane__head .ico { width: 15px; height: 15px; flex: none; }
+  .lane.done .lane__head { color: var(--good); }
+  .lane.miss .lane__head { color: var(--mute); }
+  .lane__head .n { margin-left: auto; color: var(--faint); font-weight: 500; }
+  .lane__cards { display: flex; flex-direction: column; gap: 9px; }
+
+  .donecard {
+    display: flex; align-items: center; gap: 10px;
+    border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius); padding: 11px 12px;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity .4s ease, transform .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .donecard.is-in { opacity: 1; transform: none; }
+  .donecard .tick { width: 18px; height: 18px; flex: none; }
+  .lane.done .donecard .tick { color: var(--good); }
+  .lane.miss .donecard { background: var(--panel-2); border-style: dashed; }
+  .lane.miss .donecard .tick { color: var(--bad); }
+  .donecard__name { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .lane.miss .donecard__name { color: var(--slate); }
+  .donecard__eff {
+    margin-left: auto; font-family: var(--mono); font-size: 11px;
+    color: var(--faint); font-variant-numeric: tabular-nums;
+  }
+
+  /* because-callouts — the cause→effect ledger */
+  .because { margin-top: 22px; }
+  .because__head {
+    display: flex; align-items: center; gap: 9px; margin-bottom: 13px;
+  }
+  .because__head .ico { width: 15px; height: 15px; color: var(--slate); }
+  .because__head .t {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ink-2); font-weight: 600;
+  }
+  .because__list { display: flex; flex-direction: column; gap: 10px; }
+  .callout {
+    display: flex; align-items: flex-start; gap: 12px;
+    border: 1px solid var(--line); background: var(--paper);
+    border-radius: var(--radius-lg); padding: 13px 15px;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .45s ease, transform .45s cubic-bezier(.2,.8,.2,1);
+  }
+  .callout.is-in { opacity: 1; transform: none; }
+  .callout__badge {
+    width: 30px; height: 30px; flex: none; border-radius: var(--radius);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .callout__badge .ico { width: 16px; height: 16px; }
+  .callout.up .callout__badge { background: var(--good-050); color: var(--good); border: 1px solid var(--good-line); }
+  .callout.down .callout__badge { background: var(--bad-050); color: var(--bad); border: 1px solid var(--bad-line); }
+  .callout.trust .callout__badge { background: var(--accent-050); color: var(--accent); border: 1px solid var(--accent-100); }
+  .callout__body { flex: 1 1 auto; min-width: 0; }
+  .callout__effect {
+    font-size: 14px; font-weight: 600; color: var(--ink); letter-spacing: -0.01em;
+    display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  }
+  .callout__delta {
+    font-family: var(--mono); font-size: 12.5px; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .callout.up .callout__delta { color: var(--good); }
+  .callout.down .callout__delta { color: var(--bad); }
+  .callout.trust .callout__delta { color: var(--accent); }
+  .callout__cause { margin-top: 4px; font-size: 13px; color: var(--slate); line-height: 1.5; }
+  .callout__cause b { color: var(--ink-2); font-weight: 600; }
+
+  /* replay action */
+  .replay {
+    margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+  }
+  .replay__btn {
+    appearance: none; border-radius: var(--radius);
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 12px 18px; display: inline-flex; align-items: center; gap: 8px;
+    transition: background .15s ease, border-color .15s ease, transform .07s ease;
+  }
+  .replay__btn .ico { width: 15px; height: 15px; }
+  .replay__btn.primary { border: 0; color: #fff; background: var(--accent); box-shadow: var(--shadow-md); }
+  .replay__btn.primary:hover { background: var(--accent-700); }
+  .replay__btn.ghost { border: 1px solid var(--line); background: var(--paper); color: var(--ink-2); }
+  .replay__btn.ghost:hover { border-color: var(--faint); }
+  .replay__btn:active { transform: translateY(1px); }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 1080px) {
+    .board { grid-template-columns: 1fr 1fr; }
+    .center { position: static; grid-column: 1 / -1; order: -1; }
+  }
+  @media (max-width: 760px) {
+    .board { grid-template-columns: 1fr; }
+    .lanes { grid-template-columns: 1fr; }
+    .journey__top { gap: 14px; }
+    .revbox { min-width: 0; width: 100%; }
+    .step-label { font-size: 9.5px; }
+    .step-sub { display: none; }
+  }
+  @media (max-width: 560px) {
+    .topbar__inner { padding: 10px 16px; }
+    .wordmark .v { display: none; }
+    .seg__btn { padding: 6px 10px; }
+    .seg__btn .step { display: none; }
+    .journey__inner { padding: 14px 16px 16px; }
+    .wrap { padding: 0 16px; }
+    .outcome__head h1 { font-size: 22px; }
+    .steps { gap: 0; }
+    .step-dot { width: 24px; height: 24px; }
+    .summary__sep { display: none; }
+  }
+
+  /* honour reduced motion — show end-states, no animation, drag has click fallback */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition-duration: 0.001ms !important;
+      animation-duration: 0.001ms !important;
+    }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body class="blueprint">
+<div class="app">
+
+  <!-- ═══════════════ TOP UTILITY BAR ═══════════════ -->
+  <div class="topbar">
+    <div class="topbar__inner">
+      <a href="#" class="wordmark" aria-label="PRAXIS home">praxis<span class="dot">.</span><span class="v">v0 · simulation</span></a>
+
+      <div class="seg" role="tablist" aria-label="Switch screen">
+        <button class="seg__btn" id="tab-plan" role="tab" aria-selected="true" aria-controls="screen-plan" data-screen="plan">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/></svg>
+          Plan <span class="step">· the board</span>
+        </button>
+        <button class="seg__btn" id="tab-outcome" role="tab" aria-selected="false" aria-controls="screen-outcome" data-screen="outcome">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg>
+          Outcome <span class="step">· results</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ JOURNEY TIMELINE (always visible) ═══════════════ -->
+  <div class="journey">
+    <div class="journey__inner">
+      <div class="journey__top">
+        <!-- the mission, always visible -->
+        <div class="mission">
+          <span class="mission__flag" aria-hidden="true">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4a1 1 0 0 1 1-1h13l-3 5 3 5H6"/><line x1="4" y1="21" x2="4" y2="14"/></svg>
+          </span>
+          <div>
+            <div class="mission__k">Mission</div>
+            <div class="mission__txt">B2B SaaS · team-collaboration product. Reach <b>$5,000 MRR</b> and keep customers + team healthy by Sprint 6.</div>
+          </div>
+        </div>
+
+        <!-- revenue progress toward goal -->
+        <div class="revbox">
+          <div class="revbox__row">
+            <span class="revbox__k">Revenue · MRR</span>
+            <span class="revbox__v" id="revLabel"><b>$2,400</b> / $5,000</span>
+          </div>
+          <div class="revbar" role="img" aria-label="Revenue 2400 of 5000 dollars MRR, 48 percent to goal">
+            <div class="revbar__fill" id="revFill" style="width:48%"></div>
+            <div class="revbar__goal" title="Goal $5,000"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- the 6-sprint stepper -->
+      <ol class="steps" aria-label="Sprint journey, sprint 3 of 6 active">
+        <li class="step-node is-done">
+          <span class="step-dot" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <div class="step-label">Sprint 1</div>
+          <div class="step-sub">$1,200 · done</div>
+        </li>
+        <li class="step-node is-done">
+          <span class="step-dot" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <div class="step-label">Sprint 2</div>
+          <div class="step-sub">$2,400 · done</div>
+        </li>
+        <li class="step-node is-active" aria-current="step">
+          <span class="step-dot" aria-hidden="true">3</span>
+          <div class="step-label">Sprint 3</div>
+          <div class="step-sub">planning now</div>
+          <span class="step-here"><svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>You are here</span>
+        </li>
+        <li class="step-node">
+          <span class="step-dot" aria-hidden="true">4</span>
+          <div class="step-label">Sprint 4</div>
+          <div class="step-sub">ahead</div>
+        </li>
+        <li class="step-node">
+          <span class="step-dot" aria-hidden="true">5</span>
+          <div class="step-label">Sprint 5</div>
+          <div class="step-sub">ahead</div>
+        </li>
+        <li class="step-node">
+          <span class="step-dot" aria-hidden="true">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4a1 1 0 0 1 1-1h13l-3 5 3 5H6"/></svg>
+          </span>
+          <div class="step-label">Sprint 6</div>
+          <div class="step-sub">$5k goal</div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SCREEN 1 — PLAN (the board)
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="screen is-active" id="screen-plan" role="tabpanel" aria-labelledby="tab-plan">
+      <div class="wrap">
+        <div class="plan">
+          <div class="board">
+
+            <!-- ───── LEFT · BACKLOG (drag source) ───── -->
+            <div class="colC backlog">
+              <div class="col__head">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                <span class="col__title">Backlog</span>
+                <span class="col__count" id="backlogCount">5 items</span>
+              </div>
+
+              <div class="stack" id="backlogStack">
+                <!-- cards injected by JS so drag + add/remove share one source of truth -->
+              </div>
+
+              <div class="stack__empty" id="backlogEmpty">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;margin-bottom:6px" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><br>
+                Everything's committed. Remove a card to free it up.
+              </div>
+            </div>
+
+            <!-- ───── CENTER · SPRINT BOARD + CAPACITY ───── -->
+            <div class="center">
+
+              <!-- onboarding coachmark: capacity (teaches in-context) -->
+              <div class="coach coach--inline" id="coachCapacity" role="note">
+                <span class="coach__ico" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="16" x2="12" y2="11"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+                <div class="coach__body">
+                  <div class="coach__k">Coachmark · Capacity</div>
+                  <div class="coach__txt">Your team's capacity is a <b>range, not a promise</b> — you can't build everything. Drag cards in and watch the meter fill.</div>
+                </div>
+                <button class="coach__x" data-dismiss="coachCapacity" aria-label="Dismiss capacity tip">
+                  <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+
+              <div class="col__head">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+                <span class="col__title">This Sprint</span>
+                <span class="col__count" id="sprintCount">0 cards · 0 pts</span>
+              </div>
+
+              <!-- the drop-zone -->
+              <div class="dropzone" id="dropzone" aria-label="This sprint drop zone. Drag backlog cards here, or use each card's Add button.">
+                <div class="dropzone__hint" id="dropHint">
+                  <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13"/><path d="m7 12 5 5 5-5"/><rect x="4" y="19" width="16" height="2" rx="1"/></svg>
+                  <b>Drag cards here to plan the sprint</b>
+                  <span>Or press <strong>Add</strong> on any backlog card. The capacity meter loads as you commit work.</span>
+                </div>
+              </div>
+
+              <!-- CAPACITY canister + meter -->
+              <div class="capacity">
+                <div class="capacity__head">
+                  <span class="capacity__k">Capacity this sprint</span>
+                  <span class="capacity__read"><b id="capCommitted">0</b> <span class="of">/ 12–18 pts</span></span>
+                </div>
+
+                <div class="capbar" role="img" aria-label="Capacity meter. Committed 0 points. Comfortable range 12 to 18 points, likely 15.">
+                  <div class="capbar__range" id="capRange"></div>
+                  <div class="capbar__likely" id="capLikely"></div>
+                  <div class="capbar__fill" id="capFill"></div>
+                  <span class="capbar__val" id="capVal">0</span>
+                </div>
+
+                <div class="capstatus empty" id="capStatus">
+                  <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span id="capStatusTxt">Empty — drag work in to fill toward 12–18.</span>
+                </div>
+
+                <!-- the WHY breakdown -->
+                <div class="why">
+                  <div class="why__row"><span class="why__op base">18</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 11h6"/></svg><span>Base team velocity</span></div>
+                  <div class="why__row"><span class="why__op minus">−2</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 21v-1a7 7 0 0 1 14 0v1"/></svg><span>Onboarding a new hire</span></div>
+                  <div class="why__row"><span class="why__op minus">−1</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Tech debt (currently <b>35</b>)</span></div>
+                  <div class="why__row" style="border-top:1px dashed var(--line);padding-top:8px;margin-top:1px"><span class="why__op base">15</span><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><span><b>Likely</b> deliverable (range 12–18)</span></div>
+                </div>
+              </div>
+
+              <!-- LIVE FORECAST strip -->
+              <div class="forecast" aria-live="polite">
+                <span class="forecast__k"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12a10 10 0 0 1 20 0"/><path d="m12 12 4-2"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg> Live forecast</span>
+                <div class="forecast__metrics" id="forecastMetrics">
+                  <span class="fmetric"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/></svg> <b id="fcPts">0</b>&nbsp;/ 15 pts</span>
+                  <span class="fmetric" id="fcRevMetric"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> <span id="fcRev">+$0 if released</span></span>
+                  <span class="fmetric" id="fcTeamMetric"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg> <span id="fcTeam">Team steady</span></span>
+                </div>
+              </div>
+
+              <!-- UNMISSABLE "ship to earn revenue" note -->
+              <div class="shipnote">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7l9 5 9-5-9-5z"/><path d="m3 17 9 5 9-5"/><path d="m3 12 9 5 9-5"/></svg>
+                <span>Finished features <b>only earn revenue when you Ship a Release.</b> Add the <b>Ship a Release</b> card (3 pts) to turn this sprint's work into MRR.</span>
+              </div>
+
+              <!-- SHIP SPRINT action -->
+              <button class="shipbtn" id="shipBtn" disabled>
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 3 7l9 5 9-5-9-5z"/><path d="m3 17 9 5 9-5"/><path d="m3 12 9 5 9-5"/></svg>
+                <span id="shipBtnTxt">Add work to ship the sprint</span>
+              </button>
+            </div>
+
+            <!-- ───── RIGHT · CAST + SCOREBOARD ───── -->
+            <div class="colC">
+              <div class="col__head">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span class="col__title">Your Cast</span>
+                <span class="col__count">react to what you ship</span>
+              </div>
+
+              <div class="cast">
+                <!-- MAYA — happy/active -->
+                <div class="person m-neutral" id="p-maya">
+                  <span class="portrait" aria-hidden="true">M
+                    <span class="portrait__face" id="face-maya"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="10" r="0.5"/><circle cx="15" cy="10" r="0.5"/><path d="M9 15h6"/></svg></span>
+                  </span>
+                  <div class="person__body">
+                    <div class="person__row"><span class="person__name">Maya</span><span class="person__role">Ops admin</span></div>
+                    <div class="person__want">Wants to save hours on reporting</div>
+                    <div class="person__meter">
+                      <span class="person__stat"><svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>Active</span>
+                      <div class="person__track"><div class="person__fill hi" id="fill-maya" style="width:70%"></div></div>
+                      <span class="person__stat"><b id="stat-maya">7</b>/10</span>
+                    </div>
+                    <div class="person__react" id="react-maya" role="status"></div>
+                  </div>
+                </div>
+
+                <!-- DEVON — interested/neutral -->
+                <div class="person m-neutral" id="p-devon">
+                  <span class="portrait" aria-hidden="true">D
+                    <span class="portrait__face" id="face-devon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="10" r="0.5"/><circle cx="15" cy="10" r="0.5"/><path d="M9 15h6"/></svg></span>
+                  </span>
+                  <div class="person__body">
+                    <div class="person__row"><span class="person__name">Devon</span><span class="person__role">Eng lead</span></div>
+                    <div class="person__want">Wants reliability</div>
+                    <div class="person__meter">
+                      <span class="person__stat"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>Interested</span>
+                      <div class="person__track"><div class="person__fill mid" id="fill-devon" style="width:50%"></div></div>
+                      <span class="person__stat"><b id="stat-devon">5</b>/10</span>
+                    </div>
+                    <div class="person__react" id="react-devon" role="status"></div>
+                  </div>
+                </div>
+
+                <!-- PRIYA — dormant/low -->
+                <div class="person m-low" id="p-priya">
+                  <span class="portrait" aria-hidden="true">P
+                    <span class="portrait__face" id="face-priya"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="10" r="0.5"/><circle cx="15" cy="10" r="0.5"/><path d="M9 16c1-1.2 5-1.2 6 0"/></svg></span>
+                  </span>
+                  <div class="person__body">
+                    <div class="person__row"><span class="person__name">Priya</span><span class="person__role">Trialer</span></div>
+                    <div class="person__want">Wants an easy start</div>
+                    <div class="person__meter">
+                      <span class="person__stat"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 3" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>Dormant</span>
+                      <div class="person__track"><div class="person__fill lo" id="fill-priya" style="width:40%"></div></div>
+                      <span class="person__stat"><b id="stat-priya">4</b>/10</span>
+                    </div>
+                    <div class="person__react" id="react-priya" role="status"></div>
+                  </div>
+                </div>
+
+                <!-- VP GROWTH — stakeholder trust -->
+                <div class="person m-neutral" id="p-vp">
+                  <span class="portrait" aria-hidden="true">VP
+                    <span class="portrait__face" id="face-vp"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="10" r="0.5"/><circle cx="15" cy="10" r="0.5"/><path d="M9 15h6"/></svg></span>
+                  </span>
+                  <div class="person__body">
+                    <div class="person__row"><span class="person__name">VP Growth</span><span class="person__role">Stakeholder</span></div>
+                    <div class="person__want">Wants enterprise revenue</div>
+                    <div class="person__meter">
+                      <span class="person__stat"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/></svg>Trust</span>
+                      <div class="person__track"><div class="person__fill mid" id="fill-vp" style="width:60%"></div></div>
+                      <span class="person__stat"><b id="stat-vp">6</b>/10</span>
+                    </div>
+                    <div class="person__react" id="react-vp" role="status"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- compact 5-dimension SCOREBOARD -->
+              <div class="col__head" style="margin-top:18px">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                <span class="col__title">Scoreboard</span>
+                <span class="col__count">0–100</span>
+              </div>
+              <div class="score" id="scoreboard" aria-label="Live scoreboard, five dimensions out of 100">
+                <!-- gauges injected by JS so outcome can animate them -->
+              </div>
+            </div>
+
+          </div><!-- /.board -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         SCREEN 2 — OUTCOME (results beat)
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="screen" id="screen-outcome" role="tabpanel" aria-labelledby="tab-outcome">
+      <div class="wrap">
+        <div class="outcome">
+          <header class="outcome__head">
+            <p class="eyebrow">Sprint 3 · shipped</p>
+            <h1>Here's how the sprint landed.</h1>
+            <p>You committed 14 of a likely 15 points and shipped a release. The team and your customers reacted — here's the cause and effect.</p>
+          </header>
+
+          <!-- summary banner -->
+          <div class="summary">
+            <div class="summary__rev">
+              <span class="k">Revenue</span>
+              <span class="v">$2,400</span>
+              <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              <span class="v2">$3,000 MRR</span>
+            </div>
+            <div class="summary__sep" aria-hidden="true"></div>
+            <span class="summary__roll" title="You rolled a 14 against a likely 15">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.3" fill="currentColor"/></svg>
+              Delivered <b>14</b> of <b>15</b> likely pts
+            </span>
+          </div>
+
+          <!-- Done vs Didn't-fit lanes -->
+          <div class="lanes">
+            <div class="lane done">
+              <div class="lane__head">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                Shipped <span class="n" id="doneN">3</span>
+              </div>
+              <div class="lane__cards" id="doneLane">
+                <div class="donecard" data-name="Onboarding checklist" data-eff="5"></div>
+                <div class="donecard" data-name="SSO &amp; security" data-eff="8"></div>
+                <div class="donecard" data-name="Ship a Release" data-eff="3"></div>
+              </div>
+            </div>
+            <div class="lane miss">
+              <div class="lane__head">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Didn't fit <span class="n" id="missN">1</span>
+              </div>
+              <div class="lane__cards" id="missLane">
+                <div class="donecard" data-name="Custom dashboards" data-eff="13" data-roll="rolled 14"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BECAUSE callouts: cause → effect ledger -->
+          <div class="because">
+            <div class="because__head">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+              <span class="t">Why these numbers moved</span>
+            </div>
+            <div class="because__list" id="becauseList">
+              <!-- Priya activated -->
+              <div class="callout up" data-person="priya">
+                <span class="callout__badge" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7l9 5 9-5-9-5z"/><path d="m3 17 9 5 9-5"/><path d="m3 12 9 5 9-5"/></svg></span>
+                <div class="callout__body">
+                  <div class="callout__effect">Released &rarr; Priya activated <span class="callout__delta">+5 happiness · +$600</span></div>
+                  <div class="callout__cause">Because you <b>shipped the onboarding she needed</b> — she went from Dormant to Active.</div>
+                </div>
+              </div>
+              <!-- VP trust -->
+              <div class="callout trust" data-person="vp">
+                <span class="callout__badge" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/></svg></span>
+                <div class="callout__body">
+                  <div class="callout__effect">VP Growth trust rises <span class="callout__delta">+2 trust</span></div>
+                  <div class="callout__cause">Because <b>SSO unlocks enterprise deals</b> — exactly the revenue path they care about.</div>
+                </div>
+              </div>
+              <!-- Team morale -->
+              <div class="callout down" data-person="team">
+                <span class="callout__badge" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg></span>
+                <div class="callout__body">
+                  <div class="callout__effect">Team morale dips <span class="callout__delta">−6 team health</span></div>
+                  <div class="callout__cause">Because you <b>committed 13 of 15 pts with no slack</b> — a packed sprint burns people down.</div>
+                </div>
+              </div>
+              <!-- Tech debt -->
+              <div class="callout down" data-person="quality">
+                <span class="callout__badge" aria-hidden="true"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span>
+                <div class="callout__body">
+                  <div class="callout__effect">Tech debt climbs <span class="callout__delta">+5 debt → quality −</span></div>
+                  <div class="callout__cause">Because <b>no engineering work shipped</b> — Performance hardening stayed in the backlog.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- replay -->
+          <div class="replay">
+            <button class="replay__btn primary" id="toSprint4">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+              Continue to Sprint 4
+            </button>
+            <button class="replay__btn ghost" id="replayBtn">
+              <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v6h6"/><path d="M3 13a9 9 0 1 0 3-7.7L3 8"/></svg>
+              Replan this sprint
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var doc = document;
+  function byId(id) { return doc.getElementById(id); }
+  function svg(inner, sw) {
+    return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (sw || 2) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
+  }
+
+  /* shared icon paths */
+  var I = {
+    up:    '<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>',
+    down:  '<line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>',
+    money: '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+    user:  '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>',
+    shield:'<path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/>',
+    plus:  '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+    minus: '<line x1="5" y1="12" x2="19" y2="12"/>',
+    grip:  '<circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/>',
+    rocket:'<path d="M12 2 3 7l9 5 9-5-9-5z"/><path d="m3 17 9 5 9-5"/><path d="m3 12 9 5 9-5"/>'
+  };
+
+  /* ---------- DATA: the backlog (single source of truth) ---------- */
+  var BACKLOG = [
+    { id:"onboard", name:"Onboarding checklist", eff:5, who:"Priya",
+      impacts:[ {t:"↑ Priya happiness", cls:"up"}, {t:"small revenue", cls:""} ] },
+    { id:"dash", name:"Custom dashboards", eff:13, who:"Maya · big bet",
+      impacts:[ {t:"↑↑ Maya happiness", cls:"up"}, {t:"↑ revenue", cls:"up"} ] },
+    { id:"sso", name:"SSO & security", eff:8, who:"VP Growth",
+      impacts:[ {t:"↑ VP trust", cls:"trust"}, {t:"unlocks enterprise", cls:"trust"} ] },
+    { id:"perf", name:"Performance hardening", eff:5, who:"Devon · eng",
+      impacts:[ {t:"↓ tech debt", cls:"up"}, {t:"↑ Devon happiness", cls:"up"} ] },
+    { id:"release", name:"Ship a Release", eff:3, who:"turns work → revenue", release:true,
+      impacts:[ {t:"→ earns revenue", cls:"trust"} ] }
+  ];
+
+  /* ---------- DATA: the scoreboard ---------- */
+  var GAUGES = [
+    { id:"value", name:"Value Delivered",  v:58, ico:'<path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>' },
+    { id:"loyal", name:"Customer Loyalty", v:62, ico:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>' },
+    { id:"team",  name:"Team Health",      v:70, ico:I.user },
+    { id:"trust", name:"Stakeholder Trust",v:55, ico:I.shield },
+    { id:"qual",  name:"Product Quality",  v:64, ico:'<path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5"/>' }
+  ];
+
+  var committed = {}; /* id -> true when in sprint */
+
+  /* ===================================================================
+     RENDER BACKLOG CARDS
+     =================================================================== */
+  var stack = byId("backlogStack");
+  function impChip(im) {
+    var ico = im.cls === "up" ? svg(I.up, 2.6)
+            : im.cls === "down" ? svg(I.down, 2.6)
+            : im.cls === "trust" ? svg(I.shield)
+            : svg('<circle cx="12" cy="12" r="3"/>');
+    return '<span class="imp ' + im.cls + '">' + ico + im.t + '</span>';
+  }
+  function cardHTML(item, inSprint) {
+    var impacts = item.impacts.map(impChip).join("");
+    var addBtn = inSprint
+      ? '<button class="pcard__add remove" data-act="remove" data-id="' + item.id + '">' + svg(I.minus, 2.6) + 'Remove</button>'
+      : '<button class="pcard__add" data-act="add" data-id="' + item.id + '">' + svg(I.plus, 2.6) + 'Add</button>';
+    return '' +
+      '<div class="pcard' + (item.release ? " release" : "") + (inSprint ? " in-sprint" : "") + '"' +
+        ' id="card-' + item.id + '" data-id="' + item.id + '" draggable="' + (inSprint ? "false" : "true") + '"' +
+        ' tabindex="0" role="listitem" aria-label="' + item.name + ', ' + item.eff + ' points">' +
+        '<div class="pcard__top">' +
+          '<div style="display:flex;gap:8px;align-items:flex-start">' +
+            (inSprint ? "" : '<span class="pcard__grip" aria-hidden="true">' + svg(I.grip) + '</span>') +
+            '<span class="pcard__name">' + item.name + '</span>' +
+          '</div>' +
+          '<span class="pcard__eff">' + item.eff + ' pts</span>' +
+        '</div>' +
+        '<div class="impacts">' + impacts + '</div>' +
+        '<div class="pcard__foot">' +
+          '<span class="pcard__who">' + item.who + '</span>' +
+          addBtn +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderBacklog() {
+    var html = "";
+    BACKLOG.forEach(function (item) {
+      if (!committed[item.id]) html += cardHTML(item, false);
+    });
+    stack.innerHTML = html;
+    var n = BACKLOG.filter(function (i) { return !committed[i.id]; }).length;
+    byId("backlogCount").textContent = n + (n === 1 ? " item" : " items");
+    byId("backlogEmpty").classList.toggle("is-shown", n === 0);
+    wireCards();
+  }
+
+  /* ===================================================================
+     RENDER SCOREBOARD
+     =================================================================== */
+  function gaugeHTML(g) {
+    return '' +
+      '<div class="gauge" id="gauge-' + g.id + '">' +
+        '<span class="gauge__ico" aria-hidden="true">' + svg(g.ico) + '</span>' +
+        '<div class="gauge__body">' +
+          '<div class="gauge__row">' +
+            '<span class="gauge__name">' + g.name + '</span>' +
+            '<span class="gauge__val"><span class="num" id="gval-' + g.id + '">' + g.v + '</span><span class="suffix" id="gchg-' + g.id + '"></span></span>' +
+          '</div>' +
+          '<div class="gauge__track"><div class="gauge__fill" id="gfill-' + g.id + '" style="width:' + g.v + '%"></div></div>' +
+        '</div>' +
+      '</div>';
+  }
+  byId("scoreboard").innerHTML = GAUGES.map(gaugeHTML).join("");
+
+  /* ===================================================================
+     CAPACITY + FORECAST recompute (the live heart of the board)
+     =================================================================== */
+  var LIKELY = 15, RANGE_LO = 12, RANGE_HI = 18, SCALE_MAX = 22;
+  var dropzone = byId("dropzone");
+  var shipBtn = byId("shipBtn");
+
+  /* position the comfortable-range band + likely tick once (relative to SCALE_MAX) */
+  byId("capRange").style.left  = (RANGE_LO / SCALE_MAX * 100) + "%";
+  byId("capRange").style.width = ((RANGE_HI - RANGE_LO) / SCALE_MAX * 100) + "%";
+  byId("capLikely").style.left = (LIKELY / SCALE_MAX * 100) + "%";
+
+  function committedList() { return BACKLOG.filter(function (i) { return committed[i.id]; }); }
+  function totalPts() { return committedList().reduce(function (s, i) { return s + i.eff; }, 0); }
+  function hasRelease() { return !!committed.release; }
+
+  function recompute() {
+    var list = committedList();
+    var pts = totalPts();
+    var pct = Math.min(100, pts / SCALE_MAX * 100);
+
+    /* sprint count chip */
+    byId("sprintCount").textContent = list.length + (list.length === 1 ? " card · " : " cards · ") + pts + " pts";
+
+    /* capacity meter fill + colour band (never colour alone — status text mirrors it) */
+    var fill = byId("capFill");
+    fill.style.width = pct + "%";
+    byId("capVal").textContent = pts;
+    byId("capVal").style.left = "calc(" + pct + "% - 4px)";
+    if (pts > 4) byId("capVal").style.left = (pct < 8 ? 9 + "px" : "calc(" + pct + "% - 26px)");
+    byId("capCommitted").textContent = pts;
+
+    fill.classList.remove("warn", "over");
+    var status = byId("capStatus");
+    var statusTxt = byId("capStatusTxt");
+    status.className = "capstatus";
+    if (pts === 0) {
+      status.classList.add("empty");
+      statusTxt.textContent = "Empty — drag work in to fill toward 12–18.";
+    } else if (pts > RANGE_HI) {
+      fill.classList.add("over");
+      status.classList.add("over");
+      statusTxt.textContent = "Over capacity (" + pts + " > 18) — work past the line risks rolling over.";
+    } else if (pts > LIKELY) {
+      fill.classList.add("warn");
+      status.classList.add("warn");
+      statusTxt.textContent = "Above the likely line (" + pts + " > 15) — ambitious; some may not fit.";
+    } else if (pts >= RANGE_LO) {
+      status.classList.add("ok");
+      statusTxt.textContent = "In the comfortable range — a realistic, healthy sprint.";
+    } else {
+      status.classList.add("ok");
+      statusTxt.textContent = "Below range — you have room for more (toward 12–18).";
+    }
+
+    updateForecast(list, pts);
+    updateShipBtn(list, pts);
+    updateCardStates();
+  }
+
+  /* ---- live forecast strip ---- */
+  function updateForecast(list, pts) {
+    byId("fcPts").textContent = pts;
+
+    /* revenue forecast: only meaningful if a release is in the sprint */
+    var revMetric = byId("fcRevMetric"), revTxt = byId("fcRev");
+    revMetric.classList.remove("good", "bad");
+    if (hasRelease() && list.length > 1) {
+      var rev = 600; /* shipping the onboarding/value work earns ~+$600 */
+      revMetric.classList.add("good");
+      revTxt.textContent = "+$" + rev + " if released";
+    } else if (list.length && !hasRelease()) {
+      revTxt.textContent = "+$0 — no release queued";
+    } else {
+      revTxt.textContent = "+$0 if released";
+    }
+
+    /* team forecast: packed sprint hurts morale */
+    var teamMetric = byId("fcTeamMetric"), teamTxt = byId("fcTeam");
+    teamMetric.classList.remove("good", "bad");
+    if (pts > LIKELY) {
+      teamMetric.classList.add("bad");
+      teamTxt.textContent = "Team −6 (packed sprint)";
+    } else if (pts >= RANGE_LO) {
+      teamMetric.classList.add("bad");
+      teamTxt.textContent = "Team −3 (full sprint)";
+    } else if (pts > 0) {
+      teamTxt.textContent = "Team steady (has slack)";
+    } else {
+      teamTxt.textContent = "Team steady";
+    }
+  }
+
+  /* ---- ship button gating: unmissable "ship to earn" rule ---- */
+  function updateShipBtn(list, pts) {
+    var txt = byId("shipBtnTxt");
+    if (list.length === 0) {
+      shipBtn.disabled = true;
+      txt.textContent = "Add work to ship the sprint";
+    } else if (!hasRelease()) {
+      shipBtn.disabled = false;
+      txt.textContent = "Ship Sprint — no revenue without a Release";
+    } else {
+      shipBtn.disabled = false;
+      txt.textContent = "Ship Sprint 3 · " + pts + " pts";
+    }
+  }
+
+  /* committed cards get the dimmed "is-committed" treatment in the backlog (if shown) */
+  function updateCardStates() {
+    byId("dropzone").classList.toggle("has-cards", committedList().length > 0);
+  }
+
+  /* ===================================================================
+     COMMIT / UNCOMMIT — used by both drag and the Add/Remove fallback
+     =================================================================== */
+  function renderSprint() {
+    /* rebuild the dropzone's committed cards (keep the hint node) */
+    var hint = byId("dropHint");
+    /* remove existing committed cards */
+    Array.prototype.slice.call(dropzone.querySelectorAll(".pcard")).forEach(function (el) { el.remove(); });
+    committedList().forEach(function (item) {
+      hint.insertAdjacentHTML("beforebegin", cardHTML(item, true));
+    });
+    wireCards();
+  }
+
+  function addToSprint(id) {
+    if (committed[id]) return;
+    committed[id] = true;
+    renderBacklog();
+    renderSprint();
+    recompute();
+    /* move focus to the newly committed card for keyboard users */
+    var el = byId("card-" + id);
+    if (el) el.focus();
+  }
+  function removeFromSprint(id) {
+    if (!committed[id]) return;
+    delete committed[id];
+    renderBacklog();
+    renderSprint();
+    recompute();
+    var el = byId("card-" + id);
+    if (el) el.focus();
+  }
+
+  /* ===================================================================
+     WIRING: Add/Remove buttons + drag handlers (re-run after each render)
+     =================================================================== */
+  function wireCards() {
+    Array.prototype.slice.call(doc.querySelectorAll(".pcard__add")).forEach(function (btn) {
+      btn.onclick = function (e) {
+        e.stopPropagation();
+        var id = btn.getAttribute("data-id");
+        if (btn.getAttribute("data-act") === "add") addToSprint(id);
+        else removeFromSprint(id);
+      };
+    });
+    /* drag source (backlog cards only) */
+    Array.prototype.slice.call(doc.querySelectorAll('.pcard[draggable="true"]')).forEach(function (card) {
+      card.ondragstart = function (e) {
+        card.classList.add("is-dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", card.getAttribute("data-id"));
+      };
+      card.ondragend = function () { card.classList.remove("is-dragging"); };
+      /* keyboard fallback: Enter/Space on a focused backlog card commits it */
+      card.onkeydown = function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          addToSprint(card.getAttribute("data-id"));
+        }
+      };
+    });
+  }
+
+  /* drop target */
+  dropzone.addEventListener("dragover", function (e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    dropzone.classList.add("is-over");
+  });
+  dropzone.addEventListener("dragleave", function (e) {
+    if (e.target === dropzone) dropzone.classList.remove("is-over");
+  });
+  dropzone.addEventListener("drop", function (e) {
+    e.preventDefault();
+    dropzone.classList.remove("is-over");
+    var id = e.dataTransfer.getData("text/plain");
+    if (id) addToSprint(id);
+  });
+
+  /* ===================================================================
+     COACHMARK dismissal
+     =================================================================== */
+  Array.prototype.slice.call(doc.querySelectorAll("[data-dismiss]")).forEach(function (btn) {
+    btn.onclick = function () { byId(btn.getAttribute("data-dismiss")).classList.add("is-dismissed"); };
+  });
+
+  /* ===================================================================
+     SCREEN TOGGLE (Plan | Outcome)
+     =================================================================== */
+  var tabs = Array.prototype.slice.call(doc.querySelectorAll(".seg__btn"));
+  function showScreen(name) {
+    tabs.forEach(function (t) {
+      var on = t.getAttribute("data-screen") === name;
+      t.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    Array.prototype.slice.call(doc.querySelectorAll(".screen")).forEach(function (s) {
+      s.classList.toggle("is-active", s.id === "screen-" + name);
+    });
+    if (name === "outcome") playOutcome();
+    window.scrollTo(0, 0);
+  }
+  tabs.forEach(function (t) { t.onclick = function () { showScreen(t.getAttribute("data-screen")); }; });
+
+  /* ship button jumps to the outcome beat */
+  shipBtn.addEventListener("click", function () {
+    if (shipBtn.disabled) return;
+    showScreen("outcome");
+  });
+  byId("replayBtn").onclick = function () { showScreen("plan"); };
+  byId("toSprint4").onclick = function () { showScreen("plan"); };
+
+  /* ===================================================================
+     OUTCOME ANIMATION SEQUENCE (premium, reduced-motion aware)
+     =================================================================== */
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var outcomePlayed = false;
+
+  /* fill the lane cards' markup */
+  function buildLaneCard(el) {
+    var roll = el.getAttribute("data-roll");
+    el.innerHTML =
+      '<span class="tick" aria-hidden="true">' +
+        (el.closest(".miss") ? svg('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>', 2.6)
+                             : svg('<polyline points="20 6 9 17 4 12"/>', 2.6)) +
+      '</span>' +
+      '<span class="donecard__name">' + el.getAttribute("data-name") + '</span>' +
+      '<span class="donecard__eff">' + (roll ? roll + " · " : "") + el.getAttribute("data-eff") + " pts</span>";
+  }
+  Array.prototype.slice.call(doc.querySelectorAll(".donecard")).forEach(buildLaneCard);
+
+  function playOutcome() {
+    if (outcomePlayed) return;
+    outcomePlayed = true;
+
+    var doneCards = Array.prototype.slice.call(doc.querySelectorAll("#doneLane .donecard, #missLane .donecard"));
+    var callouts  = Array.prototype.slice.call(doc.querySelectorAll(".callout"));
+
+    if (reduce) {
+      /* show all end-states immediately, no motion */
+      doneCards.forEach(function (c) { c.classList.add("is-in"); });
+      callouts.forEach(function (c) { c.classList.add("is-in"); });
+      applyOutcomeMetrics();
+      return;
+    }
+
+    /* stagger the cards into their lanes */
+    doneCards.forEach(function (c, i) {
+      setTimeout(function () { c.classList.add("is-in"); }, 120 + i * 110);
+    });
+    /* then the because-callouts, each paired with a metric tick */
+    var base = 120 + doneCards.length * 110 + 200;
+    callouts.forEach(function (c, i) {
+      setTimeout(function () {
+        c.classList.add("is-in");
+        applyOneMetric(c.getAttribute("data-person"));
+      }, base + i * 260);
+    });
+  }
+
+  /* the outcome deltas, mapped to scoreboard + characters */
+  function applyOneMetric(which) {
+    if (which === "priya") {
+      bumpGauge("loyal", 62, 69, "+7");
+      bumpGauge("value", 58, 64, "+6");
+      setPerson("priya", 4, 9, "Active", "hi", "m-happy", true);
+      showReact("priya", "up", "Activated — the onboarding unblocked her first win.", "+5");
+      bumpRevenue();
+    } else if (which === "vp") {
+      bumpGauge("trust", 55, 62, "+7");
+      setPerson("vp", 6, 8, "Trust", "hi", "m-happy", true);
+      showReact("vp", "up", "SSO unlocks the enterprise deals they're chasing.", "+2");
+    } else if (which === "team") {
+      bumpGauge("team", 70, 64, "−6");
+      setPerson("devon", 5, 4, "Interested", "lo", "m-low", true);
+      showReact("devon", "down", "A packed sprint with no slack wore the team down.", "−1");
+    } else if (which === "quality") {
+      bumpGauge("qual", 64, 60, "−4");
+      showReact("maya", "down", "No dashboards yet — reporting still costs her hours.", "0");
+      setPerson("maya", 7, 7, "Active", "hi", "m-neutral", true);
+    }
+  }
+  function applyOutcomeMetrics() {
+    ["priya","vp","team","quality"].forEach(applyOneMetric);
+  }
+
+  function bumpGauge(id, from, to, chg) {
+    byId("gfill-" + id).style.width = to + "%";
+    /* count up the number */
+    animateNumber(byId("gval-" + id), from, to, 700);
+    var chgEl = byId("gchg-" + id);
+    chgEl.textContent = " " + chg;
+    chgEl.className = "chg " + (to >= from ? "up" : "down");
+    /* prefix arrow via class only (text already carries +/−) */
+  }
+
+  function setPerson(key, from, to, stateLabel, fillCls, moodCls, react) {
+    var fill = byId("fill-" + key);
+    fill.style.width = (to * 10) + "%";
+    fill.className = "person__fill " + fillCls;
+    animateNumber(byId("stat-" + key), from, to, 700);
+    var card = byId("p-" + key);
+    card.classList.remove("m-happy", "m-neutral", "m-low");
+    card.classList.add(moodCls);
+    if (react) card.classList.add("is-reacting");
+    /* swap the mood face */
+    var face = byId("face-" + key);
+    if (moodCls === "m-happy") {
+      face.innerHTML = svg('<circle cx="9" cy="10" r="0.5"/><circle cx="15" cy="10" r="0.5"/><path d="M8.5 14c1.2 1.5 5.8 1.5 7 0"/>', 2.2);
+    } else if (moodCls === "m-low") {
+      face.innerHTML = svg('<circle cx="9" cy="10" r="0.5"/><circle cx="15" cy="10" r="0.5"/><path d="M8.5 16c1.2-1.5 5.8-1.5 7 0"/>', 2.2);
+    }
+  }
+
+  function showReact(key, dir, text, delta) {
+    var box = byId("react-" + key);
+    box.className = "person__react " + dir + " is-shown";
+    var ico = dir === "up" ? svg(I.up, 2.6) : svg(I.down, 2.6);
+    box.innerHTML = ico + '<span>' + text + '</span>' +
+      (delta !== "0" ? '<span class="person__delta">' + delta + '</span>' : '');
+  }
+
+  function bumpRevenue() {
+    byId("revFill").style.width = "60%"; /* 3000 / 5000 */
+    byId("revLabel").innerHTML = "<b>$3,000</b> / $5,000";
+  }
+
+  /* small count-up helper (respects reduced motion via caller) */
+  function animateNumber(el, from, to, dur) {
+    if (reduce) { el.textContent = to; return; }
+    var start = null, diff = to - from;
+    function tick(ts) {
+      if (!start) start = ts;
+      var p = Math.min(1, (ts - start) / dur);
+      el.textContent = Math.round(from + diff * (0.5 - Math.cos(p * Math.PI) / 2));
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* ===================================================================
+     INIT
+     =================================================================== */
+  renderBacklog();
+  recompute();
+})();
+</script>
+</body>
+</html>

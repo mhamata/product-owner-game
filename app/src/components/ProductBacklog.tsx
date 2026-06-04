@@ -1,4 +1,11 @@
 'use client';
+/**
+ * SUPERSEDED: part of the legacy GameView simulation, kept (not deleted) per
+ * the repo's no-silent-deletion rule. This is the old simulation's product-backlog column.
+ * No route imports this anymore; the Guided Flow sim under
+ * src/components/console/sim/ is the live capstone. Safe to remove once the
+ * old flow is confirmed retired.
+ */
 
 import type { Action, GameState } from '@/engine/types';
 import { PBICard } from './PBICard';

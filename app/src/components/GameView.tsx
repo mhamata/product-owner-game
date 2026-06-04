@@ -1,11 +1,21 @@
 'use client';
+/**
+ * SUPERSEDED: part of the legacy GameView simulation, kept (not deleted) per
+ * the repo's no-silent-deletion rule. This is the old 3-column simulation root;
+ * /play now renders the Guided Flow stepper
+ * (src/components/console/sim/SimRunner.tsx) instead.
+ * No route imports this anymore; the Guided Flow sim under
+ * src/components/console/sim/ is the live capstone. Safe to remove once the
+ * old flow is confirmed retired.
+ */
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { getScenario } from '@/scenarios';
 import { calculateCapacityRange } from '@/engine/capacity';
 import { calculateScore } from '@/engine/score';
+import { useHydrated } from './console/sim/useHydrated';
 import { GameHeader } from './GameHeader';
 import { ProductBacklog } from './ProductBacklog';
 import { IterationBacklog } from './IterationBacklog';
@@ -16,9 +26,7 @@ import { EndGamePanel } from './EndGamePanel';
 
 export function GameView({ scenarioId }: { scenarioId: string }) {
   const { state, scenarioId: currentId, newGame, dispatch } = useGameStore();
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => setHydrated(true), []);
+  const hydrated = useHydrated();
 
   useEffect(() => {
     if (hydrated && (!state || currentId !== scenarioId)) {

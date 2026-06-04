@@ -1,9 +1,23 @@
 import Anthropic from '@anthropic-ai/sdk';
+import {
+  checkRateLimit,
+  checkGlobalBudget,
+  clientKeyFromRequest,
+  rateLimitedResponse,
+  recordModelCall,
+} from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
+// Pin nodejs so the in-memory rate limiter keeps a persistent window (see
+// src/lib/rateLimit.ts). This is the default, made explicit on purpose.
+export const runtime = 'nodejs';
+
+// Cap the public grading endpoint: ~10 drill grades per 10 minutes per client.
+// No public LLM endpoint is left uncapped.
+const RATE_LIMIT = { limit: 10, windowMs: 10 * 60 * 1000 };
 
 interface GradeRequest {
-  drill: 'jtbd' | 'pre-mortem' | 'pr-faq';
+  drill: 'jtbd' | 'mom-test' | 'pre-mortem' | 'pr-faq';
   input: string;
   context?: Record<string, unknown>;
 }
@@ -18,11 +32,22 @@ GRADING CRITERIA:
 - OUTCOME: what the user gains, not what the product does
 
 Common failure modes:
-- Writing the feature as the motivation ("I want Level 2 data")
-- Abstract situation ("when I want to invest")
-- Tautological outcome ("so I can get Level 2 data")
+- Writing the feature as the motivation ("I want a dark-mode toggle")
+- Abstract situation ("when I'm using the app")
+- Tautological outcome ("so I can use dark mode")
 
 Return JSON: { "score": 0-10, "strengths": [...], "issues": [...], "rewrite": "a better version", "interview_angle": "how to pitch this in a PM interview" }. No prose outside JSON.`,
+  'mom-test': `You are a senior PM grading a user-research interview question against The Mom Test (Rob Fitzpatrick).
+
+The Mom Test rule: ask about the customer's life and past behavior, never pitch your idea or ask hypotheticals about the future.
+
+GRADING CRITERIA:
+- PAST BEHAVIOR: asks about something the person actually did, not what they would/might do
+- SPECIFIC: anchored to a concrete recent instance ("the last time…"), not a general habit
+- NON-LEADING: doesn't telegraph the desired answer or pitch a solution
+- BAD signals to penalize: hypotheticals ("would you…"), compliments-bait ("do you like…"), pricing speculation ("would you pay…")
+
+Return JSON: { "score": 0-10, "strengths": [...], "issues": [...], "rewrite": "a stronger Mom-Test version of the question", "interview_angle": "how to talk about this discovery skill in a PM interview" }. No prose outside JSON.`,
   'pre-mortem': `You are a senior PM evaluating a pre-mortem exercise. The user was asked to name ways a project could fail.
 
 GRADING CRITERIA:
@@ -45,6 +70,10 @@ Return JSON: { "score": 0-10, "strengths": [...], "issues": [...], "rewrite_head
 };
 
 export async function POST(request: Request) {
+  // Rate limit before any work or spend.
+  const limit = checkRateLimit(clientKeyFromRequest(request, 'grade'), RATE_LIMIT);
+  if (!limit.allowed) return rateLimitedResponse(limit);
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return Response.json(
@@ -63,8 +92,23 @@ export async function POST(request: Request) {
   const rubric = RUBRICS[body.drill];
   if (!rubric) return Response.json({ error: 'Unknown drill' }, { status: 400 });
 
+  // Global ceiling: the hard cost cap. Even with a key and the per-client limit
+  // passed, refuse once the process has spent its global model-call budget so no
+  // amount of client-key/IP rotation can run up the bill. Calm 200 with the same
+  // `unavailable` shape the UI already handles, and NO model call.
+  const budget = checkGlobalBudget();
+  if (!budget.allowed) {
+    return Response.json({
+      unavailable: true,
+      reason: 'at capacity',
+      message: 'Grading is at capacity right now. Please try again later.',
+    });
+  }
+
   const client = new Anthropic({ apiKey });
   try {
+    // Count the call against the global ceiling at the moment we spend.
+    recordModelCall();
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1200,

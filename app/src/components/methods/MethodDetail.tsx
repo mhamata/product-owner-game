@@ -3,6 +3,7 @@ import { cn } from '@/lib/cn';
 import type { Method } from '@/methods';
 import { CATEGORY_META } from '@/methods';
 import { DrillLauncher } from './drills/DrillLauncher';
+import { getScenario } from '@/scenarios';
 
 export function MethodDetail({
   method,
@@ -13,6 +14,12 @@ export function MethodDetail({
   categoryMeta: (typeof CATEGORY_META)[keyof typeof CATEGORY_META];
   related: Method[];
 }) {
+  // Resolve related scenario ids to live scenarios so we can show friendly
+  // names (not raw ids) and silently drop any that were removed from the build.
+  const exercisedScenarios = (method.relatedScenarios ?? [])
+    .map(getScenario)
+    .filter((s): s is NonNullable<typeof s> => s !== null);
+
   return (
     <article className="space-y-6">
       <header>
@@ -117,19 +124,19 @@ export function MethodDetail({
 
       {method.drill && <DrillLauncher drillType={method.drill} />}
 
-      {method.relatedScenarios && method.relatedScenarios.length > 0 && (
+      {exercisedScenarios.length > 0 && (
         <section className="pt-4 border-t">
           <h3 className="text-sm font-bold uppercase tracking-wide text-gray-500 mb-2">
             Exercised in scenarios
           </h3>
           <div className="flex gap-2 flex-wrap">
-            {method.relatedScenarios.map((sid) => (
+            {exercisedScenarios.map((scenario) => (
               <Link
-                key={sid}
-                href={`/play/${sid}`}
+                key={scenario.id}
+                href={`/play/${scenario.id}`}
                 className="text-sm px-3 py-1 bg-blue-50 border border-blue-200 text-blue-900 rounded hover:bg-blue-100"
               >
-                {sid}
+                {scenario.name}
               </Link>
             ))}
           </div>

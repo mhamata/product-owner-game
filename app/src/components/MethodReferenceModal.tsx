@@ -1,4 +1,11 @@
 'use client';
+/**
+ * SUPERSEDED: part of the legacy GameView simulation, kept (not deleted) per
+ * the repo's no-silent-deletion rule. This is a helper used only by the old GameHeader.
+ * No route imports this anymore; the Guided Flow sim under
+ * src/components/console/sim/ is the live capstone. Safe to remove once the
+ * old flow is confirmed retired.
+ */
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -105,7 +112,7 @@ export function MethodReferenceModal({ onClose }: { onClose: () => void }) {
           ))}
           {filtered.length === 0 && (
             <p className="text-sm text-gray-500 italic text-center py-8">
-              No methods match "{query}".
+              No methods match &ldquo;{query}&rdquo;.
             </p>
           )}
         </div>
