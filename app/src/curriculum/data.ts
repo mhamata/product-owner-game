@@ -111,9 +111,15 @@ interface UnitSeed {
 
 type LevelUnitSeeds = Record<LevelId, UnitSeed[]>;
 
-// Shorthand for the two live modality combos so the seeds stay readable.
+// Shorthand for the live modality combos so the seeds stay readable.
 const DRILL: Modality[] = ['lesson', 'drill'];
 const SOON_LESSON: Modality[] = ['lesson'];
+// An AI-graded artifact practice skill. Each one sits beside a sibling concept
+// lesson in the same unit: the lesson teaches the skill, the artifact is where
+// the learner writes the real deliverable and gets rubric feedback. They are
+// SEPARATE skills so both are reachable (the lesson router keys a skill to one
+// modality, with no precedence collision). See src/curriculum/artifacts.
+const ARTIFACT: Modality[] = ['artifact'];
 
 const LEVEL_UNITS: LevelUnitSeeds = {
   /* ---------------------------------------------------------------
@@ -159,7 +165,8 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Writing It Down',
       blurb: 'Turn intent into a spec a team can build from.',
       skills: [
-        { id: 'prds-and-specs', title: 'PRDs & Specs', competency: 'feature-spec', modalities: ['lesson', 'artifact'], status: 'ready' },
+        { id: 'prds-and-specs', title: 'PRDs & Specs', competency: 'feature-spec', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'prd-artifact', title: 'Write a one-page PRD', competency: 'feature-spec', modalities: ARTIFACT, status: 'ready' },
         { id: 'user-stories', title: 'User Stories & Acceptance Criteria', competency: 'feature-spec', modalities: ['lesson', 'artifact'], status: 'ready' },
       ],
     },
@@ -220,6 +227,7 @@ const LEVEL_UNITS: LevelUnitSeeds = {
         { id: 'aarrr-funnel', title: 'AARRR Funnel', competency: 'data-fluency', methodId: 'aarrr', modalities: SOON_LESSON, status: 'ready' },
         { id: 'activation-retention', title: 'Activation & Retention', competency: 'data-fluency', methodId: 'heart', modalities: SOON_LESSON, status: 'ready' },
         { id: 'north-star', title: 'North Star & OKRs', competency: 'business-outcome', methodId: 'north-star', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'north-star-tree', title: 'Build a North Star tree', competency: 'business-outcome', modalities: ARTIFACT, status: 'ready' },
       ],
     },
     {
@@ -228,6 +236,7 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       blurb: 'Design honest tests and read results without fooling yourself.',
       skills: [
         { id: 'ab-test-design', title: 'A/B Test Design', competency: 'data-fluency', methodId: 'hypothesis-cards', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'experiment-plan', title: 'Write an experiment plan', competency: 'data-fluency', modalities: ARTIFACT, status: 'ready' },
         { id: 'reading-results', title: 'Significance & Cohorts', competency: 'data-fluency', modalities: SOON_LESSON, status: 'ready' },
       ],
     },
@@ -238,6 +247,7 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       skills: [
         { id: 'roadmapping', title: 'Roadmapping', competency: 'vision-roadmap', modalities: SOON_LESSON, status: 'ready' },
         { id: 'positioning-basics', title: 'Positioning Basics', competency: 'business-outcome', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'positioning-statement', title: 'Write a positioning statement', competency: 'business-outcome', modalities: ARTIFACT, status: 'ready' },
       ],
     },
   ],
@@ -252,6 +262,7 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       blurb: 'Set a direction worth committing a team to.',
       skills: [
         { id: 'product-strategy-stack', title: 'Product Strategy Stack', competency: 'strategic-impact', methodId: 'lean-canvas', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'strategy-memo', title: 'Write a strategy memo', competency: 'strategic-impact', modalities: ARTIFACT, status: 'ready' },
         { id: 'product-vision', title: 'Vision & Strategic Intent', competency: 'vision-roadmap', methodId: 'vision-board', modalities: SOON_LESSON, status: 'ready' },
       ],
     },

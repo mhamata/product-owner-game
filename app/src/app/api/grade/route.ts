@@ -1,6 +1,18 @@
 import Anthropic from '@anthropic-ai/sdk';
+import {
+  checkRateLimit,
+  clientKeyFromRequest,
+  rateLimitedResponse,
+} from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
+// Pin nodejs so the in-memory rate limiter keeps a persistent window (see
+// src/lib/rateLimit.ts). This is the default, made explicit on purpose.
+export const runtime = 'nodejs';
+
+// Cap the public grading endpoint: ~10 drill grades per 10 minutes per client.
+// No public LLM endpoint is left uncapped.
+const RATE_LIMIT = { limit: 10, windowMs: 10 * 60 * 1000 };
 
 interface GradeRequest {
   drill: 'jtbd' | 'mom-test' | 'pre-mortem' | 'pr-faq';
@@ -56,6 +68,10 @@ Return JSON: { "score": 0-10, "strengths": [...], "issues": [...], "rewrite_head
 };
 
 export async function POST(request: Request) {
+  // Rate limit before any work or spend.
+  const limit = checkRateLimit(clientKeyFromRequest(request, 'grade'), RATE_LIMIT);
+  if (!limit.allowed) return rateLimitedResponse(limit);
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return Response.json(

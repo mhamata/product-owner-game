@@ -15,6 +15,8 @@ import {
   resolvePrFaqDrill,
 } from '@/curriculum/drills';
 import { getLessonContent } from '@/curriculum/lessons';
+import { getArtifactContent } from '@/curriculum/artifacts';
+import { ArtifactLesson } from './ArtifactLesson';
 import { ValueVsEffortLesson } from './ValueVsEffortLesson';
 import { ScoreRankLesson } from './ScoreRankLesson';
 import { ClassificationLesson } from './ClassificationLesson';
@@ -57,11 +59,22 @@ export function LessonRouter({ skill }: { skill: Skill }) {
   const preMortem = useMemo(() => resolvePreMortemDrill(industry), [industry]);
   const prFaq = useMemo(() => resolvePrFaqDrill(industry), [industry]);
 
-  // Concept lessons take precedence: a skill whose modality includes 'lesson'
-  // and that has authored teaching content renders the structured ConceptLesson
-  // (industry-aware via the resolved context inside the component). Skills that
-  // also carry a drill aren't in the lesson registry, so the drill switch below
-  // still owns them; this only ever fires for lesson-only skills.
+  // Artifact skills render the AI-graded artifact loop (write a real deliverable,
+  // get rubric feedback) - the knowledge center's differentiator. Each artifact
+  // is its OWN skill carrying only the 'artifact' modality, keyed to authored
+  // artifact content, so this never collides with the concept lesson that
+  // teaches the same topic: they are separate, separately-reachable skills.
+  // Industry flavour is resolved inside the component.
+  const artifact = getArtifactContent(skill.id);
+  if (artifact && skill.modalities.includes('artifact')) {
+    return <ArtifactLesson skill={skill} content={artifact} industry={industry} />;
+  }
+
+  // Concept skills render the structured ConceptLesson (industry-aware via the
+  // resolved context inside the component) when the skill carries the 'lesson'
+  // modality and has authored teaching content. Skills that also carry a drill
+  // aren't in the lesson registry, so the drill switch below still owns them;
+  // this fires for lesson-only skills.
   const lesson = getLessonContent(skill.id);
   if (lesson && skill.modalities.includes('lesson')) {
     return <ConceptLesson skill={skill} content={lesson} industry={industry} />;

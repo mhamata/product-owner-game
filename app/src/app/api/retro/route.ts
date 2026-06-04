@@ -2,8 +2,21 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { GameState } from '@/engine/types';
 import type { GameScore } from '@/engine/score';
 import { getScenario } from '@/scenarios';
+import {
+  checkRateLimit,
+  clientKeyFromRequest,
+  rateLimitedResponse,
+} from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
+// Pin nodejs so the in-memory rate limiter keeps a persistent window (see
+// src/lib/rateLimit.ts). This is the default, made explicit on purpose.
+export const runtime = 'nodejs';
+
+// The retro uses a larger model, so a cap matters most here. A retro is a
+// once-per-finished-game action, so ~6 per 10 minutes per client is plenty and
+// keeps a runaway client from racking up large-model spend.
+const RATE_LIMIT = { limit: 6, windowMs: 10 * 60 * 1000 };
 
 interface RetroRequest {
   state: GameState;
@@ -12,6 +25,25 @@ interface RetroRequest {
 }
 
 export async function POST(request: Request) {
+  // Rate limit before any work or spend.
+  const limit = checkRateLimit(clientKeyFromRequest(request, 'retro'), RATE_LIMIT);
+  if (!limit.allowed) {
+    // This route otherwise speaks plain text; keep the 429 plain too so the
+    // existing client (which reads the body as text on non-ok) shows a clean
+    // message instead of a JSON blob.
+    return new Response(
+      `Rate limit reached. Please wait ${limit.retryAfterSeconds}s before generating another retro.`,
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(limit.retryAfterSeconds),
+          'X-RateLimit-Limit': String(limit.limit),
+          'X-RateLimit-Remaining': String(limit.remaining),
+        },
+      },
+    );
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return new Response(
