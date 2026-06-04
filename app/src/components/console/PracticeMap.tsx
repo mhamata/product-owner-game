@@ -72,7 +72,7 @@ export function PracticeMap() {
                 Streak
               </span>
               <span className="mono tnum block text-[15px] font-semibold leading-tight text-ink">
-                {hasHydrated ? streak : 12} <span className="font-medium text-faint">days</span>
+                {hasHydrated ? streak : 0} <span className="font-medium text-faint">days</span>
               </span>
             </span>
           </div>

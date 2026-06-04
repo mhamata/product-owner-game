@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { allSkills, getUnit } from '@/curriculum/data';
+import { allSkills } from '@/curriculum/data';
 
 /**
  * Per-skill mastery record.
@@ -71,21 +71,14 @@ function dayDiff(fromISO: string, toISO: string): number {
 /* ------------------------------------------------------------------
    Seed state.
 
-   The home must match the mockup on first load: Unit 01 fully mastered
-   and "Value vs Effort" (start of Unit 02) as the active node. We derive
-   the seed from the curriculum itself so it stays correct if U1 changes.
+   A new player starts at the BEGINNING: no skills mastered, a cold streak,
+   so Unit 01 / Skill 01 is the first active node and everything else is
+   locked. (An earlier build seeded Unit 01 as already-mastered with a
+   12-day streak to match the static mockup — that made the live game look
+   already-played, so it's removed.)
    ------------------------------------------------------------------ */
 function buildSeed(): Pick<LearnState, 'progress' | 'streak' | 'lastActiveDay'> {
-  const progress: Record<string, SkillProgress> = {};
-  const unit1 = getUnit('u1');
-  if (unit1) {
-    for (const skill of unit1.skills) {
-      progress[skill.id] = { mastery: 1, attempts: 1, masteredAt: 0 };
-    }
-  }
-  // Yesterday so the streak is "warm" and today's mastery extends it.
-  const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
-  return { progress, streak: 12, lastActiveDay: yesterday };
+  return { progress: {}, streak: 0, lastActiveDay: null };
 }
 
 const seed = buildSeed();
@@ -156,7 +149,9 @@ export const useLearnStore = create<LearnStore>()(
       _setHydrated: () => set({ hasHydrated: true }),
     }),
     {
-      name: 'praxis-learn-v1',
+      // v2: the seed no longer pre-masters Unit 1, so discard any old v1 state
+      // (which carried the demo "already played" progress) and start fresh.
+      name: 'praxis-learn-v2',
       storage: createJSONStorage(() => localStorage),
       // Only persist real progress, not derived/transient flags.
       partialize: (s) => ({
