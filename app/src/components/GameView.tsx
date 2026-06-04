@@ -1,6 +1,6 @@
 'use client';
 /**
- * SUPERSEDED — part of the legacy GameView simulation, kept (not deleted) per
+ * SUPERSEDED: part of the legacy GameView simulation, kept (not deleted) per
  * the repo's no-silent-deletion rule. This is the old 3-column simulation root;
  * /play now renders the Guided Flow stepper
  * (src/components/console/sim/SimRunner.tsx) instead.

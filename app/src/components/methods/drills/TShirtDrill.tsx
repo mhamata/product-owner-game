@@ -14,7 +14,7 @@ import { useActiveIndustry } from '@/store/industryStore';
  * Library T-shirt sizing drill. Grading + the size legend come from the shared
  * engine; the story copy is industry-aware (resolves for the home industry,
  * SaaS until the store rehydrates). The correct size per story is shared
- * structure — only the story titles change. The graded Console loop lives at
+ * structure. Only the story titles change. The graded Console loop lives at
  * /learn/estimation.
  */
 export function TShirtDrill() {

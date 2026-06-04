@@ -32,7 +32,7 @@ function ctxFor(id: IndustryId): IndustryContext {
 }
 
 describe('lesson registry', () => {
-  it('exposes the expected Foundations + Associate lessons', () => {
+  it('exposes a concept lesson for every level of the ladder', () => {
     const ids = ALL_LESSONS.map((l) => l.skillId);
     const expected = [
       // Foundations
@@ -49,8 +49,42 @@ describe('lesson registry', () => {
       'backlog-sprints-kanban',
       'story-mapping',
       'quality-and-delivery',
+      // Product Manager
+      'opportunity-solution-trees',
+      'aarrr-funnel',
+      'activation-retention',
+      'north-star',
+      'ab-test-design',
+      'reading-results',
+      'roadmapping',
+      'positioning-basics',
+      // Senior PM
+      'product-strategy-stack',
+      'product-vision',
+      'growth-loops-retention',
+      'monetization-pricing',
+      'stakeholder-management',
+      'influence-without-authority',
+      'managing-up',
+      // Staff / Principal PM
+      'judgment-under-ambiguity',
+      'framing-problems',
+      'hard-tradeoffs',
+      'multi-team-strategy',
+      'platform-portfolio-thinking',
+      'force-multiplier-influence',
+      // Director / VP Product
+      'empowered-teams',
+      'org-design',
+      'hiring-coaching-pms',
+      'product-operating-model',
+      'pnl-business-acumen',
+      'product-culture',
+      'cpo-transition',
     ];
     expect(ids.sort()).toEqual(expected.sort());
+    // Sanity: the count moved to the full authored set.
+    expect(ids).toHaveLength(40);
   });
 
   it('has no duplicate skill ids', () => {

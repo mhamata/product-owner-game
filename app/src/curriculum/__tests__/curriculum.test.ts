@@ -23,7 +23,7 @@ import { COMPETENCIES, MODALITIES, type LevelId } from '../types';
  * These tests pin the *shape* of the leveled curriculum and the gating rule the
  * Practice Map relies on. They are deliberately structural: they don't assert a
  * specific skill count (that will grow as content lands), but they DO guarantee
- * the invariants — six levels, preserved drills, valid tags, and a gating rule
+ * the invariants: six levels, preserved drills, valid tags, and a gating rule
  * where coming-soon skills never wall off the ladder.
  */
 
@@ -73,7 +73,7 @@ describe('units & skills', () => {
     }
   });
 
-  it('gives every unit 2–4 skills', () => {
+  it('gives every unit 2-4 skills', () => {
     for (const unit of units) {
       expect(unit.skills.length).toBeGreaterThanOrEqual(2);
       expect(unit.skills.length).toBeLessThanOrEqual(4);
@@ -243,7 +243,7 @@ describe('gating rule', () => {
 describe('navigation helpers', () => {
   it('getNextSkill skips coming-soon skills and lands on the next ready one', () => {
     // From the last prioritization drill, the next *ready* skill is estimation's
-    // sibling? No — estimation is earlier. The contract is only that whatever it
+    // sibling? No, estimation is earlier. The contract is only that whatever it
     // returns is itself ready (or undefined at the end).
     for (const s of masterableSkills) {
       const next = getNextSkill(s.id);

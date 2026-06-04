@@ -3,7 +3,7 @@
  *
  * A learner's "home industry" re-skins the capstone simulation: same game
  * mechanics and balance, a different product story. The set is intentionally
- * small and generic — each maps to one display pack in
+ * small and generic. Each maps to one display pack in
  * `@/scenarios/scenario01.display`. The structural engine wiring is shared and
  * lives in `@/scenarios/scenario01.structure`; only human-readable copy varies
  * by industry.

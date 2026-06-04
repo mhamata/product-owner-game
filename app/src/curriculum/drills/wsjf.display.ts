@@ -3,19 +3,19 @@ import type { ScoreRankDrill } from './types';
 import { wsjfStructure, type WsjfRowId } from './wsjf';
 
 /**
- * WSJF drill — DISPLAY LAYER (per industry).
+ * WSJF drill: DISPLAY LAYER (per industry).
  *
  * Human-readable copy ONLY; the Fibonacci NUMBERS and the `score` formula (and
  * therefore the correct ranking) live in `./wsjf` and never change. See
  * `@/scenarios/scenario01.display` for the pattern this mirrors.
  *
  * Structural slots (fixed by the numbers, do not drift):
- *   • `compliance`     — ranks #1: a hard-deadline item (time criticality 13).
+ *   • `compliance`:     ranks #1: a hard-deadline item (time criticality 13).
  *                        Pick an industry compliance/deadline obligation.
- *   • `dashboard`      — ranks #2: high everyday value, no deadline, modest size.
- *   • `cost-optimizer` — ranks #3: soft value, no urgency — always loses to a
+ *   • `dashboard`:      ranks #2: high everyday value, no deadline, modest size.
+ *   • `cost-optimizer`: ranks #3: soft value, no urgency, always loses to a
  *                        deadline.
- *   • `rewrite`        — ranks LAST despite the highest raw value: an enormous
+ *   • `rewrite`:        ranks LAST despite the highest raw value: an enormous
  *                        (size 21) multi-quarter platform effort.
  *
  * Keys derive from the structural row ids, so the compiler forces full coverage.
@@ -35,7 +35,7 @@ export interface WsjfDisplay {
 }
 
 // ============================================================================
-// SaaS — original content, ported verbatim from the legacy wsjfDrill.
+// SaaS: original content, ported verbatim from the legacy wsjfDrill.
 // ============================================================================
 const saas: WsjfDisplay = {
   scenario: 'SaaS · quarterly planning',
@@ -47,7 +47,7 @@ const saas: WsjfDisplay = {
       context:
         'Hard audit date this quarter · slipping it risks losing enterprise deals in the pipeline',
       reasoning:
-        'A fixed deadline drives time criticality sky-high. Even at a sizeable 13, the ratio wins — urgency carries it.',
+        'A fixed deadline drives time criticality sky-high. Even at a sizeable 13, the ratio wins. Urgency carries it.',
     },
     dashboard: {
       name: 'Usage analytics dashboard',
@@ -61,22 +61,22 @@ const saas: WsjfDisplay = {
       context:
         'Saves infra spend · nice to have, but no external pressure to ship it now',
       reasoning:
-        'Soft value, no urgency — the kind of work that always loses to anything with a deadline.',
+        'Soft value, no urgency: the kind of work that always loses to anything with a deadline.',
     },
     rewrite: {
       name: 'Event-driven platform rewrite',
       context:
         'Huge long-term payoff · but a multi-quarter effort with no near-term forcing function',
       reasoning:
-        'Highest raw value of the four — and it still ranks last. The enormous size (21) crushes the ratio.',
+        'Highest raw value of the four, and it still ranks last. The enormous size (21) crushes the ratio.',
     },
   },
   insight:
-    'WSJF’s gift is that the platform rewrite — the most valuable item — ranks last once you divide by size. Small-but-urgent beats large-but-transformative when the horizon is short.',
+    'WSJF’s gift is that the platform rewrite (the most valuable item) ranks last once you divide by size. Small-but-urgent beats large-but-transformative when the horizon is short.',
 };
 
 // ============================================================================
-// Fintech — generic expense-management / spend platform (no brokerage/trading).
+// Fintech: generic expense-management / spend platform (no brokerage/trading).
 // ============================================================================
 const fintech: WsjfDisplay = {
   scenario: 'Fintech · quarterly planning',
@@ -88,7 +88,7 @@ const fintech: WsjfDisplay = {
       context:
         'Hard audit date this quarter · slipping it risks losing enterprise deals in the pipeline',
       reasoning:
-        'A fixed deadline drives time criticality sky-high. Even at a sizeable 13, the ratio wins — urgency carries it.',
+        'A fixed deadline drives time criticality sky-high. Even at a sizeable 13, the ratio wins. Urgency carries it.',
     },
     dashboard: {
       name: 'Real-time spend dashboard',
@@ -102,22 +102,22 @@ const fintech: WsjfDisplay = {
       context:
         'Saves infra spend · nice to have, but no external pressure to ship it now',
       reasoning:
-        'Soft value, no urgency — the kind of work that always loses to anything with a deadline.',
+        'Soft value, no urgency: the kind of work that always loses to anything with a deadline.',
     },
     rewrite: {
       name: 'Event-driven ledger rewrite',
       context:
         'Huge long-term payoff · but a multi-quarter effort with no near-term forcing function',
       reasoning:
-        'Highest raw value of the four — and it still ranks last. The enormous size (21) crushes the ratio.',
+        'Highest raw value of the four, and it still ranks last. The enormous size (21) crushes the ratio.',
     },
   },
   insight:
-    'WSJF’s gift is that the ledger rewrite — the most valuable item — ranks last once you divide by size. Small-but-urgent beats large-but-transformative when the horizon is short.',
+    'WSJF’s gift is that the ledger rewrite (the most valuable item) ranks last once you divide by size. Small-but-urgent beats large-but-transformative when the horizon is short.',
 };
 
 // ============================================================================
-// Marketplace — two-sided marketplace connecting sellers & buyers.
+// Marketplace: two-sided marketplace connecting sellers & buyers.
 // ============================================================================
 const marketplace: WsjfDisplay = {
   scenario: 'Marketplace · quarterly planning',
@@ -129,7 +129,7 @@ const marketplace: WsjfDisplay = {
       context:
         'Hard regulatory filing date this quarter · slipping it risks fines and seller churn',
       reasoning:
-        'A fixed deadline drives time criticality sky-high. Even at a sizeable 13, the ratio wins — urgency carries it.',
+        'A fixed deadline drives time criticality sky-high. Even at a sizeable 13, the ratio wins. Urgency carries it.',
     },
     dashboard: {
       name: 'Seller sales dashboard',
@@ -143,22 +143,22 @@ const marketplace: WsjfDisplay = {
       context:
         'Saves infra spend · nice to have, but no external pressure to ship it now',
       reasoning:
-        'Soft value, no urgency — the kind of work that always loses to anything with a deadline.',
+        'Soft value, no urgency: the kind of work that always loses to anything with a deadline.',
     },
     rewrite: {
       name: 'Event-driven search & catalog rewrite',
       context:
         'Huge long-term payoff · but a multi-quarter effort with no near-term forcing function',
       reasoning:
-        'Highest raw value of the four — and it still ranks last. The enormous size (21) crushes the ratio.',
+        'Highest raw value of the four, and it still ranks last. The enormous size (21) crushes the ratio.',
     },
   },
   insight:
-    'WSJF’s gift is that the search & catalog rewrite — the most valuable item — ranks last once you divide by size. Small-but-urgent beats large-but-transformative when the horizon is short.',
+    'WSJF’s gift is that the search & catalog rewrite (the most valuable item) ranks last once you divide by size. Small-but-urgent beats large-but-transformative when the horizon is short.',
 };
 
 // ============================================================================
-// Consumer — habit-tracking / journaling app.
+// Consumer: habit-tracking / journaling app.
 // ============================================================================
 const consumer: WsjfDisplay = {
   scenario: 'Consumer · quarterly planning',
@@ -170,7 +170,7 @@ const consumer: WsjfDisplay = {
       context:
         'Hard platform deadline this quarter · miss it and the app gets pulled from the store',
       reasoning:
-        'A fixed deadline drives time criticality sky-high. Even at a sizeable 13, the ratio wins — urgency carries it.',
+        'A fixed deadline drives time criticality sky-high. Even at a sizeable 13, the ratio wins. Urgency carries it.',
     },
     dashboard: {
       name: 'Personal progress insights',
@@ -184,22 +184,22 @@ const consumer: WsjfDisplay = {
       context:
         'Saves infra spend · nice to have, but no external pressure to ship it now',
       reasoning:
-        'Soft value, no urgency — the kind of work that always loses to anything with a deadline.',
+        'Soft value, no urgency: the kind of work that always loses to anything with a deadline.',
     },
     rewrite: {
       name: 'Offline-first sync rewrite',
       context:
         'Huge long-term payoff · but a multi-quarter effort with no near-term forcing function',
       reasoning:
-        'Highest raw value of the four — and it still ranks last. The enormous size (21) crushes the ratio.',
+        'Highest raw value of the four, and it still ranks last. The enormous size (21) crushes the ratio.',
     },
   },
   insight:
-    'WSJF’s gift is that the offline-first sync rewrite — the most valuable item — ranks last once you divide by size. Small-but-urgent beats large-but-transformative when the horizon is short.',
+    'WSJF’s gift is that the offline-first sync rewrite (the most valuable item) ranks last once you divide by size. Small-but-urgent beats large-but-transformative when the horizon is short.',
 };
 
 // ============================================================================
-// Healthcare — clinic-facing healthtech (patient intake & scheduling).
+// Healthcare: clinic-facing healthtech (patient intake & scheduling).
 // ============================================================================
 const healthcare: WsjfDisplay = {
   scenario: 'Healthcare · quarterly planning',
@@ -211,7 +211,7 @@ const healthcare: WsjfDisplay = {
       context:
         'Hard audit date this quarter · slipping it risks losing multi-clinic deals in the pipeline',
       reasoning:
-        'A fixed deadline drives time criticality sky-high. Even at a sizeable 13, the ratio wins — urgency carries it.',
+        'A fixed deadline drives time criticality sky-high. Even at a sizeable 13, the ratio wins. Urgency carries it.',
     },
     dashboard: {
       name: 'Patient-flow dashboard',
@@ -225,18 +225,18 @@ const healthcare: WsjfDisplay = {
       context:
         'Saves infra spend · nice to have, but no external pressure to ship it now',
       reasoning:
-        'Soft value, no urgency — the kind of work that always loses to anything with a deadline.',
+        'Soft value, no urgency: the kind of work that always loses to anything with a deadline.',
     },
     rewrite: {
       name: 'Event-driven scheduling rewrite',
       context:
         'Huge long-term payoff · but a multi-quarter effort with no near-term forcing function',
       reasoning:
-        'Highest raw value of the four — and it still ranks last. The enormous size (21) crushes the ratio.',
+        'Highest raw value of the four, and it still ranks last. The enormous size (21) crushes the ratio.',
     },
   },
   insight:
-    'WSJF’s gift is that the scheduling rewrite — the most valuable item — ranks last once you divide by size. Small-but-urgent beats large-but-transformative when the horizon is short.',
+    'WSJF’s gift is that the scheduling rewrite (the most valuable item) ranks last once you divide by size. Small-but-urgent beats large-but-transformative when the horizon is short.',
 };
 
 /** All five WSJF display packs, keyed by industry id. */
@@ -250,8 +250,8 @@ export const WSJF_DISPLAY: Record<IndustryId, WsjfDisplay> = {
 
 /**
  * Assemble the WSJF drill for a given home industry: the shared structure with
- * the industry's strings merged on by row id. The numbers — and the correct
- * ranking — are unchanged.
+ * the industry's strings merged on by row id. The numbers (and the correct
+ * ranking) are unchanged.
  */
 export function resolveWsjfDrill(industry: IndustryId): ScoreRankDrill {
   const display = WSJF_DISPLAY[industry];

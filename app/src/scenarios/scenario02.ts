@@ -1,14 +1,14 @@
-// EXCLUDED from the app (finance/Moomoo content) — kept for later
+// EXCLUDED from the app (finance/Moomoo content), kept for later
 // de-specialization; not exported, so /play/02-clearing-pipeline 404s.
 import type { Scenario } from '@/engine/types';
 
-// Scenario 02 — The Clearing Pipeline (Moomoo). Platform/internal PM.
+// Scenario 02: The Clearing Pipeline (Moomoo). Platform/internal PM.
 // Customers here are internal user-groups (Ops, Risk, Compliance, Treasury).
 // "Revenue" is a proxy for operational value delivered.
 
 export const scenario02: Scenario = {
   id: '02-clearing-pipeline',
-  name: 'The Clearing Pipeline — Moomoo',
+  name: 'The Clearing Pipeline: Moomoo',
   summary:
     "Senior PM for Moomoo Canada's clearing & settlement platform. Reduce breaks by 50%, pass the CIRO audit, don't break anything.",
   totalIterations: 6,
@@ -168,7 +168,7 @@ export const scenario02: Scenario = {
     // Risk & compliance
     {
       id: 'ciro-audit-prep',
-      title: 'CIRO Audit Preparation — Trade Surveillance',
+      title: 'CIRO Audit Preparation: Trade Surveillance',
       kind: 'regulatory',
       effort: 11,
       effortRevealed: 11,
@@ -352,7 +352,7 @@ export const scenario02: Scenario = {
     },
     {
       id: 'discovery-new-ciro-rule',
-      title: 'New CIRO Rule 3300 guidance — reporting change',
+      title: 'New CIRO Rule 3300 guidance: reporting change',
       kind: 'regulatory',
       effort: 5,
       effortRevealed: 5,
@@ -382,7 +382,7 @@ export const scenario02: Scenario = {
       trigger: 'forced',
       forcedAtIteration: 1,
       narrative:
-        'Rajesh tells you Monday: "4 weeks notice. Accepted a role at RBC Capital Markets." He owns the OCC integration — nobody else understands it.',
+        'Rajesh tells you Monday: "4 weeks notice. Accepted a role at RBC Capital Markets." He owns the OCC integration. Nobody else understands it.',
       options: [
         {
           id: 'pair-with-max',
@@ -466,7 +466,7 @@ export const scenario02: Scenario = {
       options: [
         {
           id: 'prioritize',
-          label: 'Prioritize immediately — injects 6-pt forced item into backlog',
+          label: 'Prioritize immediately: injects 6-pt forced item into backlog',
           visibleConsequence: 'Painful but safe. New PBI added.',
           effects: [
             { kind: 'trust', stakeholderId: 'vendors', delta: 1 },
@@ -658,7 +658,7 @@ export const scenario02: Scenario = {
       options: [
         {
           id: 'ambitious',
-          label: 'Ambitious vision (event-driven rebuild) — ask $3M',
+          label: 'Ambitious vision (event-driven rebuild): ask $3M',
           visibleConsequence: 'High risk, high reward.',
           effects: [
             { kind: 'trust', stakeholderId: 'hq', delta: 1 },
@@ -667,7 +667,7 @@ export const scenario02: Scenario = {
         },
         {
           id: 'pragmatic',
-          label: 'Pragmatic vision (incremental) — ask $1M',
+          label: 'Pragmatic vision (incremental): ask $1M',
           visibleConsequence: 'Safer. Budget for audit compliance.',
           effects: [{ kind: 'revenue', delta: 100 }],
         },

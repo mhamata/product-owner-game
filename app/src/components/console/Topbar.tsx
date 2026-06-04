@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
  * (e.g. the lesson's close affordance) without a screen-toggle that doesn't
  * apply to a routed app.
  *
- * `context` is the wordmark suffix after "v0 ·" — "console" on the learning
+ * `context` is the wordmark suffix after "v0 ·", "console" on the learning
  * path (default), "simulation" on the sim route (matches sim-b.html).
  */
 export function Topbar({

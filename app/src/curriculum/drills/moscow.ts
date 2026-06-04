@@ -1,14 +1,14 @@
 import type { DrillBucket } from './types';
 
 /**
- * MoSCoW drill — STRUCTURAL CORE (industry-neutral).
+ * MoSCoW drill: STRUCTURAL CORE (industry-neutral).
  *
  * Must / Should / Could / Won't. "Must" is defined strictly: the release fails
  * without it.
  *
  * This file owns the answer key: the four buckets (the fixed MoSCoW taxonomy,
  * identical for every industry) and, for each item, its stable `id` and the
- * single `correct` bucket. It carries NO human-readable feature copy — names,
+ * single `correct` bucket. It carries NO human-readable feature copy. Names,
  * rationales, scenario framing, and the insight live in `./moscow.display`, one
  * pack per home industry, merged on by `resolveMoscowDrill`. The correct bucket
  * per item never changes, so a fully-correct attempt is identical across
@@ -17,7 +17,7 @@ import type { DrillBucket } from './types';
 
 export type MoscowBucket = 'M' | 'S' | 'C' | 'W';
 
-/** The structural item ids — the keys every display pack must cover. */
+/** The structural item ids: the keys every display pack must cover. */
 export type MoscowItemId =
   | 'auth'
   | 'gdpr'

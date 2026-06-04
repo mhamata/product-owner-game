@@ -3,7 +3,7 @@ import { methods, CATEGORY_META, type MethodCategory } from '@/methods';
 import { MethodCard } from '@/components/methods/MethodCard';
 
 export const metadata = {
-  title: 'PM Methods — PRAXIS',
+  title: 'PM Methods | PRAXIS',
   description:
     'Complete study library: 37 PM methods with when-to-use, benefits, limitations, and interactive drills.',
 };
@@ -34,7 +34,7 @@ export default function MethodsPage() {
           <div>
             <h2 className="text-xl font-semibold">🎯 Most commonly asked in PM interviews</h2>
             <p className="text-sm text-gray-500">
-              Study these first — each has a worked example and an interactive drill.
+              Study these first. Each has a worked example and an interactive drill.
             </p>
           </div>
         </div>

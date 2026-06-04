@@ -311,8 +311,8 @@ export function ValueVsEffortLesson({
                   </span>
                 </div>
                 <p className="mt-2.5 text-[14px] leading-[1.6] text-ink-2">
-                  A quick win is <b className="font-semibold text-ink">HIGH value, LOW effort</b>{' '}
-                  — Feature A. (B is a high-value &ldquo;big bet&rdquo;; C is
+                  A quick win is <b className="font-semibold text-ink">HIGH value, LOW effort</b>.
+                  That&rsquo;s Feature A. (B is a high-value &ldquo;big bet&rdquo;; C is
                   &ldquo;maybe later.&rdquo;)
                 </p>
                 <button
@@ -328,15 +328,15 @@ export function ValueVsEffortLesson({
                   <div className="mt-2.5 border-t border-dashed border-line pt-[11px] text-[13px] leading-[1.6] text-slate">
                     <p className="mb-1.5">
                       <span className="mono text-[11px] tracking-[0.05em] text-mute">
-                        VALUE AXIS
+                        VALUE AXIS:
                       </span>{' '}
-                      — how much it moves activation, retention, or revenue.
+                      how much it moves activation, retention, or revenue.
                     </p>
                     <p className="mb-1.5">
                       <span className="mono text-[11px] tracking-[0.05em] text-mute">
-                        EFFORT AXIS
+                        EFFORT AXIS:
                       </span>{' '}
-                      — engineering + design cost to ship it.
+                      engineering and design cost to ship it.
                     </p>
                     <p>
                       <b className="font-semibold text-ink">Quick wins</b> sit

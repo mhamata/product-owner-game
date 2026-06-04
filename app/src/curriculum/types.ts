@@ -10,7 +10,7 @@ import type { DrillType } from '@/methods';
 export type SkillState = 'mastered' | 'active' | 'available' | 'locked';
 
 /* ------------------------------------------------------------------
-   LEVELS — the career ladder.
+   LEVELS: the career ladder.
 
    PRAXIS is a zero-to-expert curriculum organised as six levels, each a rung
    on a real PM career ladder. Levels are the top-level navigation: a learner
@@ -30,9 +30,9 @@ export type LevelId =
 
 /**
  * Which fork of the ladder a level sits on.
- *  - `core`       — the shared spine everyone climbs (Foundations → Senior).
- *  - `ic`         — the individual-contributor branch (Staff / Principal).
- *  - `management` — the people-management branch (Director / VP).
+ *  - `core`:       the shared spine everyone climbs (Foundations → Senior).
+ *  - `ic`:         the individual-contributor branch (Staff / Principal).
+ *  - `management`: the people-management branch (Director / VP).
  * Both `ic` and `management` are "post-senior": they unlock after Senior and
  * represent a choice of direction rather than a strict sequence.
  */
@@ -50,7 +50,7 @@ export interface Level {
 }
 
 /* ------------------------------------------------------------------
-   COMPETENCY SPINE — the Reforge / Ravi Mehta product-competency model.
+   COMPETENCY SPINE: the Reforge / Ravi Mehta product-competency model.
 
    Every skill tags exactly one competency. Competencies roll up into four
    product DIMENSIONS (execution / insight / strategy / influence), plus a set
@@ -80,7 +80,7 @@ export type InfluenceCompetency =
   | 'managing-up';
 
 /**
- * Cross-cutting competencies. These don't sit under one dimension — they are
+ * Cross-cutting competencies. These don't sit under one dimension; they are
  * the broad literacies every PM carries across all four.
  */
 export type CrossCuttingCompetency =
@@ -148,7 +148,7 @@ export const COMPETENCIES: Record<Competency, CompetencyMeta> = {
 };
 
 /* ------------------------------------------------------------------
-   MODALITIES — *how* a skill is practised.
+   MODALITIES: *how* a skill is practised.
 
    A skill can use several. `lesson`, `drill`, and `sim` have working content
    today; the rest (artifact / roleplay / judgment / reading / reference) are
@@ -183,18 +183,18 @@ export const MODALITIES: Record<Modality, ModalityMeta> = {
 };
 
 /* ------------------------------------------------------------------
-   STATUS — whether a skill is playable yet.
+   STATUS: whether a skill is playable yet.
 
-   `ready`       — has a working lesson/drill loop today; counts toward mastery
-                   and can gate progression.
-   `coming-soon` — content is planned. Renders as a tasteful placeholder, is
+   `ready`:       has a working lesson/drill loop today; counts toward mastery
+                  and can gate progression.
+   `coming-soon`: content is planned. Renders as a tasteful placeholder, is
                    non-interactive, and NEVER blocks progress or counts against
                    any mastery denominator (see learnStore for the gating rule).
    ------------------------------------------------------------------ */
 export type SkillStatus = 'ready' | 'coming-soon';
 
 /* ------------------------------------------------------------------
-   SPECIALIZATION TRACKS — off-ladder depth.
+   SPECIALIZATION TRACKS: off-ladder depth.
 
    Tracks sit beside the career ladder rather than on it. Conceptually they
    unlock at Senior+ and let a PM go deep on a domain (growth, platform/API,
@@ -228,7 +228,7 @@ export interface Track {
    `competency`, `modalities`, `status`) layer the leveled model on top.
    ------------------------------------------------------------------ */
 export interface Skill {
-  /** Stable slug used in the /learn/[skillId] route. Generic — never finance-specific. */
+  /** Stable slug used in the /learn/[skillId] route. Generic, never finance-specific. */
   id: string;
   title: string;
   /** Id of the unit this skill belongs to (e.g. 'foundations-u1'). */
@@ -261,7 +261,7 @@ export interface Skill {
   /**
    * Convenience flag mirrored from `status === 'ready'`: true when a working
    * Console lesson loop ships for this skill. Kept for readability at call
-   * sites that branch on "is this interactive". Derived in data.ts — never
+   * sites that branch on "is this interactive". Derived in data.ts, never
    * hand-set out of sync with `status`.
    */
   hasLesson: boolean;

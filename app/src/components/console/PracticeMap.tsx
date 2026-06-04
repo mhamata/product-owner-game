@@ -48,7 +48,7 @@ const BRANCH_NOTE: Record<Level['branch'], string | null> = {
  * One LEVEL on the Practice Map: a labelled header (locked / active / complete),
  * then its units, each a sub-header over a grid of skill cards. Locked levels
  * collapse to a one-line "locknote" listing their units so the map stays
- * scannable — exactly the pattern the old per-unit map used, lifted up a tier.
+ * scannable, exactly the pattern the old per-unit map used, lifted up a tier.
  */
 function LevelSection({
   level,
@@ -174,7 +174,7 @@ export function PracticeMap() {
   const streak = useLearnStore((s) => s.streak);
   const hasHydrated = useLearnStore((s) => s.hasHydrated);
 
-  // Home industry — persisted, SSR-safe. Before hydration we show the default
+  // Home industry: persisted, SSR-safe. Before hydration we show the default
   // so server + first client paint agree (mirrors the streak gating above).
   const industry = useIndustryStore((s) => s.industry);
   const industryHydrated = useIndustryStore((s) => s.hasHydrated);
@@ -204,10 +204,10 @@ export function PracticeMap() {
       {/* status bar */}
       <div className="border-b border-line bg-paper">
         <div className="mx-auto flex max-w-[1080px] flex-wrap items-center gap-3.5 px-6 py-[18px]">
-          {/* consistency streak — habit, not guilt */}
+          {/* consistency streak: habit, not guilt */}
           <div
             className="inline-flex items-center gap-2.5 rounded-console border border-line bg-paper px-[13px] py-2"
-            title="Flexible consistency streak — keep the habit, no guilt"
+            title="Flexible consistency streak: keep the habit, no guilt"
           >
             <FlameIcon size={17} className="flex-none text-flame" />
             <span>
@@ -220,10 +220,10 @@ export function PracticeMap() {
             </span>
           </div>
 
-          {/* mastery — demonstrated competence, not lesson count */}
+          {/* mastery: demonstrated competence, not lesson count */}
           <div
             className="inline-flex items-center gap-2.5 rounded-console border border-line bg-paper px-[13px] py-2"
-            title="Mastery — demonstrated competence across the playable curriculum"
+            title="Mastery: demonstrated competence across the playable curriculum"
           >
             <ProgressRing
               value={overall}
@@ -288,7 +288,7 @@ export function PracticeMap() {
                 <p className="mt-2 max-w-[56ch] text-[15px] text-slate">
                   A zero-to-expert path across {levels.length} career levels and{' '}
                   {TOTAL_LADDER_SKILLS} skills. Earn mastery by proving the
-                  judgment — not by clearing checkboxes.
+                  judgment, not by clearing checkboxes.
                 </p>
               </div>
               <span className="mono whitespace-nowrap text-[12px] text-faint">
@@ -320,7 +320,7 @@ export function PracticeMap() {
             ))}
           </div>
 
-          {/* Capstone — entry point to the existing live simulation */}
+          {/* Capstone: entry point to the existing live simulation */}
           <section className="mt-11">
             <div className="flex items-center gap-3 border-b-2 border-line pb-3">
               <span className="mono whitespace-nowrap rounded-console-sm border border-line bg-panel-2 px-[10px] py-1 text-[11px] uppercase tracking-[0.14em] text-mute">
@@ -354,7 +354,7 @@ export function PracticeMap() {
             </div>
           </section>
 
-          {/* Specialization tracks — off-ladder depth (coming soon) */}
+          {/* Specialization tracks: off-ladder depth (coming soon) */}
           <section className="mt-11 pb-16">
             <div className="flex flex-wrap items-center gap-3 border-b-2 border-line pb-3">
               <span className="mono inline-flex items-center gap-1.5 whitespace-nowrap rounded-console-sm border border-line bg-panel-2 px-[10px] py-1 text-[11px] uppercase tracking-[0.14em] text-mute">

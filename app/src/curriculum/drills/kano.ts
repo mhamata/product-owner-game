@@ -1,21 +1,21 @@
 import type { DrillBucket } from './types';
 
 /**
- * Kano drill — STRUCTURAL CORE (industry-neutral).
+ * Kano drill: STRUCTURAL CORE (industry-neutral).
  *
  * Basic (must-have) / Performance (more is better) / Delighter (surprise) /
  * Indifferent (nobody cares).
  *
  * This file owns the answer key: the four Kano categories (fixed taxonomy) and,
  * per item, its stable `id` and the single `correct` category. It carries NO
- * human-readable copy — names, rationales, framing, and the insight live in
+ * human-readable copy. Names, rationales, framing, and the insight live in
  * `./kano.display`, one pack per home industry, merged on by `resolveKanoDrill`.
  * The correct category per item never changes across industries.
  */
 
 export type KanoCategory = 'basic' | 'performance' | 'delighter' | 'indifferent';
 
-/** The structural item ids — the keys every display pack must cover. */
+/** The structural item ids: the keys every display pack must cover. */
 export type KanoItemId =
   | 'login'
   | 'load-speed'

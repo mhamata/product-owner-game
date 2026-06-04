@@ -27,7 +27,7 @@ describe('updateTechDebt', () => {
     expect(tech.releaseCost).toBeGreaterThanOrEqual(4);
   });
 
-  it('threshold is idempotent — re-crossing already-crossed threshold does not re-apply', () => {
+  it('threshold is idempotent: re-crossing already-crossed threshold does not re-apply', () => {
     // Already at 50+: releaseCost already elevated; next iter no new threshold crossed
     const state = makeState({
       tech: { ...makeState().tech, techDebt: 55, releaseCost: 5 },

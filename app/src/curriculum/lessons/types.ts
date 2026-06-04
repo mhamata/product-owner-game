@@ -2,21 +2,21 @@ import type { ReactNode } from 'react';
 import type { IndustryId } from '@/curriculum/industries';
 
 /**
- * CONCEPT LESSON — the teaching modality.
+ * CONCEPT LESSON: the teaching modality.
  *
  * A concept lesson is a structured, *demonstrated-mastery* reading: a one-line
  * hook, the framework explained in short prose sections, one or two worked
  * examples, a handful of takeaways, and a short comprehension CHECK that must be
  * answered correctly to complete the skill. It is the counterpart to the
- * interactive drills — same Console chrome, same completion path into the learn
- * store — for skills whose substance is conceptual rather than procedural.
+ * interactive drills (same Console chrome, same completion path into the learn
+ * store) for skills whose substance is conceptual rather than procedural.
  *
  * INDUSTRY FLAVOUR
  * ----------------
  * Worked examples (and individual prose lines) can be authored as a function of
  * the learner's home industry so the teaching lands in the world they work in,
  * reusing the same `useActiveIndustry()` signal the drills use. Authors get a
- * small, *typed* context — the industry id plus a couple of ready-made nouns —
+ * small, *typed* context (the industry id plus a couple of ready-made nouns)
  * rather than having to hand-write five full copies of every example. Content
  * that doesn't benefit from flavour is just a plain string.
  */
@@ -25,7 +25,7 @@ import type { IndustryId } from '@/curriculum/industries';
  * What an industry-aware author callback receives. Deliberately tiny: the
  * industry id, its display label, and two pre-resolved nouns so a worked example
  * can say "your marketplace" / "a checkout flow" without each lesson re-deriving
- * the mapping. Everything here is plain data — safe to compute on the client.
+ * the mapping. Everything here is plain data, safe to compute on the client.
  */
 export interface IndustryContext {
   id: IndustryId;
@@ -47,14 +47,14 @@ export type Flavoured<T> = T | ((ctx: IndustryContext) => T);
 /**
  * One short teaching section: a heading plus body prose. The body is an array of
  * paragraphs (each plain text, optionally industry-flavoured). Keeping prose as
- * data — not JSX — means the content files stay reviewable and free of markup,
+ * data (not JSX) means the content files stay reviewable and free of markup,
  * and the component owns every pixel of styling.
  */
 export interface LessonSection {
   heading: string;
   body: Flavoured<string>[];
   /**
-   * Optional compact bullet list rendered under the prose — handy for the
+   * Optional compact bullet list rendered under the prose, handy for the
    * "what PMs do / don't" style contrasts without inventing a second block type.
    */
   bullets?: Flavoured<string>[];
@@ -73,7 +73,7 @@ export interface WorkedExample {
 }
 
 /* ------------------------------------------------------------------
-   COMPREHENSION CHECK — the mastery gate.
+   COMPREHENSION CHECK: the mastery gate.
    ------------------------------------------------------------------ */
 
 /** A single multiple-choice option. */
@@ -84,7 +84,7 @@ export interface ChoiceOption {
 
 /**
  * A multiple-choice question. `correctId` is the single right option; `why` is
- * the explanation revealed after grading (always shown — right or wrong — so the
+ * the explanation revealed after grading (always shown, right or wrong, so the
  * check teaches, not just tests).
  */
 export interface ChoiceQuestion {
@@ -99,8 +99,8 @@ export interface ChoiceQuestion {
 /**
  * A fill-in question. The learner types a short answer; it is matched
  * case-insensitively (trimmed) against `accept`. Use for crisp vocabulary
- * ("what does the 'M' in DAU/WAU/MAU stand for?") — never for open prose, which
- * the LLM-graded drills already cover.
+ * ("what does the 'M' in DAU/WAU/MAU stand for?"). Never use it for open prose,
+ * which the LLM-graded drills already cover.
  */
 export interface FillQuestion {
   kind: 'fill';
@@ -115,7 +115,7 @@ export interface FillQuestion {
 
 export type CheckQuestion = ChoiceQuestion | FillQuestion;
 
-/** The end-of-lesson comprehension check: 1–3 questions, all must be correct. */
+/** The end-of-lesson comprehension check: 1-3 questions, all must be correct. */
 export interface ComprehensionCheck {
   /** Optional lead-in shown above the questions. */
   intro?: string;

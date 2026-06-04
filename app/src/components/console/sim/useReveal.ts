@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
  * (e.g. the sprint number) so it restarts cleanly each sprint. Returns the count
  * of items currently shown.
  *
- * Lint-clean: the effect never calls setState synchronously in its body — the
+ * Lint-clean: the effect never calls setState synchronously in its body; the
  * reset to 0 and each subsequent bump happen inside requestAnimationFrame /
  * setTimeout callbacks, which the react-hooks rule permits. When `reduced` is
  * set (prefers-reduced-motion), everything is shown immediately with no timers.
@@ -25,7 +25,7 @@ export function useReveal(
   useEffect(() => {
     const timers: number[] = [];
     // All state changes happen inside async callbacks (rAF / setTimeout), never
-    // synchronously in the effect body — keeping the react-hooks rule happy.
+    // synchronously in the effect body, keeping the react-hooks rule happy.
     const raf = window.requestAnimationFrame(() => {
       if (reduced) {
         setShown(count);

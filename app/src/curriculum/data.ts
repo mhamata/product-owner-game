@@ -12,12 +12,12 @@ import type {
 } from './types';
 
 /**
- * The PRAXIS curriculum — a leveled, zero-to-expert PM career ladder.
+ * The PRAXIS curriculum: a leveled, zero-to-expert PM career ladder.
  *
  * SHAPE
  * -----
  * Six LEVELS (a real PM career ladder), each containing UNITS, each containing
- * 2–4 SKILLS. Every skill tags one product `competency`, lists its practice
+ * 2-4 SKILLS. Every skill tags one product `competency`, lists its practice
  * `modalities`, and carries a `status` of `ready` (playable today) or
  * `coming-soon` (planned placeholder). A separate set of specialization TRACKS
  * sits beside the ladder.
@@ -29,13 +29,13 @@ import type {
  * with their `id` / `methodId` / `drillType` PRESERVED so every existing drill
  * still plays and stays industry-aware. Everything new is `coming-soon`.
  *
- * Mapping is intentionally generic — no finance / Moomoo content here. All the
+ * Mapping is intentionally generic: no finance / Moomoo content here. All the
  * industry skinning lives in the drill resolvers, which key off the unchanged
  * skill ids, not this structure.
  */
 
 /* ==================================================================
-   LEVELS — the career ladder.
+   LEVELS: the career ladder.
    ================================================================== */
 export const levels: Level[] = [
   {
@@ -88,7 +88,7 @@ export const levels: Level[] = [
    Seeds are terse on purpose: a unit lists its skills, each skill carries a
    `competency` + `modalities` + `status` (+ optional `methodId`/`drillType`).
    The global `index`, per-level unit `number`, `unitId`, `level`, and the
-   `hasLesson` mirror are all filled in by the assembly pass below — never by
+   `hasLesson` mirror are all filled in by the assembly pass below, never by
    hand (hand-numbering drifts the moment the list changes).
    ================================================================== */
 type SkillSeed = {
@@ -117,13 +117,13 @@ const SOON_LESSON: Modality[] = ['lesson'];
 
 const LEVEL_UNITS: LevelUnitSeeds = {
   /* ---------------------------------------------------------------
-     FOUNDATIONS — what PM is + shared language.
+     FOUNDATIONS: what PM is + shared language.
      --------------------------------------------------------------- */
   foundations: [
     {
       id: 'u1',
       title: 'The Role',
-      blurb: 'What a PM is — and is not — and how the work fits together.',
+      blurb: 'What a PM is, what a PM is not, and how the work fits together.',
       skills: [
         { id: 'what-pm-is', title: 'What PM Is', competency: 'business', modalities: ['lesson', 'reading'], status: 'ready' },
         { id: 'product-lifecycle', title: 'The Product Lifecycle', competency: 'business-outcome', modalities: ['lesson', 'reading'], status: 'ready' },
@@ -151,7 +151,7 @@ const LEVEL_UNITS: LevelUnitSeeds = {
   ],
 
   /* ---------------------------------------------------------------
-     ASSOCIATE PM — execution.
+     ASSOCIATE PM: execution.
      --------------------------------------------------------------- */
   associate: [
     {
@@ -177,7 +177,7 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Shipping Well',
       blurb: 'Size the work and keep quality from slipping.',
       skills: [
-        // Existing T-shirt sizing drill — industry-aware, fully playable.
+        // Existing T-shirt sizing drill: industry-aware, fully playable.
         { id: 'estimation', title: 'Estimation', competency: 'delivery', methodId: 't-shirt', drillType: 't-shirt', modalities: DRILL, status: 'ready' },
         { id: 'quality-and-delivery', title: 'Quality & Delivery', competency: 'quality', modalities: ['lesson', 'reference'], status: 'ready' },
       ],
@@ -185,7 +185,7 @@ const LEVEL_UNITS: LevelUnitSeeds = {
   ],
 
   /* ---------------------------------------------------------------
-     PRODUCT MANAGER — insight + strategy.
+     PRODUCT MANAGER: insight + strategy.
      --------------------------------------------------------------- */
   pm: [
     {
@@ -197,7 +197,7 @@ const LEVEL_UNITS: LevelUnitSeeds = {
         { id: 'jtbd', title: 'Jobs To Be Done', competency: 'voice-of-customer', methodId: 'jtbd', drillType: 'jtbd', modalities: DRILL, status: 'ready' },
         { id: 'user-interviews', title: 'User Interviews', competency: 'voice-of-customer', methodId: 'mom-test', drillType: 'mom-test', modalities: DRILL, status: 'ready' },
         { id: 'problem-framing', title: 'Problem Framing', competency: 'voice-of-customer', methodId: 'five-whys', drillType: 'five-whys', modalities: DRILL, status: 'ready' },
-        { id: 'opportunity-solution-trees', title: 'Opportunity-Solution Trees', competency: 'voice-of-customer', methodId: 'opportunity-solution-tree', modalities: SOON_LESSON, status: 'coming-soon' },
+        { id: 'opportunity-solution-trees', title: 'Opportunity-Solution Trees', competency: 'voice-of-customer', methodId: 'opportunity-solution-tree', modalities: SOON_LESSON, status: 'ready' },
       ],
     },
     {
@@ -217,9 +217,9 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Metrics & North Star',
       blurb: 'Measure what matters and ignore the vanity numbers.',
       skills: [
-        { id: 'aarrr-funnel', title: 'AARRR Funnel', competency: 'data-fluency', methodId: 'aarrr', modalities: SOON_LESSON, status: 'coming-soon' },
-        { id: 'activation-retention', title: 'Activation & Retention', competency: 'data-fluency', methodId: 'heart', modalities: SOON_LESSON, status: 'coming-soon' },
-        { id: 'north-star', title: 'North Star & OKRs', competency: 'business-outcome', methodId: 'north-star', modalities: SOON_LESSON, status: 'coming-soon' },
+        { id: 'aarrr-funnel', title: 'AARRR Funnel', competency: 'data-fluency', methodId: 'aarrr', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'activation-retention', title: 'Activation & Retention', competency: 'data-fluency', methodId: 'heart', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'north-star', title: 'North Star & OKRs', competency: 'business-outcome', methodId: 'north-star', modalities: SOON_LESSON, status: 'ready' },
       ],
     },
     {
@@ -227,8 +227,8 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Experimentation',
       blurb: 'Design honest tests and read results without fooling yourself.',
       skills: [
-        { id: 'ab-test-design', title: 'A/B Test Design', competency: 'data-fluency', methodId: 'hypothesis-cards', modalities: SOON_LESSON, status: 'coming-soon' },
-        { id: 'reading-results', title: 'Significance & Cohorts', competency: 'data-fluency', modalities: SOON_LESSON, status: 'coming-soon' },
+        { id: 'ab-test-design', title: 'A/B Test Design', competency: 'data-fluency', methodId: 'hypothesis-cards', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'reading-results', title: 'Significance & Cohorts', competency: 'data-fluency', modalities: SOON_LESSON, status: 'ready' },
       ],
     },
     {
@@ -236,14 +236,14 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Roadmapping & Positioning',
       blurb: 'Sequence the bets and say what the product is for.',
       skills: [
-        { id: 'roadmapping', title: 'Roadmapping', competency: 'vision-roadmap', modalities: SOON_LESSON, status: 'coming-soon' },
-        { id: 'positioning-basics', title: 'Positioning Basics', competency: 'business-outcome', modalities: SOON_LESSON, status: 'coming-soon' },
+        { id: 'roadmapping', title: 'Roadmapping', competency: 'vision-roadmap', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'positioning-basics', title: 'Positioning Basics', competency: 'business-outcome', modalities: SOON_LESSON, status: 'ready' },
       ],
     },
   ],
 
   /* ---------------------------------------------------------------
-     SENIOR PM — strategy + influence.
+     SENIOR PM: strategy + influence.
      --------------------------------------------------------------- */
   senior: [
     {
@@ -251,8 +251,8 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Strategy & Vision',
       blurb: 'Set a direction worth committing a team to.',
       skills: [
-        { id: 'product-strategy-stack', title: 'Product Strategy Stack', competency: 'strategic-impact', methodId: 'lean-canvas', modalities: SOON_LESSON, status: 'coming-soon' },
-        { id: 'product-vision', title: 'Vision & Strategic Intent', competency: 'vision-roadmap', methodId: 'vision-board', modalities: SOON_LESSON, status: 'coming-soon' },
+        { id: 'product-strategy-stack', title: 'Product Strategy Stack', competency: 'strategic-impact', methodId: 'lean-canvas', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'product-vision', title: 'Vision & Strategic Intent', competency: 'vision-roadmap', methodId: 'vision-board', modalities: SOON_LESSON, status: 'ready' },
       ],
     },
     {
@@ -260,8 +260,8 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Growth & Monetization',
       blurb: 'Build the loops and the model that compound value.',
       skills: [
-        { id: 'growth-loops-retention', title: 'Growth Loops & Retention', competency: 'business-outcome', modalities: SOON_LESSON, status: 'coming-soon' },
-        { id: 'monetization-pricing', title: 'Monetization & Pricing', competency: 'business-outcome', modalities: SOON_LESSON, status: 'coming-soon' },
+        { id: 'growth-loops-retention', title: 'Growth Loops & Retention', competency: 'business-outcome', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'monetization-pricing', title: 'Monetization & Pricing', competency: 'business-outcome', modalities: SOON_LESSON, status: 'ready' },
       ],
     },
     {
@@ -269,9 +269,9 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Go-to-Market',
       blurb: 'Position, write the launch narrative, and de-risk it.',
       skills: [
-        // PR-FAQ — existing free-text drill, industry-aware.
+        // PR-FAQ: existing free-text drill, industry-aware.
         { id: 'pr-faq', title: 'PR-FAQ & Launch', competency: 'vision-roadmap', methodId: 'pr-faq', drillType: 'pr-faq', modalities: DRILL, status: 'ready' },
-        // Pre-mortem — existing free-text drill, industry-aware.
+        // Pre-mortem: existing free-text drill, industry-aware.
         { id: 'pre-mortem', title: 'Pre-Mortem', competency: 'strategic-impact', methodId: 'pre-mortem', drillType: 'pre-mortem', modalities: DRILL, status: 'ready' },
       ],
     },
@@ -280,15 +280,15 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Influence',
       blurb: 'Move people and decisions without the org chart.',
       skills: [
-        { id: 'stakeholder-management', title: 'Stakeholder Management', competency: 'stakeholder-mgmt', methodId: 'raci', modalities: ['lesson', 'roleplay'], status: 'coming-soon' },
-        { id: 'influence-without-authority', title: 'Influence Without Authority', competency: 'stakeholder-mgmt', modalities: ['lesson', 'roleplay'], status: 'coming-soon' },
-        { id: 'managing-up', title: 'Managing Up', competency: 'managing-up', modalities: ['lesson', 'roleplay'], status: 'coming-soon' },
+        { id: 'stakeholder-management', title: 'Stakeholder Management', competency: 'stakeholder-mgmt', methodId: 'raci', modalities: ['lesson', 'roleplay'], status: 'ready' },
+        { id: 'influence-without-authority', title: 'Influence Without Authority', competency: 'stakeholder-mgmt', modalities: ['lesson', 'roleplay'], status: 'ready' },
+        { id: 'managing-up', title: 'Managing Up', competency: 'managing-up', modalities: ['lesson', 'roleplay'], status: 'ready' },
       ],
     },
   ],
 
   /* ---------------------------------------------------------------
-     STAFF / PRINCIPAL — leverage (IC branch).
+     STAFF / PRINCIPAL: leverage (IC branch).
      --------------------------------------------------------------- */
   staff: [
     {
@@ -296,9 +296,9 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Judgment',
       blurb: 'Decide well when the data runs out.',
       skills: [
-        { id: 'judgment-under-ambiguity', title: 'Judgment Under Ambiguity', competency: 'strategic-impact', methodId: 'one-way-doors', modalities: ['lesson', 'judgment'], status: 'coming-soon' },
-        { id: 'framing-problems', title: 'Framing Problems for Others', competency: 'strategic-impact', modalities: ['lesson', 'judgment'], status: 'coming-soon' },
-        { id: 'hard-tradeoffs', title: 'Hard Tradeoffs', competency: 'strategic-impact', methodId: 'cost-of-inaction', modalities: ['lesson', 'judgment'], status: 'coming-soon' },
+        { id: 'judgment-under-ambiguity', title: 'Judgment Under Ambiguity', competency: 'strategic-impact', methodId: 'one-way-doors', modalities: ['lesson', 'judgment'], status: 'ready' },
+        { id: 'framing-problems', title: 'Framing Problems for Others', competency: 'strategic-impact', modalities: ['lesson', 'judgment'], status: 'ready' },
+        { id: 'hard-tradeoffs', title: 'Hard Tradeoffs', competency: 'strategic-impact', methodId: 'cost-of-inaction', modalities: ['lesson', 'judgment'], status: 'ready' },
       ],
     },
     {
@@ -306,15 +306,15 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Scope & Leverage',
       blurb: 'Think across teams, platforms, and portfolios.',
       skills: [
-        { id: 'multi-team-strategy', title: 'Multi-Team Strategy', competency: 'strategic-impact', modalities: SOON_LESSON, status: 'coming-soon' },
-        { id: 'platform-portfolio-thinking', title: 'Platform & Portfolio Thinking', competency: 'vision-roadmap', modalities: SOON_LESSON, status: 'coming-soon' },
-        { id: 'force-multiplier-influence', title: 'Force-Multiplier Influence', competency: 'team-leadership', modalities: ['lesson', 'roleplay'], status: 'coming-soon' },
+        { id: 'multi-team-strategy', title: 'Multi-Team Strategy', competency: 'strategic-impact', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'platform-portfolio-thinking', title: 'Platform & Portfolio Thinking', competency: 'vision-roadmap', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'force-multiplier-influence', title: 'Force-Multiplier Influence', competency: 'team-leadership', modalities: ['lesson', 'roleplay'], status: 'ready' },
       ],
     },
   ],
 
   /* ---------------------------------------------------------------
-     DIRECTOR / VP — the org (management branch).
+     DIRECTOR / VP: the org (management branch).
      --------------------------------------------------------------- */
   director: [
     {
@@ -322,9 +322,9 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Leading Teams',
       blurb: 'Build empowered teams and the people on them.',
       skills: [
-        { id: 'empowered-teams', title: 'Empowered Teams', competency: 'team-leadership', modalities: SOON_LESSON, status: 'coming-soon' },
-        { id: 'org-design', title: 'Org Design', competency: 'team-leadership', modalities: SOON_LESSON, status: 'coming-soon' },
-        { id: 'hiring-coaching-pms', title: 'Hiring & Coaching PMs', competency: 'team-leadership', modalities: ['lesson', 'roleplay'], status: 'coming-soon' },
+        { id: 'empowered-teams', title: 'Empowered Teams', competency: 'team-leadership', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'org-design', title: 'Org Design', competency: 'team-leadership', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'hiring-coaching-pms', title: 'Hiring & Coaching PMs', competency: 'team-leadership', modalities: ['lesson', 'roleplay'], status: 'ready' },
       ],
     },
     {
@@ -332,8 +332,8 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'The Operating Model',
       blurb: 'Make the system that makes the product.',
       skills: [
-        { id: 'product-operating-model', title: 'Product Operating Model', competency: 'strategic-impact', modalities: SOON_LESSON, status: 'coming-soon' },
-        { id: 'pnl-business-acumen', title: 'P&L & Business Acumen', competency: 'business', modalities: SOON_LESSON, status: 'coming-soon' },
+        { id: 'product-operating-model', title: 'Product Operating Model', competency: 'strategic-impact', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'pnl-business-acumen', title: 'P&L & Business Acumen', competency: 'business', modalities: SOON_LESSON, status: 'ready' },
       ],
     },
     {
@@ -341,15 +341,15 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Culture & The Top Job',
       blurb: 'Set the culture and step into product leadership.',
       skills: [
-        { id: 'product-culture', title: 'Product Culture', competency: 'team-leadership', modalities: SOON_LESSON, status: 'coming-soon' },
-        { id: 'cpo-transition', title: 'The CPO Transition', competency: 'strategic-impact', modalities: SOON_LESSON, status: 'coming-soon' },
+        { id: 'product-culture', title: 'Product Culture', competency: 'team-leadership', modalities: SOON_LESSON, status: 'ready' },
+        { id: 'cpo-transition', title: 'The CPO Transition', competency: 'strategic-impact', modalities: SOON_LESSON, status: 'ready' },
       ],
     },
   ],
 };
 
 /* ==================================================================
-   SPECIALIZATION TRACKS — off-ladder depth (conceptually unlock at senior+).
+   SPECIALIZATION TRACKS: off-ladder depth (conceptually unlock at senior+).
    All coming-soon for now; surfaced in their own Practice Map section.
    ================================================================== */
 type TrackSeed = {
@@ -428,7 +428,7 @@ const TRACK_SEEDS: TrackSeed[] = [
 ];
 
 /* ==================================================================
-   ASSEMBLY — turn the terse seeds into fully-numbered Units/Skills.
+   ASSEMBLY: turn the terse seeds into fully-numbered Units/Skills.
 
    `index` is a single running counter across the whole ladder (so the
    "Skill 0X" label stays globally unique and stable). Unit `number` resets per
@@ -502,7 +502,7 @@ export const allSkills: Skill[] = units.flatMap((u) => u.skills);
 /** Flat list of every TRACK skill. */
 export const allTrackSkills: Skill[] = tracks.flatMap((t) => t.skills);
 
-/** Every skill in the system — ladder + tracks (used for route generation). */
+/** Every skill in the system: ladder + tracks (used for route generation). */
 export const everySkill: Skill[] = [...allSkills, ...allTrackSkills];
 
 /**
@@ -510,7 +510,7 @@ export const everySkill: Skill[] = [...allSkills, ...allTrackSkills];
  *
  * GATING RULE (documented once, used everywhere):
  *  - `coming-soon` skills are placeholders. They never count toward the mastery
- *    denominator and never block progression — otherwise the map would feel
+ *    denominator and never block progression. Otherwise the map would feel
  *    permanently stuck at a tiny percentage and every level past the first
  *    would be unreachable. So "mastery" is measured against the *playable*
  *    curriculum only.
@@ -565,7 +565,7 @@ export function getNextSkill(id: string): Skill | undefined {
 }
 
 /* ==================================================================
-   STATE DERIVATION — mastery → display state.
+   STATE DERIVATION: mastery → display state.
    ================================================================== */
 
 /**
@@ -615,7 +615,7 @@ export function isLevelUnlocked(
  *
  * Rules (Duolingo-style linear unlock over the *playable* curriculum):
  *  - A `coming-soon` skill is always `locked` (it isn't playable yet, but it is
- *    rendered with a distinct "coming soon" treatment — see SkillCard).
+ *    rendered with a distinct "coming soon" treatment; see SkillCard).
  *  - A skill the learner has mastered → `mastered`.
  *  - In a LOCKED level, every skill is `locked`.
  *  - In an UNLOCKED level, the first un-mastered `ready` skill *of the whole
@@ -645,8 +645,8 @@ export function deriveSkillState(
 /**
  * True once every `ready` skill in the unit is mastered.
  *
- * A unit with no `ready` skills (all coming-soon) is never "complete" — it has
- * nothing to master yet — so it reads as upcoming rather than done.
+ * A unit with no `ready` skills (all coming-soon) is never "complete" (it has
+ * nothing to master yet), so it reads as upcoming rather than done.
  */
 export function isUnitComplete(unitId: string, masteredIds: ReadonlySet<string>): boolean {
   const unit = getUnit(unitId);

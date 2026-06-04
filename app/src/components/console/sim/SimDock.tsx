@@ -5,7 +5,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from '../Icon';
 
 /**
  * The fixed bottom action dock: optional Back, a centered helper hint, and the
- * primary CTA. Mirrors sim-b.html's `.dock`. Purely presentational — the runner
+ * primary CTA. Mirrors sim-b.html's `.dock`. Purely presentational; the runner
  * owns the step logic and passes labels, gating, and handlers.
  */
 export function SimDock({

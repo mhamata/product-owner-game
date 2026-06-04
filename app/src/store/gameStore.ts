@@ -17,7 +17,7 @@ interface GameStore {
   industry: IndustryId | null;
   /**
    * The exact assembled scenario the active game runs against. TRANSIENT (not
-   * persisted — it is rebuildable from id + industry and would bloat storage).
+   * persisted; it is rebuildable from id + industry and would bloat storage).
    * After a hard refresh this is null until `newGame` runs again; `dispatch`
    * falls back to the default-industry registry, which is structurally
    * identical, so the engine still resolves correctly.

@@ -125,7 +125,7 @@ describe('de-specialization', () => {
 
   it('contains no finance/brokerage-specific content in any drill (every industry)', () => {
     const banned = /TFSA|Moomoo|CIRO|DTCC|RRSP|brokerage|fractional shares/i;
-    // Resolve every drill for every industry — the fintech pack in particular
+    // Resolve every drill for every industry. The fintech pack in particular
     // must stay generic expense-management, never the old brokerage content.
     const blob = JSON.stringify(
       ALL.flatMap((ind) => [
@@ -145,8 +145,8 @@ describe('de-specialization', () => {
 /**
  * The safety guarantee: switching the home industry re-skins a drill's COPY but
  * never moves the graded answer. These tests resolve every drill for all five
- * industries and assert the answer-bearing structure — and the grade of the
- * canonical attempt — is byte-for-byte identical across them.
+ * industries and assert the answer-bearing structure (and the grade of the
+ * canonical attempt) is byte-for-byte identical across them.
  */
 describe('industry invariance (graded answer is identical across industries)', () => {
   const ALL: IndustryId[] = INDUSTRIES.map((i) => i.id);
@@ -174,7 +174,7 @@ describe('industry invariance (graded answer is identical across industries)', (
         expect(row.factors).toEqual(saasRow.factors);
       }
       expect(rankRows(drill).map((r) => r.id)).toEqual(baseline);
-      // The teaching point — the rewrite ranks last — holds in every industry.
+      // The teaching point (the rewrite ranks last) holds in every industry.
       expect(rankRows(drill).at(-1)?.id).toBe('rewrite');
     }
   });
@@ -253,7 +253,7 @@ describe('industry invariance (graded answer is identical across industries)', (
   it('free-text drills keep the same drillId (rubric) + field keys across industries', () => {
     // The graded rubric is selected server-side by drillId, so resolving any
     // industry must not change the drillId or the field keys the answer is
-    // composed from — only the visible copy and the persona context change.
+    // composed from. Only the visible copy and the persona context change.
     const resolvers = [
       { resolve: resolveJtbdDrill, drillId: 'jtbd' as const },
       { resolve: resolveMomTestDrill, drillId: 'mom-test' as const },

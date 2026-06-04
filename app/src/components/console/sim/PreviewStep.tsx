@@ -15,7 +15,7 @@ import { DIMENSIONS } from './dimensions';
 import { previewForecast, projectIteration, type Direction } from './projection';
 
 /**
- * STEP 2 · PREVIEW — projected consequences BEFORE committing.
+ * STEP 2 · PREVIEW: projected consequences BEFORE committing.
  *
  * This step is read-only: it dispatches nothing. It shows a non-mutating
  * projection (directional dimension forecast + per-customer reactions) so the
@@ -34,7 +34,7 @@ export function PreviewStep({ state, score }: { state: GameState; score: GameSco
         name="Preview"
         eyebrow="Before you commit"
         title={<span id="preview-title">Here&apos;s what will likely happen if you ship this.</span>}
-        sub="A projection — not a guarantee. Capacity still rolls within its range on the next step. Review, then decide."
+        sub="A projection, not a guarantee. Capacity still rolls within its range on the next step. Review, then decide."
       />
 
       <div className="mt-[22px] grid grid-cols-2 gap-4 max-[720px]:grid-cols-1">
@@ -96,7 +96,7 @@ export function PreviewStep({ state, score }: { state: GameState; score: GameSco
         </div>
       </div>
 
-      {/* contextual note — leads with the release lesson */}
+      {/* contextual note: leads with the release lesson */}
       <div className="mt-4 flex items-start gap-2.5 rounded-console border border-dashed border-line bg-panel p-[12px_14px] text-[13px] text-slate [&_b]:font-semibold [&_b]:text-ink">
         <InfoIcon size={15} className="mt-px flex-none text-mute" />
         <span>
@@ -108,18 +108,18 @@ export function PreviewStep({ state, score }: { state: GameState; score: GameSco
           ) : projection.overCommitted ? (
             <>
               You&apos;ve committed <b>{projection.committed} pts</b> against a likely{' '}
-              <b>{projection.likely}</b>. Expect some work to not fit when capacity rolls — and a hit
+              <b>{projection.likely}</b>. Expect some work to not fit when capacity rolls, and a hit
               to team health.
             </>
           ) : projection.hasRelease ? (
             <>
               Looks balanced. A <b>Release</b> is included, so finished work will pay out. Capacity
-              still rolls within {projection.lower}–{projection.upper} on the next step.
+              still rolls within {projection.lower}-{projection.upper} on the next step.
             </>
           ) : (
             <>
               Nothing committed yet earns revenue without a <b>Release</b>. Capacity still rolls
-              within {projection.lower}–{projection.upper} on the next step.
+              within {projection.lower}-{projection.upper} on the next step.
             </>
           )}
         </span>
@@ -172,7 +172,7 @@ function ReactionLabel({ direction }: { direction: Direction }) {
   );
 }
 
-/** Deterministic avatar tint from the customer id — stable across renders. */
+/** Deterministic avatar tint from the customer id, stable across renders. */
 function avatarColor(id: string): string {
   const palette = ['#7C3AED', '#0891B2', '#DB2777', '#0F766E', '#B45309', '#4F46E5'];
   let h = 0;

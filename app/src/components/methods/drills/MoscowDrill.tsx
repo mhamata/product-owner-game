@@ -12,7 +12,7 @@ import { useActiveIndustry } from '@/store/industryStore';
 /**
  * Library MoSCoW drill. Buckets + grading come from the shared engine; the item
  * copy is industry-aware (resolves for the home industry, SaaS until the store
- * rehydrates). The correct bucket per item is shared structure — only the
+ * rehydrates). The correct bucket per item is shared structure. Only the
  * feature names change. The graded Console loop lives at /learn/kano-moscow.
  */
 export function MoscowDrill() {

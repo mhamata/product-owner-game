@@ -40,7 +40,7 @@ export function createGame(scenario: Scenario, seed: string): GameState {
 function collectPriorDoneIds(state: GameState): Set<string> {
   // Everything not currently in productBacklog or iterationBacklog counts as shipped/lost.
   // Simpler: we derive from event log of shipped items. For MVP we track via a trivial
-  // sentinel — PBIs removed from both backlogs after resolveIteration via appending to
+  // sentinel. PBIs removed from both backlogs after resolveIteration via appending to
   // an internal list. We infer by scanning state's prior done events (MVP: look at
   // lastOutcome history is lost; we recompute from the scenario-initial backlog minus
   // current backlogs).

@@ -1,5 +1,5 @@
 /**
- * 5-Whys drill — STRUCTURAL CORE (industry-neutral).
+ * 5-Whys drill: STRUCTURAL CORE (industry-neutral).
  *
  * The /methods library keeps the open-ended "write your own whys" version. For
  * the Console lesson we use a DETERMINISTIC variant: the five causes are given
@@ -7,7 +7,7 @@
  *
  * This file owns the answer key: the canonical ORDER of the step ids (surface
  * symptom first → organizational root last). That order is the graded answer
- * and is IDENTICAL for every industry. It carries NO human-readable copy — the
+ * and is IDENTICAL for every industry. It carries NO human-readable copy. The
  * symptom, each cause's `text`, and each cause's `layer` live in
  * `./fiveWhys.display`, one pack per home industry, merged on by
  * `resolveFiveWhysDrill`.

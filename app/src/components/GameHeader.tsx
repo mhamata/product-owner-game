@@ -1,6 +1,6 @@
 'use client';
 /**
- * SUPERSEDED — part of the legacy GameView simulation, kept (not deleted) per
+ * SUPERSEDED: part of the legacy GameView simulation, kept (not deleted) per
  * the repo's no-silent-deletion rule. This is the old simulation's top bar.
  * No route imports this anymore; the Guided Flow sim under
  * src/components/console/sim/ is the live capstone. Safe to remove once the
@@ -95,7 +95,7 @@ export function GameHeader({
             Committed: <strong>{committed}</strong> pts
           </span>
           <span>
-            Capacity: <strong>{capacityRange.lower}</strong>–
+            Capacity: <strong>{capacityRange.lower}</strong>-
             <strong>{capacityRange.upper}</strong> (expected {capacityRange.expected})
           </span>
         </div>

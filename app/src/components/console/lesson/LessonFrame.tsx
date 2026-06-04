@@ -24,7 +24,7 @@ export interface DrillResult {
   /** Did they get it (fully) right? Drives the green/red treatment. */
   correct: boolean;
   /**
-   * Optional 0–1 partial score for the overlay/store. Defaults to 1 when
+   * Optional 0-1 partial score for the overlay/store. Defaults to 1 when
    * `correct`, else 0. The loop always reveals the answer and awards mastery on
    * continue (matching the Value vs Effort exemplar); this is kept for a future
    * phase that scales mastery by first-try accuracy.
@@ -63,7 +63,7 @@ interface LessonFrameProps {
  *
  *  - answer:   the body's interaction is live; CHECK is disabled until canCheck.
  *  - checked:  the body locks + reveals correctness; a slide-up feedback bar
- *              shows Correct!/Not quite (icon + label + explanation — semantic
+ *              shows Correct!/Not quite (icon + label + explanation; semantic
  *              colour ALWAYS paired with icon and text); CHECK morphs to
  *              CONTINUE, coloured by result.
  *  - complete: a restrained "Skill mastered" overlay writes mastery to the

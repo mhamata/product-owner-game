@@ -15,7 +15,7 @@ type IconCmp = ComponentType<{ size?: number; className?: string }>;
 
 /**
  * One small icon per practice modality, reused by the skill cards and the
- * coming-soon lesson. Icons are decorative — every place that renders them
+ * coming-soon lesson. Icons are decorative: every place that renders them
  * also exposes the modality label (tooltip / sr text), never icon-alone.
  */
 const MODALITY_ICON: Record<Modality, IconCmp> = {

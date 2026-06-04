@@ -1,12 +1,12 @@
 import type { ConceptLessonContent } from './types';
 
 /**
- * Associate PM · Writing It Down — "PRDs & Specs".
+ * Associate PM · Writing It Down: "PRDs & Specs".
  * What a good product requirements document contains, and why.
  */
 export const prdsAndSpecs: ConceptLessonContent = {
   skillId: 'prds-and-specs',
-  hook: 'A PRD’s job is to align a team on the problem and the bar for done — not to dictate the solution in pixel-perfect detail.',
+  hook: 'A PRD’s job is to align a team on the problem and the bar for done, not to dictate the solution in pixel-perfect detail.',
   sections: [
     {
       heading: 'What a PRD is for',
@@ -21,12 +21,12 @@ export const prdsAndSpecs: ConceptLessonContent = {
         'Formats vary, but the strong ones answer a consistent set of questions. Notice the order: problem and outcome come first, solution detail comes last.',
       ],
       bullets: [
-        'Problem & context — what user or business problem this solves, and why now.',
-        'Goals & success metrics — the measurable outcome that defines success, plus what’s explicitly out of scope.',
-        'Users & use cases — who this is for and the scenarios it must handle.',
-        'Requirements — what the solution must do (the "what"), ideally as user stories with acceptance criteria.',
-        'Non-goals & constraints — what we’re deliberately not doing; technical, legal, or design limits.',
-        'Open questions & risks — what’s still unknown, so it’s tracked rather than buried.',
+        'Problem & context: what user or business problem this solves, and why now.',
+        'Goals & success metrics: the measurable outcome that defines success, plus what’s explicitly out of scope.',
+        'Users & use cases: who this is for and the scenarios it must handle.',
+        'Requirements: what the solution must do (the "what"), ideally as user stories with acceptance criteria.',
+        'Non-goals & constraints: what we’re deliberately not doing; technical, legal, or design limits.',
+        'Open questions & risks: what’s still unknown, so it’s tracked rather than buried.',
       ],
     },
     {
@@ -41,17 +41,17 @@ export const prdsAndSpecs: ConceptLessonContent = {
       title: (ctx) => `Two openings for the same ${ctx.product} PRD`,
       lines: [
         (ctx) =>
-          `Weak: "Build a settings page with toggles for notifications." It starts at the solution and names no outcome — nobody can tell if it succeeded.`,
+          `Weak: "Build a settings page with toggles for notifications." It starts at the solution and names no outcome, so nobody can tell if it succeeded.`,
         (ctx) =>
           `Strong: "Problem: ${ctx.user}s get too many notifications and disable them entirely, losing a key retention channel. Goal: cut notification opt-outs by 30% this quarter."`,
-        'The strong version states the problem, the measurable outcome, and the bar for done — and leaves the trio free to decide whether the answer is a settings page, smarter defaults, or batching.',
+        'The strong version states the problem, the measurable outcome, and the bar for done, and it leaves the trio free to decide whether the answer is a settings page, smarter defaults, or batching.',
       ],
       takeaway:
         'Open with the problem and the metric; let the solution be the team’s to discover, not the document’s to dictate.',
     },
   ],
   takeaways: [
-    'A PRD aligns the team on the problem, the users, and the measurable definition of success — not on a locked-down UI.',
+    'A PRD aligns the team on the problem, the users, and the measurable definition of success, not on a locked-down UI.',
     'Strong PRDs lead with problem and outcome, name what’s out of scope, and track open questions and risks.',
     'Watch the failure modes: solution-first framing, success with no metric, no non-goals, and over-specified design.',
   ],
@@ -79,7 +79,7 @@ export const prdsAndSpecs: ConceptLessonContent = {
         prompt:
           'A reviewer says a PRD is missing a "non-goals" (out-of-scope) section. Why does that matter?',
         options: [
-          { id: 'a', label: 'It doesn’t — listing what you won’t do is filler.' },
+          { id: 'a', label: 'It doesn’t. Listing what you won’t do is filler.' },
           {
             id: 'b',
             label:

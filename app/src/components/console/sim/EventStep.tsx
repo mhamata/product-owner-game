@@ -21,7 +21,7 @@ import { deriveEventBeats, shortName } from './explain';
 import { EventBeatList } from './EventBeats';
 
 /**
- * STEP 5 · EVENT — telegraphed dilemmas, then explained outcomes.
+ * STEP 5 · EVENT: telegraphed dilemmas, then explained outcomes.
  *
  * Each pending event (state.pendingEvents) is presented as a card with its
  * narrative and option set. Every option shows its engine-authored
@@ -30,7 +30,7 @@ import { EventBeatList } from './EventBeats';
  *
  * Choosing an option does two things:
  *   1. records the chosen option locally so we can show a "BECAUSE …"
- *      confirmation (deriveEventBeats) — every metric the choice moved gets a
+ *      confirmation (deriveEventBeats); every metric the choice moved gets a
  *      plain-language cause→effect line, including Stakeholder Trust (which only
  *      ever moves via events);
  *   2. dispatches respond-to-event, which the engine applies and removes from
@@ -77,7 +77,7 @@ export function EventStep({
         name="Event"
         eyebrow={totalThisSprint > 1 ? `A curveball · ${position} of ${totalThisSprint}` : 'A curveball'}
         title={<span id="event-title">Something just landed on your desk.</span>}
-        sub="Each option shows its likely effect up front. There's no free lunch — pick the trade-off you can live with."
+        sub="Each option shows its likely effect up front. There's no free lunch. Pick the trade-off you can live with."
       />
 
       {justChosen ? (
@@ -141,7 +141,7 @@ function EventDilemma({
               <span className="mono text-[9.5px] uppercase tracking-[0.12em] text-faint">Likely effect</span>
               {/* engine-authored telegraph string, verbatim */}
               <span className="text-[12.5px] leading-[1.5] text-slate">{opt.visibleConsequence}</span>
-              {/* icon hints from the effect kinds — never colour-alone */}
+              {/* icon hints from the effect kinds, never colour-alone */}
               <span className="mt-0.5 flex flex-wrap gap-x-3 gap-y-1">
                 {summarizeEffects(opt.effects, state).map((hint, i) => (
                   <span
@@ -171,7 +171,7 @@ function EventDilemma({
 /**
  * Post-choice confirmation. Echoes what the player picked, then narrates every
  * metric the choice moved as an explained "BECAUSE" beat (deriveEventBeats).
- * This is where Stakeholder Trust — which moves ONLY via events — finally gets
+ * This is where Stakeholder Trust, which moves ONLY via events, finally gets
  * its "because", so the Trust gauge never shifts without a visible reason.
  */
 function EventOutcome({
@@ -202,7 +202,7 @@ function EventOutcome({
         </div>
       ) : (
         <p className="mt-3 text-[13px] leading-[1.5] text-slate">
-          No tracked metric moved on this one — your call shapes the story, not the scoreboard, this
+          No tracked metric moved on this one. Your call shapes the story, not the scoreboard, this
           time.
         </p>
       )}

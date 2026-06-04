@@ -8,7 +8,7 @@ import { useActiveIndustry } from '@/store/industryStore';
  * Library 5-Whys drill. The symptom, canonical chain, and insight come from the
  * shared engine; the content is industry-aware (resolves for the home industry,
  * SaaS until the store rehydrates). The canonical surface-to-root ORDER is
- * shared structure — only the symptom and cause text change. This surface keeps
+ * shared structure. Only the symptom and cause text change. This surface keeps
  * the open-ended "write your own whys → compare with canonical" study model; the
  * deterministic graded variant (order surface → root) lives in the Console loop
  * at /learn/problem-framing.

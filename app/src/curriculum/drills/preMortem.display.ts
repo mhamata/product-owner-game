@@ -3,7 +3,7 @@ import type { FreeTextDrill, FreeTextField } from './types';
 import { preMortemStructure, type PreMortemFieldKey } from './preMortem';
 
 /**
- * Pre-Mortem drill — DISPLAY LAYER (per industry).
+ * Pre-Mortem drill: DISPLAY LAYER (per industry).
  *
  * Human-readable copy ONLY: scenario, prompt, the project brief, the four field
  * labels/placeholders, and the `project` context passed to the grader (the same
@@ -21,7 +21,7 @@ export interface PreMortemDisplay {
   scenario: string;
   prompt: string;
   briefTitle: string;
-  /** The project description — also passed verbatim to the grader as context. */
+  /** The project description; also passed verbatim to the grader as context. */
   project: string;
   fields: Record<PreMortemFieldKey, PreMortemFieldCopy>;
 }
@@ -37,7 +37,7 @@ const LABELS: Record<PreMortemFieldKey, string> = {
 };
 
 // ============================================================================
-// SaaS — original content, ported verbatim from the legacy preMortemDrill.
+// SaaS: original content, ported verbatim from the legacy preMortemDrill.
 // ============================================================================
 const saas: PreMortemDisplay = {
   scenario: 'SaaS · delivery risk',
@@ -68,7 +68,7 @@ const saas: PreMortemDisplay = {
 };
 
 // ============================================================================
-// Fintech — generic expense-management / spend platform (no brokerage/trading).
+// Fintech: generic expense-management / spend platform (no brokerage/trading).
 // ============================================================================
 const fintech: PreMortemDisplay = {
   scenario: 'Fintech · delivery risk',
@@ -99,7 +99,7 @@ const fintech: PreMortemDisplay = {
 };
 
 // ============================================================================
-// Marketplace — two-sided marketplace connecting sellers & buyers.
+// Marketplace: two-sided marketplace connecting sellers & buyers.
 // ============================================================================
 const marketplace: PreMortemDisplay = {
   scenario: 'Marketplace · delivery risk',
@@ -130,7 +130,7 @@ const marketplace: PreMortemDisplay = {
 };
 
 // ============================================================================
-// Consumer — habit-tracking / journaling app.
+// Consumer: habit-tracking / journaling app.
 // ============================================================================
 const consumer: PreMortemDisplay = {
   scenario: 'Consumer · delivery risk',
@@ -161,7 +161,7 @@ const consumer: PreMortemDisplay = {
 };
 
 // ============================================================================
-// Healthcare — clinic-facing healthtech (patient intake & scheduling).
+// Healthcare: clinic-facing healthtech (patient intake & scheduling).
 // ============================================================================
 const healthcare: PreMortemDisplay = {
   scenario: 'Healthcare · delivery risk',

@@ -186,7 +186,7 @@ export function ConceptLesson({
 
       <main className="flex-auto">
         <div className="mx-auto max-w-[720px] px-6">
-          {/* slim progress rail — identical chrome to the drill loop */}
+          {/* slim progress rail, identical chrome to the drill loop */}
           <div className="sticky top-[49px] z-10 flex items-center gap-4 bg-background py-[18px] pb-4 max-[560px]:top-[45px]">
             <div className="h-[7px] flex-auto overflow-hidden rounded-full bg-line">
               <div
@@ -221,7 +221,7 @@ export function ConceptLesson({
               </p>
             )}
 
-            {/* READING BODY — always rendered; the check appends below it. */}
+            {/* READING BODY: always rendered; the check appends below it. */}
             <article className="mt-7 grid gap-7">
               {sections.map((section) => (
                 <section key={section.heading}>
@@ -312,7 +312,7 @@ export function ConceptLesson({
               </ul>
             </div>
 
-            {/* COMPREHENSION CHECK — revealed once the learner advances. */}
+            {/* COMPREHENSION CHECK: revealed once the learner advances. */}
             {phase !== 'read' && (
               <section id="concept-check" className="mt-9 scroll-mt-[110px]">
                 <div className="flex items-center gap-2">
@@ -384,7 +384,7 @@ export function ConceptLesson({
                     </span>
                     <p className="mt-0.5 text-[13px] leading-[1.5] text-ink-2">
                       {allCorrect
-                        ? 'You demonstrated the concept — skill mastered on continue.'
+                        ? 'You demonstrated the concept. Skill mastered on continue.'
                         : 'Review the explanations below, then try the check again.'}
                     </p>
                   </div>
@@ -437,7 +437,7 @@ export function ConceptLesson({
  * One comprehension question. Choice questions render as an accessible radio
  * group (native radios, fully keyboard-operable); fill questions render a text
  * input. After grading (`locked`), the correct answer + "why" are revealed and
- * correctness is shown with colour AND an icon AND text — never colour alone.
+ * correctness is shown with colour AND an icon AND text, never colour alone.
  */
 function CheckQuestionCard({
   question,

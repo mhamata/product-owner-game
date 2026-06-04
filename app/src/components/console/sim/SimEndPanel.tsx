@@ -199,7 +199,7 @@ export function SimEndPanel({
                 The AI retrospective needs an{' '}
                 <code className="mono rounded bg-panel-2 px-1.5 py-0.5 text-[12px] text-ink">ANTHROPIC_API_KEY</code>{' '}
                 in <code className="mono rounded bg-panel-2 px-1.5 py-0.5 text-[12px] text-ink">.env.local</code>.
-                Your full decision log is below — everything the retro would analyze is captured there.
+                Your full decision log is below. Everything the retro would analyze is captured there.
               </p>
             ) : error ? (
               <p className="mt-3 rounded-console border border-bad-line bg-bad-050 p-2.5 text-[12px] text-bad-700">
@@ -207,7 +207,7 @@ export function SimEndPanel({
               </p>
             ) : !loading ? (
               <p className="mt-3 text-[13px] leading-[1.6] text-mute">
-                Generate a senior-PM retrospective of your run — strengths, growth edges, and an
+                Generate a senior-PM retrospective of your run: strengths, growth edges, and an
                 interview-ready STAR story drawn from your decisions.
               </p>
             ) : null}

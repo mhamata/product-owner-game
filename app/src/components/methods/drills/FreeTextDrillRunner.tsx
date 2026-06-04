@@ -10,7 +10,7 @@ import { GradeDisplay, useLLMGrade } from './LLMGrade';
  * industry-aware `FreeTextDrill`: the brief, prompt, per-field labels +
  * placeholders, live preview, the string sent to the grader, and the persona/
  * context all come from the shared config (`src/curriculum/drills`). Nothing
- * here is industry-specific — the caller resolves the drill for the home
+ * here is industry-specific; the caller resolves the drill for the home
  * industry and hands it down, so /methods and /learn render the same content.
  *
  * Grading is unchanged: it POSTs to /api/grade via `useLLMGrade(drill.drillId)`
@@ -37,7 +37,7 @@ export function FreeTextDrillRunner({ drill }: { drill: FreeTextDrill }) {
 
   return (
     <div className="space-y-4">
-      {/* brief / assignment / persona — sourced from the resolved config */}
+      {/* brief / assignment / persona, sourced from the resolved config */}
       <div className="rounded-console border border-line bg-paper p-3">
         <div className="mono mb-1 text-[10.5px] uppercase tracking-[0.12em] text-mute">
           {drill.briefTitle}

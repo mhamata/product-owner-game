@@ -5,7 +5,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { DEFAULT_INDUSTRY, type IndustryId } from '@/curriculum/industries';
 
 /**
- * The learner's "home industry" — the theme applied to the capstone simulation.
+ * The learner's "home industry": the theme applied to the capstone simulation.
  *
  * Persisted (so the choice sticks across sessions) and SSR-safe: like the learn
  * store, a `hasHydrated` flag flips true only after rehydration, so components
@@ -51,7 +51,7 @@ export const useIndustryStore = create<IndustryStore>()(
 /**
  * The active home industry, read SSR-safely. Returns `DEFAULT_INDUSTRY` on the
  * server and the first client paint (before the persisted store rehydrates),
- * then the learner's stored choice — so industry-themed content never causes a
+ * then the learner's stored choice, so industry-themed content never causes a
  * hydration mismatch. This is the one-liner SimRunner and the lesson/methods
  * surfaces share for resolving industry-aware drills.
  */

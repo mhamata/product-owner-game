@@ -7,7 +7,7 @@ import { SIM_STEPS } from './steps';
 /**
  * The sticky stepper progress bar. A step is "done" once we're past it,
  * "current" when active. Steps are clickable only when `canNavigateTo` allows
- * it — back-navigation is permitted inside the planning window (Plan ⇄ Preview)
+ * it; back-navigation is permitted inside the planning window (Plan ⇄ Preview)
  * but never after the sprint is committed, because the engine is one-directional.
  * Keyboard: each navigable node is a button with a visible focus ring.
  */

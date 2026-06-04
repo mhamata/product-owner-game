@@ -9,7 +9,7 @@ import { SimScoreboard, type DimensionDeltas } from './SimScoreboard';
 /**
  * The persistent context rail, always visible across every step. It surfaces
  * the three things the old sim never showed during play:
- *   1. the MISSION — scenario.summary + the revenue target,
+ *   1. the MISSION: scenario.summary + the revenue target,
  *   2. a REVENUE PROGRESS meter (economy.revenue / targetRevenue),
  *   3. the live 5-dimension SCOREBOARD (calculateScore, passed in fresh).
  */

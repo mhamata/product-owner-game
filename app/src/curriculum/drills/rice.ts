@@ -1,14 +1,14 @@
 import type { ScoreFactor, ScoreRow } from './types';
 
 /**
- * RICE drill — STRUCTURAL CORE (industry-neutral).
+ * RICE drill: STRUCTURAL CORE (industry-neutral).
  *
  * RICE = (Reach × Impact × Confidence) / Effort. Higher = higher priority.
  *
  * This file owns every answer-bearing value: the row ids, the
  * reach/impact/confidence/effort NUMBERS, the `score` formula, and the factor
  * metadata (label + display format, which are the same maths for every
- * industry). It carries NO human-readable feature copy — that lives in
+ * industry). It carries NO human-readable feature copy; that lives in
  * `./rice.display`, one pack per home industry, merged back on by
  * `resolveRiceDrill`. Because the numbers never change, the correct ranking is
  * provably identical across industries.
@@ -18,7 +18,7 @@ import type { ScoreFactor, ScoreRow } from './types';
  * feature), so halving it tanks the score.
  */
 
-/** The structural RICE row ids — the keys every display pack must cover. */
+/** The structural RICE row ids: the keys every display pack must cover. */
 export type RiceRowId = 'sso' | 'templates' | 'audit-log';
 
 /** A RICE row with its display strings (`name`, `context`, `reasoning`) removed. */

@@ -5,19 +5,19 @@
  *
  * Each drill follows the same structural/display split as the capstone sim (see
  * `@/scenarios/buildScenario`):
- *   • `./<drill>.ts`         — the industry-NEUTRAL answer-bearing structure
- *                              (correct option / ranking / categories / sizes /
- *                              chain order, plus the answer-determining numbers
- *                              and labels). Identical across all industries.
- *   • `./<drill>.display.ts` — five per-industry DISPLAY packs (human strings
- *                              only) + a `resolve<Drill>(industry)` that merges
- *                              the chosen pack onto the shared structure.
+ *   • `./<drill>.ts`:         the industry-NEUTRAL answer-bearing structure
+ *                             (correct option / ranking / categories / sizes /
+ *                             chain order, plus the answer-determining numbers
+ *                             and labels). Identical across all industries.
+ *   • `./<drill>.display.ts`: five per-industry DISPLAY packs (human strings
+ *                             only) + a `resolve<Drill>(industry)` that merges
+ *                             the chosen pack onto the shared structure.
  *
  * Because the structure is shared, the graded answer is provably identical for
  * every home industry; only the feature names / framing change.
  *
  * For convenience and backward compatibility, the un-suffixed `…Drill` exports
- * below are the DEFAULT-industry (SaaS) assemblies — the original content, now
+ * below are the DEFAULT-industry (SaaS) assemblies: the original content, now
  * produced through the resolver. Industry-aware surfaces should call the
  * `resolve…Drill(industry)` functions instead.
  */

@@ -1,7 +1,7 @@
 'use client';
 /**
- * SUPERSEDED — part of the legacy GameView simulation, kept (not deleted) per
- * the repo's no-silent-deletion rule. This is the old simulation's review panel — replaced by the Ship/Outcome steps.
+ * SUPERSEDED: part of the legacy GameView simulation, kept (not deleted) per
+ * the repo's no-silent-deletion rule. This is the old simulation's review panel, replaced by the Ship/Outcome steps.
  * No route imports this anymore; the Guided Flow sim under
  * src/components/console/sim/ is the live capstone. Safe to remove once the
  * old flow is confirmed retired.
@@ -33,7 +33,7 @@ export function ReviewPanel({
   return (
     <section className="flex flex-col min-h-0 bg-white rounded-lg border">
       <header className="px-3 py-2 border-b">
-        <h2 className="text-sm font-semibold">Iteration {o.iteration} — Review</h2>
+        <h2 className="text-sm font-semibold">Iteration {o.iteration}: Review</h2>
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 text-sm">
@@ -41,7 +41,7 @@ export function ReviewPanel({
           <Metric
             label="Velocity"
             value={`${o.capacityRolled} pts`}
-            sub={`range ${o.capacityRange.lower}–${o.capacityRange.upper}`}
+            sub={`range ${o.capacityRange.lower}-${o.capacityRange.upper}`}
           />
           <Metric
             label="Shipped"
@@ -126,7 +126,7 @@ export function ReviewPanel({
         {hasPendingEvents && (
           <div className="p-2 bg-amber-50 border border-amber-200 rounded text-xs">
             ⚡ {state.pendingEvents.length} event
-            {state.pendingEvents.length > 1 ? 's' : ''} pending — respond before advancing.
+            {state.pendingEvents.length > 1 ? 's' : ''} pending. Respond before advancing.
           </div>
         )}
       </div>

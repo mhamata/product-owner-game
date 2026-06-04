@@ -31,7 +31,7 @@ import type { DimensionDeltas } from './SimScoreboard';
 import { useHydrated } from './useHydrated';
 
 /**
- * SimRunner — the Guided Flow simulation, a linear stepper that REPLACES the old
+ * SimRunner: the Guided Flow simulation, a linear stepper that REPLACES the old
  * 3-column GameView on /play/[scenarioId].
  *
  * The engine is the single source of truth. The runner:
@@ -44,7 +44,7 @@ import { useHydrated } from './useHydrated';
  * Step ↔ phase ↔ action map:
  *   Plan      planning   add/remove-to-iteration, place-release-card
  *   Preview   planning   (read-only projection); CTA → commit-iteration + execute-iteration
- *   Ship      review     (reads lastOutcome — already resolved); animates the roll
+ *   Ship      review     (reads lastOutcome, already resolved); animates the roll
  *   Outcome   review     reads lastOutcome; CTA → advance cursor
  *   Event     review     respond-to-event (gated until pendingEvents empty)
  *   Debrief   review     CTA → advance-iteration (→ planning, or → complete)
@@ -101,7 +101,7 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
 
   // Reset the cursor to Plan whenever a fresh planning phase begins (new sprint
   // or new game). This uses React's "adjust state during render" pattern keyed
-  // by phase+iteration — no effect, so no flash and no setState-in-effect.
+  // by phase+iteration, so no effect, no flash, and no setState-in-effect.
   const planKey = phase === 'planning' ? `plan-${iteration}` : '';
   const [lastPlanKey, setLastPlanKey] = useState('');
   if (planKey && planKey !== lastPlanKey) {
@@ -127,7 +127,7 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
   // The rendered step is a pure function of (step cursor, engine phase,
   // iteration); any of those changing advances the panel. On each transition
   // (but NOT the initial mount), move keyboard focus to the new step's heading
-  // and scroll the panel to the top — so screen-reader and keyboard users are
+  // and scroll the panel to the top, so screen-reader and keyboard users are
   // told the page advanced instead of being stranded on the dock button.
   const stepContainerRef = useRef<HTMLDivElement>(null);
   const didMountRef = useRef(false);

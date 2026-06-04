@@ -3,7 +3,7 @@ import { everySkill, getSkill } from '@/curriculum/data';
 import { LessonRouter } from '@/components/console/lesson/LessonRouter';
 
 export async function generateStaticParams() {
-  // Every skill — ladder + specialization tracks — gets a static lesson route.
+  // Every skill (ladder + specialization tracks) gets a static lesson route.
   // `ready` skills render their drill; `coming-soon` skills (incl. all tracks)
   // render the placeholder via the LessonRouter's default branch.
   return everySkill.map((s) => ({ skillId: s.id }));
@@ -17,7 +17,7 @@ export async function generateMetadata({
   const { skillId } = await params;
   const skill = getSkill(skillId);
   return {
-    title: skill ? `${skill.title} — PRAXIS` : 'Skill not found',
+    title: skill ? `${skill.title} | PRAXIS` : 'Skill not found',
     description: skill
       ? `Practice ${skill.title} in the PRAXIS curriculum.`
       : undefined,

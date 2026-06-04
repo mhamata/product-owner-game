@@ -30,7 +30,7 @@ export interface ClassificationItem<K extends string> {
   name: string;
   /** The single correct bucket for this item. */
   correct: K;
-  /** Why this is the right bucket — shown in feedback. */
+  /** Why this is the right bucket; shown in feedback. */
   why: string;
 }
 
@@ -76,7 +76,7 @@ export interface ScoreRow {
   context: string;
   /** Raw input factors keyed by factor id (e.g. reach, impact…). */
   factors: Record<string, number>;
-  /** Why this row lands where it does — shown in feedback. */
+  /** Why this row lands where it does; shown in feedback. */
   reasoning: string;
 }
 
@@ -84,7 +84,7 @@ export interface ScoreRow {
 export interface ScoreFactor {
   key: string;
   label: string;
-  /** 'int' | 'percent' (0..1 shown as %) | 'months' — display only. */
+  /** 'int' | 'percent' (0..1 shown as %) | 'months'. Display only. */
   format: 'int' | 'percent' | 'months';
 }
 
@@ -100,7 +100,7 @@ export interface ScoreRankDrill {
   insight: string;
 }
 
-/** The rows sorted highest-score-first — the canonical correct ranking. */
+/** The rows sorted highest-score-first: the canonical correct ranking. */
 export function rankRows(drill: ScoreRankDrill): ScoreRow[] {
   return [...drill.rows].sort((a, b) => drill.score(b) - drill.score(a));
 }
@@ -183,7 +183,7 @@ export interface CauseStep {
   id: string;
   /** The cause statement. */
   text: string;
-  /** Which layer this cause sits at — shown after grading. */
+  /** Which layer this cause sits at; shown after grading. */
   layer: string;
 }
 
@@ -217,7 +217,7 @@ export function gradeSequencing(
 /* ------------------------------------------------------------------
    Free-text drills (JTBD, User Interviews/Mom Test, Pre-Mortem, PR-FAQ):
    the learner writes prose, which an LLM grades via /api/grade. Unlike the
-   deterministic drills above there is no canonical answer — grading is the
+   deterministic drills above there is no canonical answer; grading is the
    model's structured rubric verdict. The data here is still React-free
    (strings + pure compose/validate fns) so the same definition drives the
    Console lesson; the network call lives in the lesson component.
@@ -239,11 +239,11 @@ export interface FreeTextField {
   rows?: number;
 }
 
-/** Values keyed by field key — the live state of the form. */
+/** Values keyed by field key: the live state of the form. */
 export type FreeTextValues = Record<string, string>;
 
 export interface FreeTextDrill {
-  /** Grade-route key — selects the rubric server-side. */
+  /** Grade-route key: selects the rubric server-side. */
   drillId: FreeTextDrillId;
   /** One-line generic scenario framing, e.g. "SaaS · discovery". */
   scenario: string;

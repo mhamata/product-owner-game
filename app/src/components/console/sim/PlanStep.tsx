@@ -22,7 +22,7 @@ import { projectIteration } from './projection';
 const effortOf = (p: PBI) => p.effortRevealed ?? p.effort;
 
 /**
- * STEP 1 · PLAN — choose the sprint backlog.
+ * STEP 1 · PLAN: choose the sprint backlog.
  *
  * Wiring to the engine (no game logic lives here):
  *   - toggling a normal item dispatches add-to-iteration / remove-from-iteration
@@ -87,11 +87,11 @@ export function PlanStep({
         name="Plan"
         eyebrow="Commit your sprint"
         title={<span id="plan-title">What will the team build this sprint?</span>}
-        sub="Pick the work to commit. Watch capacity and the live forecast as you go — you can't build everything."
+        sub="Pick the work to commit. Watch capacity and the live forecast as you go. You can't build everything."
       />
 
       <Coachmark id="capacity" tag="Capacity" active={firstSprint}>
-        Your team&apos;s capacity is a <b>range, not a promise</b> — you can&apos;t build everything.
+        Your team&apos;s capacity is a <b>range, not a promise</b>. You can&apos;t build everything.
         Commit close to the likely line and leave a little slack.
       </Coachmark>
 
@@ -104,7 +104,7 @@ export function PlanStep({
               Capacity this sprint
             </span>
             <span className="mono tnum text-[13px] font-semibold text-ink">
-              {breakdown.lower}–{breakdown.upper} pts · likely{' '}
+              {breakdown.lower}-{breakdown.upper} pts · likely{' '}
               <b className="text-accent">{breakdown.expected}</b>
             </span>
           </div>
@@ -185,7 +185,7 @@ export function PlanStep({
             <span className="text-[12.5px] text-faint">Tap to add · effort &amp; telegraphed impact shown</span>
           </div>
 
-          <div role="group" aria-label="Backlog items — tap to add to the sprint">
+          <div role="group" aria-label="Backlog items, tap to add to the sprint">
             {pickerItems.map(({ pbi, selected }) => (
               <BacklogItem
                 key={pbi.id}

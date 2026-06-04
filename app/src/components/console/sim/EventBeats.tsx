@@ -6,7 +6,7 @@ import type { OutcomeBeat } from './explain';
 /**
  * Static renderer for a list of explained "BECAUSE" beats. Visually identical to
  * the Outcome step's animated beat card, but shown all at once (no reveal
- * tween) — used by the Event step's post-choice confirmation, where the player
+ * tween), used by the Event step's post-choice confirmation, where the player
  * has just acted and wants the full consequence read immediately.
  *
  * Kept as its own small component so the Outcome and Event steps share one beat

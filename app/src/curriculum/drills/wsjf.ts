@@ -1,23 +1,23 @@
 import type { ScoreFactor, ScoreRow } from './types';
 
 /**
- * Cost of Delay → WSJF drill — STRUCTURAL CORE (industry-neutral).
+ * Cost of Delay → WSJF drill: STRUCTURAL CORE (industry-neutral).
  *
  * WSJF = (Value + Time Criticality + Risk Reduction) / Job Size.
  * Factors use the Fibonacci scale (1,2,3,5,8,13,21). Higher = do sooner.
  *
  * This file owns every answer-bearing value: the row ids, the four Fibonacci
  * factor NUMBERS per row, the `score` formula, and the factor metadata. It
- * carries NO human-readable copy — that lives in `./wsjf.display`, one pack per
+ * carries NO human-readable copy; that lives in `./wsjf.display`, one pack per
  * home industry, merged on by `resolveWsjfDrill`. The numbers (and therefore
  * the correct ranking) are identical for every industry.
  *
  * Teaching point preserved across the re-skin: the big platform rewrite has the
- * highest raw value but its enormous size kills the ratio — small-but-urgent
+ * highest raw value but its enormous size kills the ratio. Small-but-urgent
  * beats large-but-transformative on a short horizon.
  */
 
-/** The structural WSJF row ids — the keys every display pack must cover. */
+/** The structural WSJF row ids: the keys every display pack must cover. */
 export type WsjfRowId = 'compliance' | 'dashboard' | 'cost-optimizer' | 'rewrite';
 
 /** A WSJF row with its display strings removed. */

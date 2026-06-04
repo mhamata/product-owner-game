@@ -1,7 +1,7 @@
 // Non-mutating forecast/projection for the Plan + Preview steps.
 //
 // This computes what the player is ABOUT to commit and a telegraphed,
-// best-effort guess at the consequences — WITHOUT running the engine. It reads
+// best-effort guess at the consequences, WITHOUT running the engine. It reads
 // the live iterationBacklog and mirrors only the *shape* of the engine's rules
 // (commit ratio for morale, "release required for revenue", "tech work pays down
 // debt") so the player can preview a trade-off before committing. The authoritative
@@ -39,7 +39,7 @@ export interface SimProjection {
 const effortOf = (p: PBI) => p.effortRevealed ?? p.effort;
 
 /**
- * Build the live forecast for the current iteration backlog. Pure read — never
+ * Build the live forecast for the current iteration backlog. Pure read; never
  * dispatches or mutates.
  */
 export function projectIteration(state: GameState): SimProjection {
@@ -52,7 +52,7 @@ export function projectIteration(state: GameState): SimProjection {
   // Revenue projection: a product earns only when ALL its PBIs are done across
   // iterations AND a release ships. We can't know cross-iteration completion
   // here, so we project the optimistic "if this all ships and releases" figure
-  // from the customers the committed customer-work would satisfy — clearly
+  // from the customers the committed customer-work would satisfy, clearly
   // framed in the UI as "if released", never as a promise.
   const servedIds = new Set<string>();
   for (const p of customerWork) for (const cid of p.satisfies) servedIds.add(cid);
@@ -73,13 +73,13 @@ export function projectIteration(state: GameState): SimProjection {
   // a high completion ratio is likely → morale lift.
   const overCommitted = committed > range.expected;
   let teamImpact: SimProjection['teamImpact'] = 'steady';
-  let teamNote = 'Team steady — a realistic commitment.';
+  let teamNote = 'Team steady. A realistic commitment.';
   if (overCommitted) {
     teamImpact = 'down';
-    teamNote = `Packed sprint — ${committed} pts against a likely ${range.expected}. Expect spillover and a morale hit.`;
+    teamNote = `Packed sprint: ${committed} pts against a likely ${range.expected}. Expect spillover and a morale hit.`;
   } else if (committed > 0 && committed <= range.lower) {
     teamImpact = 'up';
-    teamNote = 'Comfortable load — the team is likely to finish and gain momentum.';
+    teamNote = 'Comfortable load: the team is likely to finish and gain momentum.';
   }
 
   return {
@@ -98,7 +98,7 @@ export function projectIteration(state: GameState): SimProjection {
 }
 
 /* ============================================================
-   PREVIEW — projected directional movement per scoreboard
+   PREVIEW: projected directional movement per scoreboard
    dimension, and per-customer reactions. Directional only
    (up / down / steady), framed in the UI as a projection.
    Mirrors the *shape* of the engine rules without running them.
@@ -163,7 +163,7 @@ export function previewForecast(state: GameState): PreviewForecast {
     .map((c) => {
       const name = shortName(c.name);
       if (servedIfReleased.has(c.id)) {
-        return { id: c.id, name, direction: 'up' as const, why: `Work they need ships and releases — ${name} feels the value.` };
+        return { id: c.id, name, direction: 'up' as const, why: `Work they need ships and releases. ${name} feels the value.` };
       }
       if (touchedAtAll.has(c.id)) {
         return {
@@ -172,7 +172,7 @@ export function previewForecast(state: GameState): PreviewForecast {
           direction: proj.hasRelease ? ('up' as const) : ('steady' as const),
           why: proj.hasRelease
             ? `${name}'s feature ships and releases this sprint.`
-            : `${name}'s feature is being built — but only counts once you release it.`,
+            : `${name}'s feature is being built, but only counts once you release it.`,
         };
       }
       return { id: c.id, name, direction: 'down' as const, why: `Nothing this sprint addresses ${name}'s needs.` };
@@ -182,7 +182,7 @@ export function previewForecast(state: GameState): PreviewForecast {
 }
 
 /* ============================================================
-   PROJECTED RAIL DELTAS — turn the directional preview forecast
+   PROJECTED RAIL DELTAS: turn the directional preview forecast
    into modest signed nudges for the persistent rail's gauge
    chips on Plan / Preview. These are HINTS, not promises: the
    value-delivered nudge is grounded in the real projected
@@ -196,7 +196,7 @@ const HINT_STEP = 4;
 
 /**
  * Projected per-dimension deltas for the Plan/Preview rail. Pure read; mirrors
- * only the SHAPE of the engine rules (via previewForecast) — it never runs the
+ * only the SHAPE of the engine rules (via previewForecast); it never runs the
  * engine or claims a precise outcome.
  */
 export function projectedDimensionDeltas(
@@ -209,7 +209,7 @@ export function projectedDimensionDeltas(
     forecast.dimensions.find((d) => d.key === key)?.direction ?? 'steady';
 
   // Value delivered: ground the hint in the actual projected revenue (only a
-  // release converts finished work), expressed on the 0–100 score scale.
+  // release converts finished work), expressed on the 0-100 score scale.
   const valueHint =
     proj.hasRelease && proj.revenueIfReleased > 0 && scenario.targetRevenue > 0
       ? Math.min(100, (proj.revenueIfReleased / scenario.targetRevenue) * 100)

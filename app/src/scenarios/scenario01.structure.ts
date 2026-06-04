@@ -9,21 +9,21 @@ import type {
 } from '@/engine/types';
 
 /**
- * Scenario 01 — STRUCTURAL CORE (industry-neutral).
+ * Scenario 01: STRUCTURAL CORE (industry-neutral).
  *
  * This file owns every load-bearing value the engine consumes: ids, efforts,
  * values, `satisfies`/`requires` wiring, `productId`s, PBI/event `kind`s, all
  * event `effect`s, triggers, weights, and every team/tech/economy number, plus
- * `totalIterations` and `targetRevenue`. None of it is industry-specific — the
+ * `totalIterations` and `targetRevenue`. None of it is industry-specific. The
  * SAME structure powers all five home industries, so game balance is provably
  * identical across them. Only human-readable copy varies, and that lives in
  * `./scenario01.display`.
  *
- * MAGIC IDS — referenced by string in the engine, so they must never change:
+ * MAGIC IDS, referenced by string in the engine, so they must never change:
  *   • `automated-tests`   (engine/techDebt.ts pays down debt; capacity.ts cuts variance)
  *   • `dod-check`         (engine/techDebt.ts: a Definition-of-Done gate in `requires`)
  *   • `refactor-core`, `observability`, `dev-team-training-bundle`,
- *     `framework-upgrade-bundle` are also engine-recognised — none appear here,
+ *     `framework-upgrade-bundle` are also engine-recognised. None appear here,
  *     but the contract holds: any tech id added later that matches one of these
  *     gains its engine effect. Of the recognised set, only `automated-tests`
  *     is present in this scenario.
@@ -32,7 +32,7 @@ import type {
  * by methods/data.ts (`relatedScenarios`) and the home-page capstone link.
  */
 
-/** The structural id this scenario assembles to. Load-bearing FK — do not change. */
+/** The structural id this scenario assembles to. Load-bearing FK; do not change. */
 export const SCENARIO_01_ID = '01-canadian-launch';
 
 /**
@@ -48,7 +48,7 @@ export type StructuralCustomer = Omit<CustomerState, 'name'>;
 export type StructuralStakeholder = Omit<StakeholderState, 'name' | 'role'>;
 
 /**
- * An event option without its display strings. `effects` is fully structural —
+ * An event option without its display strings. `effects` is fully structural,
  * including any `add-pbi` whose PBI is a {@link StructuralPBI} (title attached
  * per industry).
  */

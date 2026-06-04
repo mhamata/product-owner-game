@@ -3,20 +3,20 @@ import type { SequencingDrill } from './types';
 import { fiveWhysStructure, type FiveWhysStepId } from './fiveWhys';
 
 /**
- * 5-Whys drill — DISPLAY LAYER (per industry).
+ * 5-Whys drill: DISPLAY LAYER (per industry).
  *
  * Human-readable copy ONLY. The canonical surface-to-root ORDER lives in
  * `./fiveWhys` and is the graded answer; it never changes. Mirrors
  * `@/scenarios/scenario01.display`.
  *
- * Structural slots — every pack's chain must descend through the SAME five
+ * Structural slots. Every pack's chain must descend through the SAME five
  * layers so the canonical order stays correct (and the `layer` labels are kept
  * identical across industries because they ARE the teaching point):
- *   • `s1` — Technical cause (not the root): an immediate technical trigger.
- *   • `s2` — Process gap: the change slipped through review unnoticed.
- *   • `s3` — Process cause: no automated coverage for that area.
- *   • `s4` — Organizational cause: no clear owner of that coverage.
- *   • `s5` — Root (organizational): it was launched as a side project, never
+ *   • `s1`: Technical cause (not the root): an immediate technical trigger.
+ *   • `s2`: Process gap: the change slipped through review unnoticed.
+ *   • `s3`: Process cause: no automated coverage for that area.
+ *   • `s4`: Organizational cause: no clear owner of that coverage.
+ *   • `s5`: Root (organizational): it was launched as a side project, never
  *            staffed as an owned service. The fix is ownership + process.
  *
  * Keys derive from the structural step ids → the compiler forces full coverage.
@@ -25,7 +25,7 @@ import { fiveWhysStructure, type FiveWhysStepId } from './fiveWhys';
 export interface CauseStepDisplay {
   /** The cause statement. */
   text: string;
-  /** Which layer this cause sits at — shown after grading. */
+  /** Which layer this cause sits at; shown after grading. */
   layer: string;
 }
 
@@ -38,22 +38,22 @@ export interface FiveWhysDisplay {
 }
 
 // The layer labels describe DEPTH (the teaching point) and are intentionally
-// identical in every pack — only the symptom and cause text are re-themed.
+// identical in every pack; only the symptom and cause text are re-themed.
 const LAYERS: Record<FiveWhysStepId, string> = {
-  s1: 'Technical cause — not the root',
-  s2: 'Process gap — getting closer',
+  s1: 'Technical cause, not the root',
+  s2: 'Process gap, getting closer',
   s3: 'Process cause',
   s4: 'Organizational cause',
-  s5: 'Root — organizational. The fix is ownership + process, not a one-line patch.',
+  s5: 'Root: organizational. The fix is ownership + process, not a one-line patch.',
 };
 
 const PROMPT =
   'Order these five causes from the surface symptom down to the true root. Each "why" should go one level deeper than the last.';
 const INSIGHT =
-  'The hardest discipline is not stopping at the first human-error cause ("the reviewer missed it"). Real roots are almost always organizational or process-level — if your last why is still technical, go deeper.';
+  'The hardest discipline is not stopping at the first human-error cause ("the reviewer missed it"). Real roots are almost always organizational or process-level: if your last why is still technical, go deeper.';
 
 // ============================================================================
-// SaaS — original content, ported verbatim from the legacy fiveWhysDrill.
+// SaaS: original content, ported verbatim from the legacy fiveWhysDrill.
 // ============================================================================
 const saas: FiveWhysDisplay = {
   scenario: 'SaaS · post-incident review',
@@ -85,7 +85,7 @@ const saas: FiveWhysDisplay = {
 };
 
 // ============================================================================
-// Fintech — generic expense-management / spend platform (no brokerage/trading).
+// Fintech: generic expense-management / spend platform (no brokerage/trading).
 // ============================================================================
 const fintech: FiveWhysDisplay = {
   scenario: 'Fintech · post-incident review',
@@ -117,7 +117,7 @@ const fintech: FiveWhysDisplay = {
 };
 
 // ============================================================================
-// Marketplace — two-sided marketplace connecting sellers & buyers.
+// Marketplace: two-sided marketplace connecting sellers & buyers.
 // ============================================================================
 const marketplace: FiveWhysDisplay = {
   scenario: 'Marketplace · post-incident review',
@@ -149,7 +149,7 @@ const marketplace: FiveWhysDisplay = {
 };
 
 // ============================================================================
-// Consumer — habit-tracking / journaling app.
+// Consumer: habit-tracking / journaling app.
 // ============================================================================
 const consumer: FiveWhysDisplay = {
   scenario: 'Consumer · post-incident review',
@@ -181,7 +181,7 @@ const consumer: FiveWhysDisplay = {
 };
 
 // ============================================================================
-// Healthcare — clinic-facing healthtech (patient intake & scheduling).
+// Healthcare: clinic-facing healthtech (patient intake & scheduling).
 // ============================================================================
 const healthcare: FiveWhysDisplay = {
   scenario: 'Healthcare · post-incident review',
@@ -232,7 +232,7 @@ export function resolveFiveWhysDrill(industry: IndustryId): SequencingDrill {
     scenario: display.scenario,
     symptom: display.symptom,
     prompt: display.prompt,
-    // Build steps IN the canonical structural order — this order is the answer.
+    // Build steps IN the canonical structural order; this order is the answer.
     steps: fiveWhysStructure.order.map((id) => {
       const d = display.steps[id];
       return { id, text: d.text, layer: d.layer };

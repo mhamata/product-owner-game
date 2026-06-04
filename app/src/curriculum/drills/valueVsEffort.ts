@@ -1,11 +1,11 @@
 /**
- * Value-vs-Effort drill — STRUCTURAL CORE (industry-neutral).
+ * Value-vs-Effort drill: STRUCTURAL CORE (industry-neutral).
  *
  * The "Value vs Effort" lesson asks the learner to pick the best QUICK WIN
  * (high value, low effort) from three features. This file owns the answer key:
  * the per-feature {value, effort} labels (which determine the correct pick), the
  * option ids, and `CORRECT_OPTION_ID`. It carries NO human-readable feature
- * copy — the feature names and option labels live in `./valueVsEffort.display`,
+ * copy. The feature names and option labels live in `./valueVsEffort.display`,
  * one pack per home industry, merged on by `resolveValueVsEffortDrill`.
  *
  * The drill content used to be inlined in
@@ -13,7 +13,7 @@
  * structural/display split as every other drill so the lesson can re-skin per
  * industry without ever changing which feature is the quick win.
  *
- * Structural slots (fixed value/effort — the answer never moves):
+ * Structural slots (fixed value/effort, the answer never moves):
  *   • `A` → HIGH value, LOW effort  → the quick win, the CORRECT pick.
  *   • `B` → HIGH value, HIGH effort → a "big bet".
  *   • `C` → LOW value,  LOW effort  → "maybe later".

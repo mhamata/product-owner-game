@@ -4,8 +4,9 @@
  * Every authored concept lesson is collected here and keyed by its `skillId`, so
  * the lesson router can ask "does this skill have a teaching lesson?" with a
  * single lookup. Adding a lesson is two lines: import the content file and list
- * it in `LESSON_CONTENT`. The runtime check below guarantees each lesson's
- * `skillId` is unique and self-consistent.
+ * it in `ALL_LESSONS`. The grouping and order below mirror `curriculum/data.ts`
+ * (level → unit) so this file can be scanned against the ladder. The runtime
+ * check in `LESSON_CONTENT` guarantees each lesson's `skillId` is unique.
  */
 import type { ConceptLessonContent } from './types';
 
@@ -25,7 +26,43 @@ import { backlogSprintsKanban } from './backlog-sprints-kanban';
 import { storyMapping } from './story-mapping';
 import { qualityAndDelivery } from './quality-and-delivery';
 
-/** Every authored concept lesson, in curriculum order. */
+// Product Manager
+import { opportunitySolutionTrees } from './opportunity-solution-trees';
+import { aarrrFunnel } from './aarrr-funnel';
+import { activationRetention } from './activation-retention';
+import { northStar } from './north-star';
+import { abTestDesign } from './ab-test-design';
+import { readingResults } from './reading-results';
+import { roadmapping } from './roadmapping';
+import { positioningBasics } from './positioning-basics';
+
+// Senior PM
+import { productStrategyStack } from './product-strategy-stack';
+import { productVision } from './product-vision';
+import { growthLoopsRetention } from './growth-loops-retention';
+import { monetizationPricing } from './monetization-pricing';
+import { stakeholderManagement } from './stakeholder-management';
+import { influenceWithoutAuthority } from './influence-without-authority';
+import { managingUp } from './managing-up';
+
+// Staff / Principal PM
+import { judgmentUnderAmbiguity } from './judgment-under-ambiguity';
+import { framingProblems } from './framing-problems';
+import { hardTradeoffs } from './hard-tradeoffs';
+import { multiTeamStrategy } from './multi-team-strategy';
+import { platformPortfolioThinking } from './platform-portfolio-thinking';
+import { forceMultiplierInfluence } from './force-multiplier-influence';
+
+// Director / VP Product
+import { empoweredTeams } from './empowered-teams';
+import { orgDesign } from './org-design';
+import { hiringCoachingPms } from './hiring-coaching-pms';
+import { productOperatingModel } from './product-operating-model';
+import { pnlBusinessAcumen } from './pnl-business-acumen';
+import { productCulture } from './product-culture';
+import { cpoTransition } from './cpo-transition';
+
+/** Every authored concept lesson, in curriculum (level → unit) order. */
 export const ALL_LESSONS: ConceptLessonContent[] = [
   // Foundations
   whatPmIs,
@@ -41,6 +78,38 @@ export const ALL_LESSONS: ConceptLessonContent[] = [
   backlogSprintsKanban,
   storyMapping,
   qualityAndDelivery,
+  // Product Manager
+  opportunitySolutionTrees,
+  aarrrFunnel,
+  activationRetention,
+  northStar,
+  abTestDesign,
+  readingResults,
+  roadmapping,
+  positioningBasics,
+  // Senior PM
+  productStrategyStack,
+  productVision,
+  growthLoopsRetention,
+  monetizationPricing,
+  stakeholderManagement,
+  influenceWithoutAuthority,
+  managingUp,
+  // Staff / Principal PM
+  judgmentUnderAmbiguity,
+  framingProblems,
+  hardTradeoffs,
+  multiTeamStrategy,
+  platformPortfolioThinking,
+  forceMultiplierInfluence,
+  // Director / VP Product
+  empoweredTeams,
+  orgDesign,
+  hiringCoachingPms,
+  productOperatingModel,
+  pnlBusinessAcumen,
+  productCulture,
+  cpoTransition,
 ];
 
 /** skillId → concept lesson content. Built once; the source of truth for lookups. */

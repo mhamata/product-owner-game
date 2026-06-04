@@ -3,7 +3,7 @@ import type { FreeTextDrill, FreeTextField } from './types';
 import { jtbdStructure, type JtbdFieldKey } from './jtbd';
 
 /**
- * JTBD drill — DISPLAY LAYER (per industry).
+ * JTBD drill: DISPLAY LAYER (per industry).
  *
  * Human-readable copy ONLY: the scenario, prompt, brief/persona, per-field
  * labels + placeholders, and the persona `context` object passed to the grader.
@@ -32,7 +32,7 @@ export interface JtbdDisplay {
 }
 
 // ============================================================================
-// SaaS — original content, ported verbatim from the legacy jtbdDrill.
+// SaaS: original content, ported verbatim from the legacy jtbdDrill.
 // ============================================================================
 const saas: JtbdDisplay = {
   scenario: 'SaaS · discovery',
@@ -42,16 +42,16 @@ const saas: JtbdDisplay = {
     'Maya is a marketing analyst at a 60-person B2B SaaS company. Every Monday she rebuilds the same campaign-performance report by hand in a spreadsheet, pulling numbers from three dashboards. Her VP asks for it before the 9am standup. She has tried two analytics tools but went back to the spreadsheet because she could not trust the numbers.',
   fields: {
     situation: {
-      label: 'When… (situation — a concrete trigger, not "when I use the app")',
+      label: 'When… (situation: a concrete trigger, not "when I use the app")',
       placeholder:
         'e.g., it is Monday morning and my VP needs the campaign report before standup',
     },
     motivation: {
-      label: '…I want to (motivation — the job, not the feature)',
+      label: '…I want to (motivation: the job, not the feature)',
       placeholder: 'e.g., pull the numbers together once and trust they are right',
     },
     outcome: {
-      label: '…so I can (outcome — what the user gains)',
+      label: '…so I can (outcome: what the user gains)',
       placeholder: 'e.g., walk into standup without scrambling or second-guessing',
     },
   },
@@ -62,7 +62,7 @@ const saas: JtbdDisplay = {
 };
 
 // ============================================================================
-// Fintech — generic expense-management / spend platform (no brokerage/trading).
+// Fintech: generic expense-management / spend platform (no brokerage/trading).
 // ============================================================================
 const fintech: JtbdDisplay = {
   scenario: 'Fintech · discovery',
@@ -72,16 +72,16 @@ const fintech: JtbdDisplay = {
     'Maya is a finance ops manager at a 60-person company. Every Monday she rebuilds the same spend-by-team report by hand in a spreadsheet, pulling numbers from three systems. Her VP asks for it before the 9am standup. She has tried two expense tools but went back to the spreadsheet because she could not trust the numbers.',
   fields: {
     situation: {
-      label: 'When… (situation — a concrete trigger, not "when I use the app")',
+      label: 'When… (situation: a concrete trigger, not "when I use the app")',
       placeholder:
         'e.g., it is Monday morning and my VP needs the spend report before standup',
     },
     motivation: {
-      label: '…I want to (motivation — the job, not the feature)',
+      label: '…I want to (motivation: the job, not the feature)',
       placeholder: 'e.g., pull the numbers together once and trust they are right',
     },
     outcome: {
-      label: '…so I can (outcome — what the user gains)',
+      label: '…so I can (outcome: what the user gains)',
       placeholder: 'e.g., walk into standup without scrambling or second-guessing',
     },
   },
@@ -92,7 +92,7 @@ const fintech: JtbdDisplay = {
 };
 
 // ============================================================================
-// Marketplace — two-sided marketplace connecting sellers & buyers.
+// Marketplace: two-sided marketplace connecting sellers & buyers.
 // ============================================================================
 const marketplace: JtbdDisplay = {
   scenario: 'Marketplace · discovery',
@@ -102,16 +102,16 @@ const marketplace: JtbdDisplay = {
     'Maya runs a growing shop on your marketplace. Every Monday she rebuilds the same sales-and-payouts report by hand in a spreadsheet, pulling numbers from three screens. Her accountant needs it before their weekly call. She has tried two seller dashboards but went back to the spreadsheet because she could not trust the numbers.',
   fields: {
     situation: {
-      label: 'When… (situation — a concrete trigger, not "when I use the app")',
+      label: 'When… (situation: a concrete trigger, not "when I use the app")',
       placeholder:
         'e.g., it is Monday morning and my accountant needs the sales report before our call',
     },
     motivation: {
-      label: '…I want to (motivation — the job, not the feature)',
+      label: '…I want to (motivation: the job, not the feature)',
       placeholder: 'e.g., pull the numbers together once and trust they are right',
     },
     outcome: {
-      label: '…so I can (outcome — what the user gains)',
+      label: '…so I can (outcome: what the user gains)',
       placeholder: 'e.g., walk into the call without scrambling or second-guessing',
     },
   },
@@ -122,7 +122,7 @@ const marketplace: JtbdDisplay = {
 };
 
 // ============================================================================
-// Consumer — habit-tracking / journaling app.
+// Consumer: habit-tracking / journaling app.
 // ============================================================================
 const consumer: JtbdDisplay = {
   scenario: 'Consumer · discovery',
@@ -132,16 +132,16 @@ const consumer: JtbdDisplay = {
     'Maya is trying to build a daily journaling habit. Every Sunday evening she tries to review how her week went, piecing it together from notes scattered across her phone. She wants to feel on top of her goals before the week starts. She has tried two habit apps but went back to scattered notes because she could never trust she had logged everything.',
   fields: {
     situation: {
-      label: 'When… (situation — a concrete trigger, not "when I use the app")',
+      label: 'When… (situation: a concrete trigger, not "when I use the app")',
       placeholder:
         'e.g., it is Sunday evening and I want to review how my week actually went',
     },
     motivation: {
-      label: '…I want to (motivation — the job, not the feature)',
+      label: '…I want to (motivation: the job, not the feature)',
       placeholder: 'e.g., see my week in one place and trust nothing is missing',
     },
     outcome: {
-      label: '…so I can (outcome — what the user gains)',
+      label: '…so I can (outcome: what the user gains)',
       placeholder: 'e.g., start the new week feeling on top of my goals, not behind',
     },
   },
@@ -152,7 +152,7 @@ const consumer: JtbdDisplay = {
 };
 
 // ============================================================================
-// Healthcare — clinic-facing healthtech (patient intake & scheduling).
+// Healthcare: clinic-facing healthtech (patient intake & scheduling).
 // ============================================================================
 const healthcare: JtbdDisplay = {
   scenario: 'Healthcare · discovery',
@@ -162,16 +162,16 @@ const healthcare: JtbdDisplay = {
     'Maya is a practice manager at a 6-provider clinic. Every Monday she rebuilds the same patient-flow and no-show report by hand in a spreadsheet, pulling numbers from three screens. Her lead physician asks for it before the weekly huddle. She has tried two scheduling tools but went back to the spreadsheet because she could not trust the numbers.',
   fields: {
     situation: {
-      label: 'When… (situation — a concrete trigger, not "when I use the app")',
+      label: 'When… (situation: a concrete trigger, not "when I use the app")',
       placeholder:
         'e.g., it is Monday morning and the physician needs the no-show report before the huddle',
     },
     motivation: {
-      label: '…I want to (motivation — the job, not the feature)',
+      label: '…I want to (motivation: the job, not the feature)',
       placeholder: 'e.g., pull the numbers together once and trust they are right',
     },
     outcome: {
-      label: '…so I can (outcome — what the user gains)',
+      label: '…so I can (outcome: what the user gains)',
       placeholder: 'e.g., walk into the huddle without scrambling or second-guessing',
     },
   },

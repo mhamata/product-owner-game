@@ -28,7 +28,7 @@ import {
 /**
  * Assemble the capstone scenario for a given home industry.
  *
- * The structural core (`scenario01Structure`) is industry-neutral — same ids,
+ * The structural core (`scenario01Structure`) is industry-neutral. Same ids,
  * efforts, effects, magic ids, and balance for every industry. This function
  * deep-merges the chosen industry's DISPLAY pack (titles, names, narratives,
  * option copy) onto that core, keyed by structural id, and returns a complete,

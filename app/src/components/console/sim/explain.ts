@@ -4,7 +4,7 @@
 //
 // IMPORTANT: this file NEVER changes game state and NEVER reimplements scoring.
 // It mirrors the *rule conditions* the engine already applied so the UI can
-// EXPLAIN them — every branch here corresponds 1:1 to a branch in
+// EXPLAIN them. Every branch here corresponds 1:1 to a branch in
 //   - engine/execution.ts   (morale commit-ratio, revenue from released products)
 //   - engine/customers.ts    (happiness: served / partial / nothing / skeptic)
 //   - engine/techDebt.ts     (+5 customer-work-no-DoD, +10 no-tech-in-3-iters, pay-downs)
@@ -23,7 +23,7 @@ import type {
 import { calculateCapacityRange } from '@/engine/capacity';
 
 /* ============================================================
-   CAPACITY "WHY" — re-derive the labeled contributions that
+   CAPACITY "WHY": re-derive the labeled contributions that
    calculateCapacityRange folds into a single number, so the
    Plan step can show "Base 15 · −2 onboarding · −1 tech debt".
    The math mirrors engine/capacity.ts exactly; we surface the
@@ -52,8 +52,8 @@ export interface CapacityBreakdown {
 
 /**
  * Build the labeled capacity breakdown for the Plan step. The numeric range is
- * read straight from the engine (`calculateCapacityRange`) — the source of
- * truth — while the individual chips re-trace the same conditions so a learner
+ * read straight from the engine (`calculateCapacityRange`), the source of
+ * truth, while the individual chips re-trace the same conditions so a learner
  * can see *why* the likely line sits where it does.
  */
 export function capacityBreakdown(state: GameState): CapacityBreakdown {
@@ -64,7 +64,7 @@ export function capacityBreakdown(state: GameState): CapacityBreakdown {
     { delta: tech.capacityBaseline, label: 'baseline team velocity', kind: 'base' },
   ];
 
-  // Baseline penalties — mirrors engine/capacity.ts.
+  // Baseline penalties, mirrors engine/capacity.ts.
   if (team.sickOrVacation > 0) {
     contributions.push({
       delta: -(team.sickOrVacation * 1.5),
@@ -108,7 +108,7 @@ export function capacityBreakdown(state: GameState): CapacityBreakdown {
     contributions.push({ delta: -3, label: 'crippling tech debt', kind: 'penalty' });
   }
 
-  // Baseline bonuses from completed investments — mirrors engine/capacity.ts.
+  // Baseline bonuses from completed investments, mirrors engine/capacity.ts.
   if (tech.investmentsDone.includes('dev-team-training-bundle')) {
     contributions.push({ delta: 1, label: 'team training paid off', kind: 'bonus' });
   }
@@ -116,7 +116,7 @@ export function capacityBreakdown(state: GameState): CapacityBreakdown {
     contributions.push({ delta: 2, label: 'framework upgrade paid off', kind: 'bonus' });
   }
 
-  // Variance notes — these widen the range rather than move the likely line.
+  // Variance notes: these widen the range rather than move the likely line.
   const varianceNotes: string[] = [];
   if (team.burnoutFlag) varianceNotes.push('burnout makes the sprint less predictable');
   if (tech.techDebt >= 40) varianceNotes.push('tech debt adds delivery risk');
@@ -137,7 +137,7 @@ export function capacityBreakdown(state: GameState): CapacityBreakdown {
 }
 
 /* ============================================================
-   OUTCOME "BECAUSE" — one explained beat per change the engine
+   OUTCOME "BECAUSE": one explained beat per change the engine
    recorded in IterationOutcome.
    ============================================================ */
 
@@ -146,7 +146,7 @@ export type BeatTone = 'good' | 'bad' | 'neutral';
 export interface OutcomeBeat {
   /** Stable key for React lists + animation ordering. */
   id: string;
-  /** Emoji glyph shown in the beat icon (paired with text — never colour-alone). */
+  /** Emoji glyph shown in the beat icon (paired with text, never colour-alone). */
   glyph: string;
   tone: BeatTone;
   /** The effect headline, e.g. "Team morale dips". */
@@ -170,7 +170,7 @@ function shippedCustomerWork(done: PBI[]): boolean {
  * Build the ordered list of explained beats from the resolved outcome.
  *
  * @param outcome   the engine's IterationOutcome (already computed)
- * @param preState  the GameState *before* execute-iteration ran — needed for the
+ * @param preState  the GameState *before* execute-iteration ran, needed for the
  *                  commit ratio and the pre-change customer happiness baseline
  * @param postCustomers the customers map *after* resolution (for archetype/name)
  */
@@ -211,15 +211,15 @@ export function deriveOutcomeBeats(
     if (delta > 0 && servedByRelease.has(cid)) {
       tone = 'good';
       glyph = '🚀';
-      because = `you shipped work ${name} needed — and released it, so the value actually reached them.`;
+      because = `you shipped work ${name} needed and released it, so the value actually reached them.`;
     } else if (delta < 0 && churned) {
       tone = 'bad';
       glyph = '💔';
-      because = `${name} went too long with nothing for them and churned — their happiness hit zero.`;
+      because = `${name} went too long with nothing for them and churned. Their happiness hit zero.`;
     } else if (delta < 0 && servedByIteration.has(cid)) {
       tone = 'bad';
       glyph = '😕';
-      because = `${name} keeps getting partial progress but nothing released — patience finally ran out.`;
+      because = `${name} keeps getting partial progress but nothing released. Patience finally ran out.`;
     } else if (delta < 0) {
       tone = 'bad';
       glyph = '😕';
@@ -247,11 +247,11 @@ export function deriveOutcomeBeats(
     const tone: BeatTone = outcome.moraleDelta > 0 ? 'good' : 'bad';
     let because: string;
     if (outcome.moraleDelta > 0) {
-      because = `the team finished almost everything they committed (${outcome.done.length}/${committedCount}) — delivering builds momentum.`;
+      because = `the team finished almost everything they committed (${outcome.done.length}/${committedCount}). Delivering builds momentum.`;
     } else {
       because = `the team only cleared ${outcome.done.length} of ${committedCount} committed items (${Math.round(
         ratio * 100,
-      )}%) — over-committing wears morale down.`;
+      )}%). Over-committing wears morale down.`;
     }
     beats.push({
       id: 'morale',
@@ -280,7 +280,7 @@ export function deriveOutcomeBeats(
       }
       because =
         reasons.length > 0
-          ? `${reasons.join(' and ')} — the debt you skip compounds quietly.`
+          ? `${reasons.join(' and ')}. The debt you skip compounds quietly.`
           : 'shortcuts this sprint added to the debt you carry forward.';
     } else {
       because = 'you invested in engineering health, paying down accumulated debt.';
@@ -308,15 +308,15 @@ export function deriveOutcomeBeats(
           : `${outcome.releasedProducts.length} products shipped to customers`,
       delta: outcome.revenueEarned > 0 ? `+$${outcome.revenueEarned.toLocaleString()}` : null,
       because:
-        'a Release was in the sprint and every piece of those products was finished — so the value finally reached paying customers.',
+        'a Release was in the sprint and every piece of those products was finished, so the value finally reached paying customers.',
     });
   } else if (outcome.done.some((i) => i.kind === 'customer')) {
-    // Built customer work but did NOT release it — the #1 lesson.
+    // Built customer work but did NOT release it: the #1 lesson.
     beats.push({
       id: 'no-release',
       glyph: '🏦',
       tone: 'neutral',
-      effect: 'Finished work is banked — not yet earning',
+      effect: 'Finished work is banked, not yet earning',
       delta: '+$0',
       because:
         'you built customer features but did not Ship a Release, so none of it converted to revenue this sprint.',
@@ -327,10 +327,10 @@ export function deriveOutcomeBeats(
 }
 
 /* ============================================================
-   EVENT "BECAUSE" — narrate the metric movements the player's
+   EVENT "BECAUSE": narrate the metric movements the player's
    CHOSEN option applies. Mirrors engine/events.ts applyEventEffects
-   1:1 (one beat per EventEffect kind), so every event-driven move —
-   crucially Stakeholder Trust, which ONLY moves via events — gets a
+   1:1 (one beat per EventEffect kind), so every event-driven move,
+   crucially Stakeholder Trust, which ONLY moves via events, gets a
    plain-language "because you chose <option>" the player can see.
    The cause text is the option's own label/effect data; we never
    invent consequences the engine didn't apply.
@@ -401,7 +401,7 @@ function eventBeat(
         tone: up ? 'good' : 'bad',
         effect: `Team morale ${up ? 'lifts' : 'dips'}`,
         delta: `${fmtSigned(eff.delta)} morale`,
-        because: `you chose to ${choice} — and that ${
+        because: `you chose to ${choice}, and that ${
           up ? 'energised' : 'wore on'
         } the team.`,
       };
@@ -415,7 +415,7 @@ function eventBeat(
         tone: up ? 'good' : 'bad',
         effect: `${who} trust ${up ? 'rises' : 'falls'}`,
         delta: `${fmtSigned(eff.delta)} trust`,
-        because: `you chose to ${choice} — ${who} ${
+        because: `you chose to ${choice}, and ${who} ${
           up ? 'felt heard' : 'was not happy with that call'
         }.`,
       };
@@ -429,7 +429,7 @@ function eventBeat(
         tone: up ? 'good' : 'bad',
         effect: `${who} ${up ? 'warms up' : 'cools off'}`,
         delta: `${fmtSigned(eff.delta)} happiness`,
-        because: `you chose to ${choice} — ${who} ${
+        because: `you chose to ${choice}, and ${who} ${
           up ? 'liked the outcome' : 'was let down by it'
         }.`,
       };
@@ -453,7 +453,7 @@ function eventBeat(
         tone: up ? 'good' : 'bad',
         effect: `Team capacity ${up ? 'grows' : 'shrinks'}`,
         delta: `${fmtSigned(eff.delta)} pts/sprint`,
-        because: `you chose to ${choice} — it changes how much the team can take on each sprint.`,
+        because: `you chose to ${choice}, and it changes how much the team can take on each sprint.`,
       };
     }
     case 'headcount': {
@@ -465,8 +465,8 @@ function eventBeat(
         effect: up ? 'The team grows' : 'The team shrinks',
         delta: `${fmtSigned(eff.delta)} headcount`,
         because: up
-          ? `you chose to ${choice} — a new hire joins (and needs onboarding before they're at full speed).`
-          : `you chose to ${choice} — someone leaves the team.`,
+          ? `you chose to ${choice}, so a new hire joins (and needs onboarding before they're at full speed).`
+          : `you chose to ${choice}, so someone leaves the team.`,
       };
     }
     case 'tech-debt': {
@@ -478,7 +478,7 @@ function eventBeat(
         tone: grew ? 'bad' : 'good',
         effect: `Tech debt ${grew ? 'grows' : 'shrinks'}`,
         delta: `${fmtSigned(eff.delta)} debt`,
-        because: `you chose to ${choice} — ${
+        because: `you chose to ${choice}, and ${
           grew ? 'the shortcut adds to the debt you carry forward' : 'paying it down buys steadier sprints'
         }.`,
       };
@@ -490,10 +490,10 @@ function eventBeat(
         tone: 'neutral',
         effect: 'A new backlog item arrives',
         delta: null,
-        because: `you chose to ${choice} — “${eff.pbi.title}” is now in your product backlog to plan.`,
+        because: `you chose to ${choice}, so “${eff.pbi.title}” is now in your product backlog to plan.`,
       };
     case 'add-pattern':
-      // Structural tag, not a scoreboard movement — no beat in the player view.
+      // Structural tag, not a scoreboard movement: no beat in the player view.
       return null;
   }
 }
@@ -503,7 +503,7 @@ function decapitalize(s: string): string {
 }
 
 /* ============================================================
-   PLAN-STEP TELEGRAPHED IMPACTS — read straight off the PBI.
+   PLAN-STEP TELEGRAPHED IMPACTS: read straight off the PBI.
    No invention: derived from kind, value, and `satisfies`.
    ============================================================ */
 

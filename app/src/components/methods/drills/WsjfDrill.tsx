@@ -8,7 +8,7 @@ import { useActiveIndustry } from '@/store/industryStore';
  * Library WSJF drill. Content + scoring come from the shared drill engine; the
  * content is industry-aware (resolves for the home industry, SaaS until the
  * store rehydrates). The Fibonacci factors and the correct ranking are shared
- * structure — only the feature names change. The graded Console loop lives at
+ * structure. Only the feature names change. The graded Console loop lives at
  * /learn/cost-of-delay.
  */
 export function WsjfDrill() {
@@ -98,7 +98,7 @@ export function WsjfDrill() {
           <ol className="list-decimal space-y-1 pl-5 text-[13.5px] text-ink-2">
             {ranked.map((r) => (
               <li key={r.id}>
-                <b className="font-semibold text-ink">{r.name}</b> — WSJF{' '}
+                <b className="font-semibold text-ink">{r.name}</b>: WSJF{' '}
                 {wsjfDrill.score(r).toFixed(2)}
               </li>
             ))}

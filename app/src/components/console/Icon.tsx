@@ -168,12 +168,12 @@ export function FlaskIcon({ size = 13, ...props }: IconProps) {
 }
 
 /* ------------------------------------------------------------
-   Simulation icons — traced to match the sim-b.html mockup's
+   Simulation icons, traced to match the sim-b.html mockup's
    inline SVGs (same stroke style as the set above). All aria-
    hidden; callers always pair with a visible text label.
    ------------------------------------------------------------ */
 
-/** Bullseye — the persistent Mission marker. */
+/** Bullseye: the persistent Mission marker. */
 export function TargetIcon({ size = 13, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -184,7 +184,7 @@ export function TargetIcon({ size = 13, ...props }: IconProps) {
   );
 }
 
-/** Speed gauge — capacity panel header. */
+/** Speed gauge: capacity panel header. */
 export function GaugeIcon({ size = 14, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -194,7 +194,7 @@ export function GaugeIcon({ size = 14, ...props }: IconProps) {
   );
 }
 
-/** Line going up — Value Delivered + live forecast. */
+/** Line going up: Value Delivered + live forecast. */
 export function TrendingUpIcon({ size = 15, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -204,7 +204,7 @@ export function TrendingUpIcon({ size = 15, ...props }: IconProps) {
   );
 }
 
-/** Heart — Customer Loyalty. */
+/** Heart: Customer Loyalty. */
 export function HeartIcon({ size = 15, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -213,7 +213,7 @@ export function HeartIcon({ size = 15, ...props }: IconProps) {
   );
 }
 
-/** People — Team Health. */
+/** People: Team Health. */
 export function UsersIcon({ size = 15, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -225,7 +225,7 @@ export function UsersIcon({ size = 15, ...props }: IconProps) {
   );
 }
 
-/** Shield — Stakeholder Trust. */
+/** Shield: Stakeholder Trust. */
 export function ShieldIcon({ size = 15, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -234,7 +234,7 @@ export function ShieldIcon({ size = 15, ...props }: IconProps) {
   );
 }
 
-/** Sparkle/gem — Product Quality. */
+/** Sparkle/gem: Product Quality. */
 export function SparkleIcon({ size = 15, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -243,7 +243,7 @@ export function SparkleIcon({ size = 15, ...props }: IconProps) {
   );
 }
 
-/** Dollar sign — revenue readouts. */
+/** Dollar sign: revenue readouts. */
 export function DollarIcon({ size = 13, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -253,7 +253,7 @@ export function DollarIcon({ size = 13, ...props }: IconProps) {
   );
 }
 
-/** Rocket — Ship a Release. */
+/** Rocket: Ship a Release. */
 export function RocketIcon({ size = 13, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -264,7 +264,7 @@ export function RocketIcon({ size = 13, ...props }: IconProps) {
   );
 }
 
-/** Lightbulb — coachmark + capacity coach. */
+/** Lightbulb: coachmark + capacity coach. */
 export function LightbulbIcon({ size = 15, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2.2}>
@@ -275,7 +275,7 @@ export function LightbulbIcon({ size = 15, ...props }: IconProps) {
   );
 }
 
-/** Warning triangle — telegraphed event card. */
+/** Warning triangle: telegraphed event card. */
 export function AlertTriangleIcon({ size = 18, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2.2}>
@@ -286,7 +286,7 @@ export function AlertTriangleIcon({ size = 18, ...props }: IconProps) {
   );
 }
 
-/** Graduation cap — "what you learned" debrief takeaway. */
+/** Graduation cap: "what you learned" debrief takeaway. */
 export function CapIcon({ size = 17, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2.2}>
@@ -296,7 +296,7 @@ export function CapIcon({ size = 17, ...props }: IconProps) {
   );
 }
 
-/** Circular restart arrow — replay tutorial / restart sprint. */
+/** Circular restart arrow: replay tutorial / restart sprint. */
 export function RestartIcon({ size = 13, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2.2}>
@@ -306,7 +306,7 @@ export function RestartIcon({ size = 13, ...props }: IconProps) {
   );
 }
 
-/** Left chevron — Back in the action dock. */
+/** Left chevron: Back in the action dock. */
 export function ChevronLeftIcon({ size = 15, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2.4}>
@@ -315,7 +315,7 @@ export function ChevronLeftIcon({ size = 15, ...props }: IconProps) {
   );
 }
 
-/** List/lines — committed-points forecast chip. */
+/** List/lines: committed-points forecast chip. */
 export function ListIcon({ size = 13, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -329,7 +329,7 @@ export function ListIcon({ size = 13, ...props }: IconProps) {
   );
 }
 
-/** Minus — capacity penalty chip. */
+/** Minus: capacity penalty chip. */
 export function MinusIcon({ size = 12, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2.4}>
@@ -338,7 +338,7 @@ export function MinusIcon({ size = 12, ...props }: IconProps) {
   );
 }
 
-/** Plus — capacity bonus chip. */
+/** Plus: capacity bonus chip. */
 export function PlusIcon({ size = 12, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2.4}>
@@ -348,7 +348,7 @@ export function PlusIcon({ size = 12, ...props }: IconProps) {
   );
 }
 
-/** Circle — capacity base chip. */
+/** Circle: capacity base chip. */
 export function CircleIcon({ size = 12, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -357,7 +357,7 @@ export function CircleIcon({ size = 12, ...props }: IconProps) {
   );
 }
 
-/** Clock — "coming soon" treatment on not-yet-built skills. */
+/** Clock: "coming soon" treatment on not-yet-built skills. */
 export function ClockIcon({ size = 13, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -367,7 +367,7 @@ export function ClockIcon({ size = 13, ...props }: IconProps) {
   );
 }
 
-/** Stacked layers — specialization tracks (off-ladder depth). */
+/** Stacked layers: specialization tracks (off-ladder depth). */
 export function LayersIcon({ size = 14, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -378,7 +378,7 @@ export function LayersIcon({ size = 14, ...props }: IconProps) {
   );
 }
 
-/** Book — reading/reference modality. */
+/** Book: reading/reference modality. */
 export function BookIcon({ size = 13, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -388,7 +388,7 @@ export function BookIcon({ size = 13, ...props }: IconProps) {
   );
 }
 
-/** Speech bubble — roleplay/communication modality. */
+/** Speech bubble: roleplay/communication modality. */
 export function MessageIcon({ size = 13, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -397,7 +397,7 @@ export function MessageIcon({ size = 13, ...props }: IconProps) {
   );
 }
 
-/** Scales — judgment modality (decisions under ambiguity). */
+/** Scales: judgment modality (decisions under ambiguity). */
 export function ScaleIcon({ size = 13, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
@@ -406,7 +406,7 @@ export function ScaleIcon({ size = 13, ...props }: IconProps) {
   );
 }
 
-/** Document/file — artifact modality (PRDs, story maps). */
+/** Document/file: artifact modality (PRDs, story maps). */
 export function FileIcon({ size = 13, ...props }: IconProps) {
   return (
     <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>

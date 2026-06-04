@@ -1,7 +1,7 @@
 // The five scoreboard dimensions, in plain language, mapped to the engine's
 // GameScore (engine/score.ts). The mockup labels `productIntegrity` as
 // "Product Quality"; we keep that learner-facing wording. Icons come from the
-// shared Console icon set. Values are always read live from calculateScore — we
+// shared Console icon set. Values are always read live from calculateScore; we
 // never store or recompute a score here.
 
 import type { ComponentType } from 'react';

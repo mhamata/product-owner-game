@@ -12,9 +12,9 @@ import { useReducedMotion } from './useReducedMotion';
 import { useReveal } from './useReveal';
 
 /**
- * STEP 6 · DEBRIEF — the full scoreboard with this sprint's deltas, plus a
+ * STEP 6 · DEBRIEF: the full scoreboard with this sprint's deltas, plus a
  * one-line takeaway. Deltas are the difference between the post-sprint score and
- * the pre-sprint score (both from calculateScore — the engine read function).
+ * the pre-sprint score (both from calculateScore, the engine read function).
  * "Start Sprint N+1" / "Finish" lives in the dock and dispatches advance-iteration.
  */
 export function DebriefStep({
@@ -37,8 +37,8 @@ export function DebriefStep({
   const sprint = outcome.iteration;
   const takeaway = deriveTakeaway(outcome, postState);
   // Persistent record of how each event the player resolved THIS sprint moved
-  // the scoreboard. This is the durable home for those "because" lines — most
-  // importantly Stakeholder Trust, which only ever moves via events — so even a
+  // the scoreboard. This is the durable home for those "because" lines, most
+  // importantly Stakeholder Trust, which only ever moves via events, so even a
   // player who clicked past the Event step's confirmation still sees the cause.
   const eventBeats = deriveResolvedEventBeats(outcome.iteration, postState, scenario);
 
@@ -108,7 +108,7 @@ export function DebriefStep({
         })}
       </div>
 
-      {/* event-driven movements — the durable "because" for choices made this
+      {/* event-driven movements: the durable "because" for choices made this
           sprint (the only place Stakeholder Trust moves). */}
       {eventBeats.length > 0 && (
         <div className="mt-5">
@@ -141,7 +141,7 @@ export function DebriefStep({
 /**
  * Rebuild the explained beats for every event the player resolved this sprint,
  * by replaying the chosen option (from the engine's eventLog) through the same
- * deriveEventBeats helper the Event step uses. Pure read of GameState — no
+ * deriveEventBeats helper the Event step uses. Pure read of GameState; no
  * engine mutation. This is what guarantees event-driven movements (Stakeholder
  * Trust especially) always carry a visible "because" in the persistent debrief.
  */
@@ -166,7 +166,7 @@ function deriveResolvedEventBeats(
 
 /**
  * Pick the single most salient lesson from this sprint's outcome. Derived from
- * the same engine facts the Outcome step explains — not invented. Priority order
+ * the same engine facts the Outcome step explains; not invented. Priority order
  * surfaces the highest-leverage teaching moment.
  */
 function deriveTakeaway(outcome: IterationOutcome, postState: GameState): string {
@@ -179,22 +179,22 @@ function deriveTakeaway(outcome: IterationOutcome, postState: GameState): string
     return 'Releasing is what converts finished work into revenue. When products are complete, shipping a Release is the move that pays.';
   }
   if (builtCustomerWork && outcome.releasedProducts.length === 0) {
-    return 'You built customer value but never released it — so none of it earned revenue. Finished features only pay out when you Ship a Release.';
+    return 'You built customer value but never released it, so none of it earned revenue. Finished features only pay out when you Ship a Release.';
   }
   if (churned) {
     return 'A customer churned after too long with nothing for them. Spreading attention too thin can cost you the relationships you already have.';
   }
   if (outcome.moraleDelta <= -1) {
-    return 'A packed sprint with no slack cost you team health. Committing closer to the likely capacity protects morale — and next sprint.';
+    return 'A packed sprint with no slack cost you team health. Committing closer to the likely capacity protects morale, and next sprint.';
   }
   if (outcome.techDebtDelta >= 5) {
-    return 'Shipping features without engineering health let tech debt climb. Debt you skip compounds — and quietly slows every future sprint.';
+    return 'Shipping features without engineering health let tech debt climb. Debt you skip compounds, and quietly slows every future sprint.';
   }
   if (outcome.techDebtDelta < 0) {
     return 'Investing in engineering health paid down debt. It rarely feels urgent, but it buys you steadier, faster sprints later.';
   }
   if (outcome.moraleDelta >= 1) {
-    return 'A realistic commitment let the team finish what they started — delivering on your word builds momentum and trust.';
+    return 'A realistic commitment let the team finish what they started. Delivering on your word builds momentum and trust.';
   }
   return 'Trade-offs compound across sprints. Watch how today’s choice reshapes capacity, customers, and team health next time.';
 }

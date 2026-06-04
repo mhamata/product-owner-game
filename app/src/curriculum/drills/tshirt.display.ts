@@ -3,16 +3,16 @@ import type { SizingDrill } from './types';
 import { tshirtStructure, type TshirtStoryId } from './tshirt';
 
 /**
- * T-shirt sizing drill — DISPLAY LAYER (per industry).
+ * T-shirt sizing drill: DISPLAY LAYER (per industry).
  *
  * Human-readable copy ONLY. The size legend and the correct size per story live
  * in `./tshirt` and never change. Mirrors `@/scenarios/scenario01.display`.
  *
- * Structural slots (fixed `correct` size — pick a believable story per one):
- *   • `locale-toggle`    → S: small in concept but touches many surfaces (~2–3 days).
+ * Structural slots (fixed `correct` size, pick a believable story per one):
+ *   • `locale-toggle`    → S: small in concept but touches many surfaces (~2-3 days).
  *   • `sso`              → L: a third-party integration with several flows (~2 sprints).
  *   • `copy-fix`         → XS: a copy/string change plus a quick test (~1 day).
- *   • `billing-platform` → XXL: a multi-quarter platform — decompose before a sprint.
+ *   • `billing-platform` → XXL: a multi-quarter platform, decompose before a sprint.
  *   • `activity-feed`    → M: a scoped feed with light moderation (~1 sprint).
  *
  * The `why` for each story must keep explaining ITS size honestly (e.g. the XS
@@ -35,12 +35,12 @@ export interface TshirtDisplay {
 }
 
 const PROMPT =
-  'Size each story relative to the others. No absolute hours — relative effort only.';
+  'Size each story relative to the others. No absolute hours: relative effort only.';
 const INSIGHT =
-  'Rule of thumb: anything bigger than M should be broken down before it enters a sprint. XXL isn’t an estimate — it’s a flag that says "decompose me first."';
+  'Rule of thumb: anything bigger than M should be broken down before it enters a sprint. XXL isn’t an estimate. It’s a flag that says "decompose me first."';
 
 // ============================================================================
-// SaaS — original content, ported verbatim from the legacy tshirtDrill.
+// SaaS: original content, ported verbatim from the legacy tshirtDrill.
 // ============================================================================
 const saas: TshirtDisplay = {
   scenario: 'SaaS · roadmap sizing',
@@ -49,7 +49,7 @@ const saas: TshirtDisplay = {
     'locale-toggle': {
       title: 'Locale / timezone preference toggle',
       description: 'Let users set their locale so dates and times render correctly.',
-      why: 'Small in concept, but it touches every date/time component. 2–3 days of careful work.',
+      why: 'Small in concept, but it touches every date/time component. 2-3 days of careful work.',
     },
     sso: {
       title: 'Enterprise SSO (SAML)',
@@ -66,7 +66,7 @@ const saas: TshirtDisplay = {
       title: 'Usage-based billing platform',
       description:
         'Full metering pipeline, invoicing, proration, tax handling, and a customer billing portal.',
-      why: 'Multi-quarter. Break it down before any sprint commitment — metering alone is an L.',
+      why: 'Multi-quarter. Break it down before any sprint commitment. Metering alone is an L.',
     },
     'activity-feed': {
       title: 'Team activity feed (v1)',
@@ -78,7 +78,7 @@ const saas: TshirtDisplay = {
 };
 
 // ============================================================================
-// Fintech — generic expense-management / spend platform (no brokerage/trading).
+// Fintech: generic expense-management / spend platform (no brokerage/trading).
 // ============================================================================
 const fintech: TshirtDisplay = {
   scenario: 'Fintech · roadmap sizing',
@@ -87,7 +87,7 @@ const fintech: TshirtDisplay = {
     'locale-toggle': {
       title: 'Currency / locale preference toggle',
       description: 'Let users set their currency and locale so amounts and dates render correctly.',
-      why: 'Small in concept, but it touches every amount/date component. 2–3 days of careful work.',
+      why: 'Small in concept, but it touches every amount/date component. 2-3 days of careful work.',
     },
     sso: {
       title: 'Enterprise SSO (SAML)',
@@ -104,7 +104,7 @@ const fintech: TshirtDisplay = {
       title: 'Usage-based billing platform',
       description:
         'Full metering pipeline, invoicing, proration, tax handling, and a customer billing portal.',
-      why: 'Multi-quarter. Break it down before any sprint commitment — metering alone is an L.',
+      why: 'Multi-quarter. Break it down before any sprint commitment. Metering alone is an L.',
     },
     'activity-feed': {
       title: 'Team expense activity feed (v1)',
@@ -116,7 +116,7 @@ const fintech: TshirtDisplay = {
 };
 
 // ============================================================================
-// Marketplace — two-sided marketplace connecting sellers & buyers.
+// Marketplace: two-sided marketplace connecting sellers & buyers.
 // ============================================================================
 const marketplace: TshirtDisplay = {
   scenario: 'Marketplace · roadmap sizing',
@@ -125,7 +125,7 @@ const marketplace: TshirtDisplay = {
     'locale-toggle': {
       title: 'Currency / locale preference toggle',
       description: 'Let buyers set their currency and locale so prices and dates render correctly.',
-      why: 'Small in concept, but it touches every price/date component. 2–3 days of careful work.',
+      why: 'Small in concept, but it touches every price/date component. 2-3 days of careful work.',
     },
     sso: {
       title: 'Seller SSO (SAML)',
@@ -142,7 +142,7 @@ const marketplace: TshirtDisplay = {
       title: 'Seller payouts platform',
       description:
         'Full payouts pipeline, fee deduction, proration, tax handling, and a seller earnings portal.',
-      why: 'Multi-quarter. Break it down before any sprint commitment — the payouts pipeline alone is an L.',
+      why: 'Multi-quarter. Break it down before any sprint commitment. The payouts pipeline alone is an L.',
     },
     'activity-feed': {
       title: 'Buyer reviews feed (v1)',
@@ -154,7 +154,7 @@ const marketplace: TshirtDisplay = {
 };
 
 // ============================================================================
-// Consumer — habit-tracking / journaling app.
+// Consumer: habit-tracking / journaling app.
 // ============================================================================
 const consumer: TshirtDisplay = {
   scenario: 'Consumer · roadmap sizing',
@@ -163,7 +163,7 @@ const consumer: TshirtDisplay = {
     'locale-toggle': {
       title: 'Locale / timezone preference toggle',
       description: 'Let users set their locale so streak dates and times render correctly.',
-      why: 'Small in concept, but it touches every date/time component. 2–3 days of careful work.',
+      why: 'Small in concept, but it touches every date/time component. 2-3 days of careful work.',
     },
     sso: {
       title: 'Social login (Apple / Google)',
@@ -180,7 +180,7 @@ const consumer: TshirtDisplay = {
       title: 'Subscription billing platform',
       description:
         'Full metering pipeline, trials, proration, tax handling, and a self-serve subscription portal.',
-      why: 'Multi-quarter. Break it down before any sprint commitment — metering alone is an L.',
+      why: 'Multi-quarter. Break it down before any sprint commitment. Metering alone is an L.',
     },
     'activity-feed': {
       title: 'Friends activity feed (v1)',
@@ -192,7 +192,7 @@ const consumer: TshirtDisplay = {
 };
 
 // ============================================================================
-// Healthcare — clinic-facing healthtech (patient intake & scheduling).
+// Healthcare: clinic-facing healthtech (patient intake & scheduling).
 // ============================================================================
 const healthcare: TshirtDisplay = {
   scenario: 'Healthcare · roadmap sizing',
@@ -201,7 +201,7 @@ const healthcare: TshirtDisplay = {
     'locale-toggle': {
       title: 'Locale / timezone preference toggle',
       description: 'Let clinics set their locale so appointment dates and times render correctly.',
-      why: 'Small in concept, but it touches every date/time component. 2–3 days of careful work.',
+      why: 'Small in concept, but it touches every date/time component. 2-3 days of careful work.',
     },
     sso: {
       title: 'Enterprise SSO (SAML)',
@@ -218,7 +218,7 @@ const healthcare: TshirtDisplay = {
       title: 'Insurance claims & billing platform',
       description:
         'Full claims pipeline, clearinghouse submission, denials handling, and a patient billing portal.',
-      why: 'Multi-quarter. Break it down before any sprint commitment — the claims pipeline alone is an L.',
+      why: 'Multi-quarter. Break it down before any sprint commitment. The claims pipeline alone is an L.',
     },
     'activity-feed': {
       title: 'Care-team notes feed (v1)',

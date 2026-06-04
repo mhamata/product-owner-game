@@ -1,7 +1,7 @@
 'use client';
 /**
- * SUPERSEDED — part of the legacy GameView simulation, kept (not deleted) per
- * the repo's no-silent-deletion rule. This is the old end-game panel — replaced by sim/SimEndPanel.tsx (Console-styled).
+ * SUPERSEDED: part of the legacy GameView simulation, kept (not deleted) per
+ * the repo's no-silent-deletion rule. This is the old end-game panel, replaced by sim/SimEndPanel.tsx (Console-styled).
  * No route imports this anymore; the Guided Flow sim under
  * src/components/console/sim/ is the live capstone. Safe to remove once the
  * old flow is confirmed retired.
@@ -55,7 +55,7 @@ export function EndGamePanel({
         <header>
           <h1 className="text-2xl font-bold">Game Complete</h1>
           <p className="text-gray-600 mt-1">
-            {scenario.name} — {state.totalIterations} iterations
+            {scenario.name} · {state.totalIterations} iterations
           </p>
         </header>
 

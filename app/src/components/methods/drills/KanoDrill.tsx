@@ -12,7 +12,7 @@ import { useActiveIndustry } from '@/store/industryStore';
 /**
  * Library Kano drill. Categories + grading come from the shared engine; the item
  * copy is industry-aware (resolves for the home industry, SaaS until the store
- * rehydrates). The correct category per item is shared structure — only the
+ * rehydrates). The correct category per item is shared structure. Only the
  * feature names change. The graded Console loop lives at /learn/kano-moscow.
  */
 export function KanoDrill() {

@@ -1,6 +1,6 @@
 'use client';
 /**
- * SUPERSEDED — part of the legacy GameView simulation, kept (not deleted) per
+ * SUPERSEDED: part of the legacy GameView simulation, kept (not deleted) per
  * the repo's no-silent-deletion rule. This is the old simulation's iteration-backlog column.
  * No route imports this anymore; the Guided Flow sim under
  * src/components/console/sim/ is the live capstone. Safe to remove once the
@@ -32,7 +32,7 @@ export function IterationBacklog({
   return (
     <section className="flex flex-col min-h-0 bg-white rounded-lg border">
       <header className="px-3 py-2 border-b flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Iteration {state.iterationNumber} — Plan</h2>
+        <h2 className="text-sm font-semibold">Iteration {state.iterationNumber}: Plan</h2>
         <span className="text-xs text-gray-500">
           {state.iterationBacklog.length} items · {committed} pts
         </span>

@@ -9,7 +9,7 @@ import { useActiveIndustry } from '@/store/industryStore';
  * (src/curriculum/drills) so /methods and /learn stay in sync. The content is
  * industry-aware: it resolves for the learner's home industry (hydration-safe;
  * SaaS until the store rehydrates). The reach/impact/confidence/effort numbers
- * — and the correct ranking — are shared structure, so only the feature names
+ * (and the correct ranking) are shared structure, so only the feature names
  * change. This surface keeps the "enter your scores → reveal" study model; the
  * graded Console loop lives at /learn/rice.
  */
@@ -95,7 +95,7 @@ export function RiceDrill() {
           <ol className="list-decimal space-y-1 pl-5 text-[13.5px] text-ink-2">
             {ranked.map((r) => (
               <li key={r.id}>
-                <b className="font-semibold text-ink">{r.name}</b> — RICE{' '}
+                <b className="font-semibold text-ink">{r.name}</b>: RICE{' '}
                 {riceDrill.score(r).toFixed(1)}
               </li>
             ))}

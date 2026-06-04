@@ -66,7 +66,7 @@ export function SequencingLesson({
       correct: allCorrect,
       score,
       headline: allCorrect
-        ? 'Surface to root — nailed it!'
+        ? 'Surface to root. Nailed it!'
         : `${correct} / ${total} in place`,
       explanation: allCorrect ? (
         <>{drill.insight}</>

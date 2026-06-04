@@ -1,13 +1,13 @@
 import type { FreeTextValues } from './types';
 
 /**
- * PR-FAQ drill — STRUCTURAL CORE (industry-neutral).
+ * PR-FAQ drill: STRUCTURAL CORE (industry-neutral).
  *
  * Free-text, LLM-graded. The learner writes the press-release opener (headline +
  * subtitle + summary) for an Amazon-style PR-FAQ, framing a customer benefit
  * rather than a feature.
  *
- * No client-side answer key — `/api/grade` scores it with a rubric keyed
+ * No client-side answer key. `/api/grade` scores it with a rubric keyed
  * SERVER-SIDE by `drillId`. The industry-invariant structure is the `drillId`,
  * the three field keys + shapes, and the compose/ready logic. The assignment is
  * DISPLAY (`./prFaq.display`). The industry changes which launch is being

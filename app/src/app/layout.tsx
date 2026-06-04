@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PRAXIS — Product Owner Game",
+  title: "PRAXIS: Product Owner Game",
   description: "Product-management simulation for PM interview prep and Scrum/PO training.",
 };
 

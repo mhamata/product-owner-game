@@ -9,7 +9,7 @@ import { useReducedMotion } from './useReducedMotion';
 import { useReveal } from './useReveal';
 
 /**
- * STEP 4 · OUTCOME — reveal cause → effect, one beat at a time.
+ * STEP 4 · OUTCOME: reveal cause → effect, one beat at a time.
  *
  * Every change the engine recorded in `outcome` gets a plain-language "BECAUSE"
  * derived (in explain.ts) from the SAME rule conditions the engine applied. The
@@ -17,7 +17,7 @@ import { useReveal } from './useReveal';
  * DoD / no-tech rules, happiness from served/partial/nothing, revenue from a
  * released product reaching non-churned customers.
  *
- * `preState` is the snapshot taken right before execute-iteration ran — needed
+ * `preState` is the snapshot taken right before execute-iteration ran, needed
  * for the commit ratio and the pre-change happiness baseline.
  */
 export function OutcomeStep({
@@ -46,14 +46,14 @@ export function OutcomeStep({
         name="Outcome"
         eyebrow="Cause → effect"
         title={<span id="outcome-title">Here&apos;s why the numbers moved.</span>}
-        sub="Every change has a reason. Read each beat — this is the judgment the sim is teaching."
+        sub="Every change has a reason. Read each beat. This is the judgment the sim is teaching."
       />
 
       {/* shipped / didn't-fit summary */}
       <div className="mt-5 flex flex-wrap items-center gap-x-3.5 gap-y-2.5 rounded-console-lg border border-line bg-panel p-[14px_16px]">
         {outcome.done.filter((p) => p.kind !== 'release-card').length === 0 &&
         outcome.notDone.length === 0 ? (
-          <span className="mono text-[12px] text-mute">An empty sprint — nothing was committed.</span>
+          <span className="mono text-[12px] text-mute">An empty sprint. Nothing was committed.</span>
         ) : (
           <>
             {outcome.done
@@ -78,7 +78,7 @@ export function OutcomeStep({
       <div className="mt-[18px] grid gap-3">
         {beats.length === 0 ? (
           <p className="text-[13px] text-mute">
-            No measurable changes this sprint — a quiet one. Keep an eye on revenue: it only moves
+            No measurable changes this sprint, a quiet one. Keep an eye on revenue: it only moves
             when you release finished work.
           </p>
         ) : (

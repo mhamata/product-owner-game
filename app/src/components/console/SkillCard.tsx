@@ -46,7 +46,7 @@ function CompetencyTag({ skill, muted = false }: { skill: Skill; muted?: boolean
  *                 non-interactive, modality preview. Clearly future, not locked.
  * - locked      → a *ready* skill gated earlier in the path; dashed + lock.
  *
- * Color is always paired with an icon and a text label — never color alone.
+ * Color is always paired with an icon and a text label, never color alone.
  * Every state shows the competency tag + modality icons so the map reads as a
  * competency atlas, not just a checklist.
  */
@@ -60,7 +60,7 @@ export function SkillCard({ skill, state, mastery }: SkillCardProps) {
     return (
       <div
         className="relative flex min-h-[132px] flex-col gap-3 rounded-console-lg border border-dashed border-line bg-panel/60 p-4"
-        aria-label={`${skill.title} — coming soon`}
+        aria-label={`${skill.title}, coming soon`}
       >
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -157,7 +157,7 @@ export function SkillCard({ skill, state, mastery }: SkillCardProps) {
     );
   }
 
-  // locked — a *ready* skill gated behind earlier progress.
+  // locked: a *ready* skill gated behind earlier progress.
   return (
     <div className="relative flex min-h-[132px] flex-col gap-3 rounded-console-lg border border-dashed border-line bg-panel p-4">
       <div className="flex items-start justify-between gap-3">
@@ -180,7 +180,7 @@ export function SkillCard({ skill, state, mastery }: SkillCardProps) {
           <LockIcon size={12} />
           Locked
         </span>
-        <span className="mono text-[12px] text-slate">—</span>
+        <span className="mono text-[12px] text-slate">-</span>
       </div>
     </div>
   );

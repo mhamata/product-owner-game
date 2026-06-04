@@ -1,7 +1,7 @@
 import type { IndustryId } from '@/curriculum/industries';
 
 /**
- * Scenario 01 — DISPLAY LAYER (per industry).
+ * Scenario 01: DISPLAY LAYER (per industry).
  *
  * Every entry here is human-readable copy ONLY. It is merged onto the shared
  * structural core (`./scenario01.structure`) by `./buildScenario`, keyed by the
@@ -14,11 +14,11 @@ import type { IndustryId } from '@/curriculum/industries';
  * option. A missing or misspelled id is a build error.
  *
  * Mapping discipline (so personas stay coherent across industries):
- *   • maya     — mainstream admin/operator evaluating for her team (churn risk)
- *   • darren   — power user / technical evaluator with a public voice
- *   • priya    — innovator / new trialer, early-adopter appetite
- *   • hq       — growth/leadership stakeholder (the "ship the shiny thing" push)
- *   • ciro     — security/compliance/trust stakeholder (the quality gate)
+ *   • maya:    mainstream admin/operator evaluating for her team (churn risk)
+ *   • darren:  power user / technical evaluator with a public voice
+ *   • priya:   innovator / new trialer, early-adopter appetite
+ *   • hq:      growth/leadership stakeholder (the "ship the shiny thing" push)
+ *   • ciro:    security/compliance/trust stakeholder (the quality gate)
  *   • the tech PBIs (feature-flags, kyc-rebuild, automated-tests, infra cost)
  *     always read as infra/quality/security plumbing, never customer features.
  */
@@ -100,12 +100,12 @@ export interface ScenarioDisplay {
 }
 
 // ============================================================================
-// SaaS — the original Hubflow theme, ported verbatim from the legacy scenario01.
+// SaaS: the original Hubflow theme, ported verbatim from the legacy scenario01.
 // ============================================================================
 const saas: ScenarioDisplay = {
-  name: 'The Q3 Expansion — Hubflow',
+  name: 'The Q3 Expansion: Hubflow',
   summary:
-    'Senior PM for Hubflow, a B2B team-collaboration SaaS. Win the enterprise upmarket push this quarter — hit the revenue target without failing the security review or burning leadership trust.',
+    'Senior PM for Hubflow, a B2B team-collaboration SaaS. Win the enterprise upmarket push this quarter. Hit the revenue target without failing the security review or burning leadership trust.',
   customers: {
     maya: 'Maya (Ops Admin, mid-market trial)',
     darren: 'Darren (Engineering Lead, power user)',
@@ -139,7 +139,7 @@ const saas: ScenarioDisplay = {
   events: {
     'wei-crypto-demand': {
       narrative:
-        'Wei (VP Growth): "Ship an AI assistant by month-end — every competitor is announcing one." Your team has zero ML experience and the data-privacy story is unclear.',
+        'Wei (VP Growth): "Ship an AI assistant by month-end. Every competitor is announcing one." Your team has zero ML experience and the data-privacy story is unclear.',
       options: {
         accept: {
           label: 'Accept and commit',
@@ -168,7 +168,7 @@ const saas: ScenarioDisplay = {
           visibleConsequence: 'Delay 1 iteration.',
         },
         'ship-anyway': {
-          label: 'Ship anyway — "move fast"',
+          label: 'Ship anyway: "move fast"',
           visibleConsequence: 'Big compliance risk.',
         },
       },
@@ -226,13 +226,13 @@ const saas: ScenarioDisplay = {
 };
 
 // ============================================================================
-// Fintech — Ledgerline, a generic B2B expense-management / spend platform.
+// Fintech: Ledgerline, a generic B2B expense-management / spend platform.
 // Deliberately NO brokerage / trading / TFSA / CIRO specifics.
 // ============================================================================
 const fintech: ScenarioDisplay = {
-  name: 'The Q3 Expansion — Ledgerline',
+  name: 'The Q3 Expansion: Ledgerline',
   summary:
-    'Senior PM for Ledgerline, a B2B expense-management and corporate-card platform. Win the upmarket finance-team push this quarter — hit the revenue target without failing the compliance review or burning leadership trust.',
+    'Senior PM for Ledgerline, a B2B expense-management and corporate-card platform. Win the upmarket finance-team push this quarter. Hit the revenue target without failing the compliance review or burning leadership trust.',
   customers: {
     maya: 'Maya (Finance Ops Manager, mid-market trial)',
     darren: 'Darren (Controller, power user)',
@@ -266,7 +266,7 @@ const fintech: ScenarioDisplay = {
   events: {
     'wei-crypto-demand': {
       narrative:
-        'Wei (VP Growth): "Ship an AI expense categorizer by month-end — every competitor is announcing one." Your team has zero ML experience and the data-privacy story is unclear.',
+        'Wei (VP Growth): "Ship an AI expense categorizer by month-end. Every competitor is announcing one." Your team has zero ML experience and the data-privacy story is unclear.',
       options: {
         accept: {
           label: 'Accept and commit',
@@ -295,7 +295,7 @@ const fintech: ScenarioDisplay = {
           visibleConsequence: 'Delay 1 iteration.',
         },
         'ship-anyway': {
-          label: 'Ship anyway — "move fast"',
+          label: 'Ship anyway: "move fast"',
           visibleConsequence: 'Big compliance risk.',
         },
       },
@@ -353,12 +353,12 @@ const fintech: ScenarioDisplay = {
 };
 
 // ============================================================================
-// Marketplace — Stallweave, a two-sided marketplace connecting buyers & sellers.
+// Marketplace: Stallweave, a two-sided marketplace connecting buyers & sellers.
 // ============================================================================
 const marketplace: ScenarioDisplay = {
-  name: 'The Q3 Expansion — Stallweave',
+  name: 'The Q3 Expansion: Stallweave',
   summary:
-    'Senior PM for Stallweave, a two-sided marketplace connecting independent sellers with buyers. Win the supply-and-demand growth push this quarter — hit the GMV target without failing the trust & safety review or burning leadership trust.',
+    'Senior PM for Stallweave, a two-sided marketplace connecting independent sellers with buyers. Win the supply-and-demand growth push this quarter. Hit the GMV target without failing the trust & safety review or burning leadership trust.',
   customers: {
     maya: 'Maya (Shop Owner, mid-market seller)',
     darren: 'Darren (Power Seller, top-volume merchant)',
@@ -392,7 +392,7 @@ const marketplace: ScenarioDisplay = {
   events: {
     'wei-crypto-demand': {
       narrative:
-        'Wei (VP Growth): "Ship an AI listing assistant by month-end — every marketplace is announcing one." Your team has zero ML experience and the data-privacy story is unclear.',
+        'Wei (VP Growth): "Ship an AI listing assistant by month-end. Every marketplace is announcing one." Your team has zero ML experience and the data-privacy story is unclear.',
       options: {
         accept: {
           label: 'Accept and commit',
@@ -421,7 +421,7 @@ const marketplace: ScenarioDisplay = {
           visibleConsequence: 'Delay 1 iteration.',
         },
         'ship-anyway': {
-          label: 'Ship anyway — "move fast"',
+          label: 'Ship anyway: "move fast"',
           visibleConsequence: 'Big trust & safety risk.',
         },
       },
@@ -479,12 +479,12 @@ const marketplace: ScenarioDisplay = {
 };
 
 // ============================================================================
-// Consumer — Trailmark, a consumer habit / journaling app.
+// Consumer: Trailmark, a consumer habit / journaling app.
 // ============================================================================
 const consumer: ScenarioDisplay = {
-  name: 'The Q3 Expansion — Trailmark',
+  name: 'The Q3 Expansion: Trailmark',
   summary:
-    'Senior PM for Trailmark, a consumer habit-tracking and journaling app. Win the premium-subscription growth push this quarter — hit the revenue target without failing the privacy review or burning leadership trust.',
+    'Senior PM for Trailmark, a consumer habit-tracking and journaling app. Win the premium-subscription growth push this quarter. Hit the revenue target without failing the privacy review or burning leadership trust.',
   customers: {
     maya: 'Maya (Casual User, free-tier regular)',
     darren: 'Darren (Power User, daily streak-keeper)',
@@ -518,7 +518,7 @@ const consumer: ScenarioDisplay = {
   events: {
     'wei-crypto-demand': {
       narrative:
-        'Wei (VP Growth): "Ship an AI coach by month-end — every app is announcing one." Your team has zero ML experience and the data-privacy story is unclear.',
+        'Wei (VP Growth): "Ship an AI coach by month-end. Every app is announcing one." Your team has zero ML experience and the data-privacy story is unclear.',
       options: {
         accept: {
           label: 'Accept and commit',
@@ -547,7 +547,7 @@ const consumer: ScenarioDisplay = {
           visibleConsequence: 'Delay 1 iteration.',
         },
         'ship-anyway': {
-          label: 'Ship anyway — "move fast"',
+          label: 'Ship anyway: "move fast"',
           visibleConsequence: 'Big privacy risk.',
         },
       },
@@ -605,12 +605,12 @@ const consumer: ScenarioDisplay = {
 };
 
 // ============================================================================
-// Healthcare — Carechart, a clinic-facing healthtech (patient-intake) platform.
+// Healthcare: Carechart, a clinic-facing healthtech (patient-intake) platform.
 // ============================================================================
 const healthcare: ScenarioDisplay = {
-  name: 'The Q3 Expansion — Carechart',
+  name: 'The Q3 Expansion: Carechart',
   summary:
-    'Senior PM for Carechart, a healthtech platform for outpatient clinics (patient intake & scheduling). Win the multi-clinic expansion this quarter — hit the revenue target without failing the HIPAA compliance review or burning leadership trust.',
+    'Senior PM for Carechart, a healthtech platform for outpatient clinics (patient intake & scheduling). Win the multi-clinic expansion this quarter. Hit the revenue target without failing the HIPAA compliance review or burning leadership trust.',
   customers: {
     maya: 'Maya (Practice Manager, mid-size clinic trial)',
     darren: 'Darren (Lead Physician, power user)',
@@ -644,7 +644,7 @@ const healthcare: ScenarioDisplay = {
   events: {
     'wei-crypto-demand': {
       narrative:
-        'Wei (VP Growth): "Ship an AI clinical scribe by month-end — every health vendor is announcing one." Your team has zero ML experience and the patient-data privacy story is unclear.',
+        'Wei (VP Growth): "Ship an AI clinical scribe by month-end. Every health vendor is announcing one." Your team has zero ML experience and the patient-data privacy story is unclear.',
       options: {
         accept: {
           label: 'Accept and commit',
@@ -673,7 +673,7 @@ const healthcare: ScenarioDisplay = {
           visibleConsequence: 'Delay 1 iteration.',
         },
         'ship-anyway': {
-          label: 'Ship anyway — "move fast"',
+          label: 'Ship anyway: "move fast"',
           visibleConsequence: 'Big compliance risk.',
         },
       },

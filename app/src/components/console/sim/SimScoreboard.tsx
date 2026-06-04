@@ -9,7 +9,7 @@ export type DimensionDeltas = Partial<Record<DimensionKey, number>>;
 
 /**
  * The compact live 5-dimension scoreboard shown in the persistent context rail.
- * `score` is always passed in fresh from `calculateScore(state, scenario)` — the
+ * `score` is always passed in fresh from `calculateScore(state, scenario)`; the
  * engine read function is the single source of truth; this component only paints.
  *
  * `deltas` optionally tints each gauge with a signed change (used on Plan to

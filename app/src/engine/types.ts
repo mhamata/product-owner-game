@@ -18,7 +18,7 @@ export interface PBI {
   productId?: string;
   // Iteration in which this PBI first entered the backlog. Null for initial.
   discoveredInIteration?: number | null;
-  // 'initial' | 'discovery' | 'event' — source tag for UI and analytics.
+  // 'initial' | 'discovery' | 'event': source tag for UI and analytics.
   source?: 'initial' | 'discovery' | 'event';
 }
 
@@ -121,7 +121,7 @@ export interface GameState {
   eventLog: EventRecord[];
   activePatterns: PatternTag[];
 
-  // Snapshot for review screen — set each time resolveIteration runs
+  // Snapshot for review screen, set each time resolveIteration runs
   lastOutcome: IterationOutcome | null;
 
   // Pending events to be surfaced in review (rules-based)
@@ -132,7 +132,7 @@ export interface GameState {
   newlyDiscoveredIds: string[];
 
   // PM methods the player claimed to have used on decisions. Surfaced in
-  // the AI retrospective as "you invoked RICE here — interview angle: ..."
+  // the AI retrospective as "you invoked RICE here, interview angle: ..."
   methodTags: MethodTag[];
 }
 

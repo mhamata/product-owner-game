@@ -14,7 +14,7 @@ import { CheckIcon, ChevronRightIcon, InfoIcon, XIcon } from '../Icon';
 
 const padIndex = (n: number) => String(n).padStart(2, '0');
 
-/** answer → checked → complete, like LessonFrame — but grading is async. */
+/** answer → checked → complete, like LessonFrame, but grading is async. */
 type Phase = 'answer' | 'checked' | 'complete';
 
 /** Humanise a rubric JSON key, e.g. "coverage_gaps" → "Coverage gaps". */
@@ -62,10 +62,10 @@ function GradeSection({ label, value }: { label: string; value: unknown }) {
  * ASYNCHRONOUS: it POSTs to /api/grade and renders the returned rubric verdict
  * (score + strengths/issues/rewrite) in the Console feedback style. If the key
  * is missing the route returns an error, which we surface in a bad-styled card
- * with a Retry — the same graceful degradation as the legacy LLMGrade path.
+ * with a Retry, the same graceful degradation as the legacy LLMGrade path.
  *
  * Mastery, like the deterministic loop, is awarded on Continue (the answer +
- * model feedback are revealed either way); the model's 0–10 score is shown as
+ * model feedback are revealed either way); the model's 0-10 score is shown as
  * feedback, not used as a gate.
  */
 export function FreeTextGradeLesson({
@@ -268,7 +268,7 @@ export function FreeTextGradeLesson({
                       {result?.error}
                     </p>
                     <p className="mt-2 text-[12.5px] leading-[1.55] text-slate">
-                      Your answer is saved below — you can still continue and mark
+                      Your answer is saved below. You can still continue and mark
                       this skill complete, or set{' '}
                       <code className="mono rounded bg-panel px-1 py-0.5 text-[11.5px] text-ink-2">
                         ANTHROPIC_API_KEY
@@ -422,7 +422,7 @@ function FeedbackVerdict({
           )}
         </div>
       ) : (
-        // Model replied but not as JSON — show the raw text rather than nothing.
+        // Model replied but not as JSON: show the raw text rather than nothing.
         <p className="mt-3 whitespace-pre-wrap text-[13.5px] leading-[1.6] text-ink-2">
           {/* raw is carried on the result; parent only passes parsed, so this
               branch is effectively the "no structured fields" fallback. */}

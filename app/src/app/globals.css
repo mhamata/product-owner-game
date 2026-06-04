@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================================
-   PRAXIS — "Console" design system
+   PRAXIS: "Console" design system
    Ported from design/previews/direction-b.html.
    Light, technical, engineer-tool aesthetic: mono metadata +
    one electric-indigo accent. Gamification = crisp data-viz.
@@ -39,7 +39,7 @@
   --color-bad-line: #fecaca;
   --color-flame: #ea580c;
 
-  /* amber "warn" state — used by the simulation's telegraphed event cards.
+  /* amber "warn" state, used by the simulation's telegraphed event cards.
      (The original Console port omitted these; the sim reintroduces them from
      the design/previews/sim-b.html palette.) */
   --color-warn: #b45309;
@@ -80,7 +80,7 @@ html {
 
 body {
   margin: 0;
-  /* FIX: previously hard-coded to Arial — now uses the sans var */
+  /* FIX: previously hard-coded to Arial; now uses the sans var */
   font-family: var(--font-sans);
   color: var(--color-foreground);
   background: var(--color-background);

@@ -11,7 +11,7 @@ import { ArrowRightIcon, ChevronRightIcon, ClockIcon } from '../Icon';
 const padIndex = (n: number) => String(n).padStart(2, '0');
 
 /**
- * Placeholder for `coming-soon` skills — every new ladder skill plus the
+ * Placeholder for `coming-soon` skills: every new ladder skill plus the
  * specialization tracks. It names the level/unit, the competency the skill
  * builds, and the planned practice modalities, then offers a jump to the linked
  * method (when one exists) so the screen isn't a dead end.

@@ -3,13 +3,13 @@ import type { ClassificationDrill } from './types';
 import { kanoStructure, type KanoCategory, type KanoItemId } from './kano';
 
 /**
- * Kano drill — DISPLAY LAYER (per industry).
+ * Kano drill: DISPLAY LAYER (per industry).
  *
  * Human-readable copy ONLY. The four categories and the correct category per
  * item live in `./kano` and never change. Mirrors
  * `@/scenarios/scenario01.display`.
  *
- * Structural slots (fixed `correct` category — pick a believable item per one):
+ * Structural slots (fixed `correct` category, pick a believable item per one):
  *   • `login`          → Basic: expected; missing = anger, present = unnoticed.
  *   • `load-speed`     → Performance: more is better, continuously compared.
  *   • `ai-suggestions` → Delighter: unexpected; great execution earns word of mouth.
@@ -42,10 +42,10 @@ const DARK_MODE: KanoItemDisplay = {
 };
 
 const KANO_INSIGHT =
-  'Dark mode is the textbook "category drift" example — Delighters decay into Basics over time. Re-survey periodically; yesterday’s wow is today’s table stakes.';
+  'Dark mode is the textbook "category drift" example: Delighters decay into Basics over time. Re-survey periodically; yesterday’s wow is today’s table stakes.';
 
 // ============================================================================
-// SaaS — original content, ported verbatim from the legacy kanoDrill.
+// SaaS: original content, ported verbatim from the legacy kanoDrill.
 // ============================================================================
 const saas: KanoDisplay = {
   scenario: 'SaaS · mainstream segment',
@@ -58,7 +58,7 @@ const saas: KanoDisplay = {
     },
     'load-speed': {
       name: 'Page load speed',
-      why: 'More is better — users continuously compare apps on responsiveness.',
+      why: 'More is better. Users continuously compare apps on responsiveness.',
     },
     'ai-suggestions': {
       name: 'AI-generated content suggestions',
@@ -78,7 +78,7 @@ const saas: KanoDisplay = {
 };
 
 // ============================================================================
-// Fintech — generic expense-management / spend platform (no brokerage/trading).
+// Fintech: generic expense-management / spend platform (no brokerage/trading).
 // ============================================================================
 const fintech: KanoDisplay = {
   scenario: 'Fintech · mainstream segment',
@@ -91,7 +91,7 @@ const fintech: KanoDisplay = {
     },
     'load-speed': {
       name: 'Report load speed',
-      why: 'More is better — finance teams continuously compare tools on responsiveness.',
+      why: 'More is better. Finance teams continuously compare tools on responsiveness.',
     },
     'ai-suggestions': {
       name: 'AI-suggested expense categories',
@@ -111,7 +111,7 @@ const fintech: KanoDisplay = {
 };
 
 // ============================================================================
-// Marketplace — two-sided marketplace connecting sellers & buyers.
+// Marketplace: two-sided marketplace connecting sellers & buyers.
 // ============================================================================
 const marketplace: KanoDisplay = {
   scenario: 'Marketplace · mainstream segment',
@@ -124,7 +124,7 @@ const marketplace: KanoDisplay = {
     },
     'load-speed': {
       name: 'Search & listing load speed',
-      why: 'More is better — buyers and sellers continuously compare on responsiveness.',
+      why: 'More is better. Buyers and sellers continuously compare on responsiveness.',
     },
     'ai-suggestions': {
       name: 'AI-generated listing descriptions',
@@ -144,7 +144,7 @@ const marketplace: KanoDisplay = {
 };
 
 // ============================================================================
-// Consumer — habit-tracking / journaling app.
+// Consumer: habit-tracking / journaling app.
 // ============================================================================
 const consumer: KanoDisplay = {
   scenario: 'Consumer · mainstream segment',
@@ -157,7 +157,7 @@ const consumer: KanoDisplay = {
     },
     'load-speed': {
       name: 'App launch speed',
-      why: 'More is better — users continuously compare apps on responsiveness.',
+      why: 'More is better. Users continuously compare apps on responsiveness.',
     },
     'ai-suggestions': {
       name: 'AI-generated habit insights',
@@ -177,7 +177,7 @@ const consumer: KanoDisplay = {
 };
 
 // ============================================================================
-// Healthcare — clinic-facing healthtech (patient intake & scheduling).
+// Healthcare: clinic-facing healthtech (patient intake & scheduling).
 // ============================================================================
 const healthcare: KanoDisplay = {
   scenario: 'Healthcare · mainstream segment',
@@ -190,7 +190,7 @@ const healthcare: KanoDisplay = {
     },
     'load-speed': {
       name: 'Chart load speed',
-      why: 'More is better — clinicians continuously compare tools on responsiveness.',
+      why: 'More is better. Clinicians continuously compare tools on responsiveness.',
     },
     'ai-suggestions': {
       name: 'AI-drafted visit summaries',

@@ -9,13 +9,13 @@ import { StepHeader } from './StepHeader';
 import { useReducedMotion } from './useReducedMotion';
 
 /**
- * STEP 3 · SHIP — animate the capacity "roll".
+ * STEP 3 · SHIP: animate the capacity "roll".
  *
  * The engine has ALREADY rolled capacity (the runner dispatched execute-iteration
  * before showing this step), so the landing number is authoritative:
  * `outcome.capacityRolled`, within `outcome.capacityRange`. We animate a tween up
  * to that exact value, then reveal which committed items fit (outcome.done) vs
- * didn't (outcome.notDone). Nothing here is randomised — only the *reveal* is.
+ * didn't (outcome.notDone). Nothing here is randomised; only the *reveal* is.
  */
 export function ShipStep({
   state,
@@ -94,12 +94,12 @@ export function ShipStep({
         name="Ship"
         eyebrow="Capacity rolls"
         title={<span id="ship-title">The sprint runs…</span>}
-        sub={`Your real capacity lands somewhere in the ${range.lower}–${range.upper} range. Let's see how many of your committed points actually fit.`}
+        sub={`Your real capacity lands somewhere in the ${range.lower}-${range.upper} range. Let's see how many of your committed points actually fit.`}
       />
 
       <Coachmark id="release" tag="Releasing" active={firstSprint}>
         Finished features only earn revenue when you <b>Ship a Release</b>. Building without releasing
-        banks the work — but no money moves yet.
+        banks the work, but no money moves yet.
       </Coachmark>
 
       <div className="mt-[30px] text-center">
@@ -115,7 +115,7 @@ export function ShipStep({
             {display}
           </div>
           <div className="mono text-[12px] text-faint">
-            within {range.lower}–{range.upper} pts
+            within {range.lower}-{range.upper} pts
           </div>
 
           <div className="relative mt-[22px] h-2.5 overflow-hidden rounded-full bg-line-2" aria-hidden="true">
@@ -183,7 +183,7 @@ export function ShipStep({
 }
 
 /**
- * Plain-language fit summary for the single polite live region — what actually
+ * Plain-language fit summary for the single polite live region: what actually
  * fit in the rolled capacity vs what spilled over. Counts committed items only
  * (release cards are summarised as "the release" when present).
  */

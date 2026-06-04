@@ -8,9 +8,9 @@ import { masterableSkills } from '@/curriculum/data';
  * Per-skill mastery record.
  *
  * Gamification principle: progress is demonstrated COMPETENCE, never a
- * lesson/attempt tally. `mastery` is a 0–1 score; a skill counts as mastered
+ * lesson/attempt tally. `mastery` is a 0-1 score; a skill counts as mastered
  * once it crosses MASTERY_THRESHOLD. We keep `attempts` only for internal
- * pacing — it is never surfaced as "progress".
+ * pacing; it is never surfaced as "progress".
  */
 export interface SkillProgress {
   mastery: number; // 0..1 demonstrated competence
@@ -37,7 +37,7 @@ interface LearnState {
 
 interface LearnActions {
   /**
-   * Record a demonstrated result for a skill. `score` is 0–1 competence for
+   * Record a demonstrated result for a skill. `score` is 0-1 competence for
    * this attempt; mastery takes the best score seen so far. Crossing the
    * threshold for the first time keeps the consistency streak warm.
    */
@@ -46,7 +46,7 @@ interface LearnActions {
   masterSkill: (skillId: string) => void;
   /** True if the skill is at/above the mastery threshold. */
   isMastered: (skillId: string) => boolean;
-  /** Set of mastered skill ids — the input to curriculum state derivation. */
+  /** Set of mastered skill ids: the input to curriculum state derivation. */
   masteredIds: () => Set<string>;
   /** Count of mastered skills (the headline "competence" number). */
   masteredCount: () => number;
@@ -74,7 +74,7 @@ function dayDiff(fromISO: string, toISO: string): number {
    A new player starts at the BEGINNING: no skills mastered, a cold streak,
    so Unit 01 / Skill 01 is the first active node and everything else is
    locked. (An earlier build seeded Unit 01 as already-mastered with a
-   12-day streak to match the static mockup — that made the live game look
+   12-day streak to match the static mockup; that made the live game look
    already-played, so it's removed.)
    ------------------------------------------------------------------ */
 function buildSeed(): Pick<LearnState, 'progress' | 'streak' | 'lastActiveDay'> {
@@ -106,7 +106,7 @@ export const useLearnStore = create<LearnStore>()(
           };
 
           // Extend the consistency streak only on a *newly* mastered skill,
-          // and only once per day (flexible — no guilt, no double-count).
+          // and only once per day (flexible: no guilt, no double-count).
           let { streak, lastActiveDay } = s;
           if (nowMastered && !wasMastered) {
             const day = today();

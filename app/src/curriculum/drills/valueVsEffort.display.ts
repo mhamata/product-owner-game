@@ -7,7 +7,7 @@ import {
 } from './valueVsEffort';
 
 /**
- * Value-vs-Effort drill — DISPLAY LAYER (per industry).
+ * Value-vs-Effort drill: DISPLAY LAYER (per industry).
  *
  * Human-readable copy ONLY: the scenario tag, the feature NAME per row, and the
  * option label per option. The value/effort levels and the correct option id
@@ -36,7 +36,7 @@ export interface ValueVsEffortDisplay {
 const SHIP_ALL = 'Ship all three';
 
 // ============================================================================
-// SaaS — original content, ported verbatim from ValueVsEffortLesson.tsx.
+// SaaS: original content, ported verbatim from ValueVsEffortLesson.tsx.
 // ============================================================================
 const saas: ValueVsEffortDisplay = {
   scenario: 'SaaS',
@@ -54,7 +54,7 @@ const saas: ValueVsEffortDisplay = {
 };
 
 // ============================================================================
-// Fintech — generic expense-management / spend platform (no brokerage/trading).
+// Fintech: generic expense-management / spend platform (no brokerage/trading).
 // ============================================================================
 const fintech: ValueVsEffortDisplay = {
   scenario: 'Fintech',
@@ -72,7 +72,7 @@ const fintech: ValueVsEffortDisplay = {
 };
 
 // ============================================================================
-// Marketplace — two-sided marketplace connecting sellers & buyers.
+// Marketplace: two-sided marketplace connecting sellers & buyers.
 // ============================================================================
 const marketplace: ValueVsEffortDisplay = {
   scenario: 'Marketplace',
@@ -90,7 +90,7 @@ const marketplace: ValueVsEffortDisplay = {
 };
 
 // ============================================================================
-// Consumer — habit-tracking / journaling app.
+// Consumer: habit-tracking / journaling app.
 // ============================================================================
 const consumer: ValueVsEffortDisplay = {
   scenario: 'Consumer',
@@ -108,7 +108,7 @@ const consumer: ValueVsEffortDisplay = {
 };
 
 // ============================================================================
-// Healthcare — clinic-facing healthtech (patient intake & scheduling).
+// Healthcare: clinic-facing healthtech (patient intake & scheduling).
 // ============================================================================
 const healthcare: ValueVsEffortDisplay = {
   scenario: 'Healthcare',

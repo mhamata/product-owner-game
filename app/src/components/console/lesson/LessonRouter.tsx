@@ -37,7 +37,7 @@ const industryOf = (scenario: string) => scenario.split(' · ')[0];
  *
  * The drill content is now industry-aware: we read the learner's home industry
  * from the persisted store and resolve each drill for it. Reads are
- * hydration-safe — until the store rehydrates we render the DEFAULT industry,
+ * hydration-safe: until the store rehydrates we render the DEFAULT industry,
  * matching SSR + the first client paint (the same pattern the capstone sim uses
  * in SimRunner) so there is no hydration mismatch.
  */
@@ -87,7 +87,7 @@ export function LessonRouter({ skill }: { skill: Skill }) {
         />
       );
     case 'kano-moscow':
-      // Skill maps to drillType 'kano' — run the Kano classification.
+      // Skill maps to drillType 'kano', so run the Kano classification.
       return (
         <ClassificationLesson
           skill={skill}

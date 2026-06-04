@@ -9,7 +9,7 @@ import { FreeTextDrillRunner } from './FreeTextDrillRunner';
  * Library Mom Test drill. The discovery brief, the single "write one question
  * that passes the Mom Test" field, the composed answer, and the research-goal
  * context sent to the grader all come from the shared, industry-aware drill
- * engine (src/curriculum/drills) — resolved for the learner's home industry
+ * engine (src/curriculum/drills), resolved for the learner's home industry
  * (hydration-safe; SaaS until the store rehydrates). The `drillId` ('mom-test')
  * that selects the server-side rubric is unchanged, so grading is identical
  * across industries.

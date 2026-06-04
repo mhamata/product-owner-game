@@ -1,13 +1,13 @@
 import type { FreeTextValues } from './types';
 
 /**
- * Jobs-to-be-Done drill — STRUCTURAL CORE (industry-neutral).
+ * Jobs-to-be-Done drill: STRUCTURAL CORE (industry-neutral).
  *
  * Free-text, LLM-graded. The learner writes a JTBD statement in the canonical
  * "When [situation], I want to [motivation], so I can [outcome]" form.
  *
  * "Answer-bearing" here is different from the deterministic drills: there is no
- * client-side answer key — grading is the rubric verdict from `/api/grade`,
+ * client-side answer key. Grading is the rubric verdict from `/api/grade`,
  * keyed SERVER-SIDE by `drillId` (see `src/app/api/grade/route.ts`). So the
  * structure that must stay identical across industries is: the `drillId` (which
  * selects the rubric), the field KEYS + input shapes, and the pure
@@ -17,7 +17,7 @@ import type { FreeTextValues } from './types';
  * is graded.
  */
 
-/** The structural field keys — the keys every display pack must label. */
+/** The structural field keys: the keys every display pack must label. */
 export type JtbdFieldKey = 'situation' | 'motivation' | 'outcome';
 
 /** Field input shape (structural: which keys exist + how they render). */
