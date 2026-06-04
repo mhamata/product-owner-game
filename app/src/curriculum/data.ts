@@ -1,5 +1,6 @@
 import type {
   Competency,
+  CompetencyGroup,
   Level,
   LevelId,
   Modality,
@@ -10,6 +11,7 @@ import type {
   TrackId,
   Unit,
 } from './types';
+import { COMPETENCIES } from './types';
 
 /**
  * The PRAXIS curriculum: a leveled, zero-to-expert PM career ladder.
@@ -588,6 +590,15 @@ function readySkillsOfLevel(levelId: LevelId): Skill[] {
 }
 
 /**
+ * The ids of a level's `ready` skills, in curriculum order. These are exactly
+ * the skills certifying the level requires, and the set a passing test-out marks
+ * as mastered. Public so the placement flow and the profile share one definition.
+ */
+export function readySkillIdsOfLevel(levelId: LevelId): string[] {
+  return readySkillsOfLevel(levelId).map((s) => s.id);
+}
+
+/**
  * Is this level unlocked given the mastered set?
  *
  *  - `foundations` is always unlocked (the entry point).
@@ -674,14 +685,107 @@ export function isUnitCurrent(unitId: string, masteredIds: ReadonlySet<string>):
   return unit.skills.some((s) => deriveSkillState(s.id, masteredIds) === 'active');
 }
 
-/** A level is complete once all its `ready` skills are mastered. */
-export function isLevelComplete(levelId: LevelId, masteredIds: ReadonlySet<string>): boolean {
+/**
+ * A level is CERTIFIED once every `ready` skill in it is mastered.
+ *
+ * This is the bar that turns "I climbed this rung" into "I can demonstrate this
+ * rung". It is intentionally the same predicate as level completion: mastery in
+ * PRAXIS is demonstrated competence (a passing check or drill), never attendance,
+ * so a fully-mastered level IS a certified level. The two names exist because the
+ * map speaks of a level being "complete" while the profile speaks of it being
+ * "certified"; they share one source of truth here so they can never drift.
+ *
+ * A level with NO `ready` skills is not certifiable yet (it has nothing to
+ * demonstrate), so it reads as not-certified rather than vacuously certified.
+ */
+export function isLevelCertified(levelId: LevelId, masteredIds: ReadonlySet<string>): boolean {
   const ready = readySkillsOfLevel(levelId);
   if (ready.length === 0) return false;
   return ready.every((s) => masteredIds.has(s.id));
 }
 
+/**
+ * A level is complete once all its `ready` skills are mastered. Alias of
+ * {@link isLevelCertified}: completion and certification are the same condition
+ * (see the note there). Kept so existing call sites read naturally.
+ */
+export function isLevelComplete(levelId: LevelId, masteredIds: ReadonlySet<string>): boolean {
+  return isLevelCertified(levelId, masteredIds);
+}
+
 /** True when the level contains the single active node. */
 export function isLevelCurrent(levelId: LevelId, masteredIds: ReadonlySet<string>): boolean {
   return getUnitsForLevel(levelId).some((u) => isUnitCurrent(u.id, masteredIds));
+}
+
+/* ==================================================================
+   COMPETENCY COVERAGE: the "where am I strong / weak" view.
+
+   The map answers "what level am I". Coverage answers the orthogonal question:
+   across the 12-competency / 4-dimension model, how much of each muscle have I
+   actually demonstrated? For every competency (and every dimension it rolls up
+   into) we count the `ready` skills that build it and how many of those the
+   learner has mastered. Only `ready` skills count, for the same reason mastery
+   does: a coming-soon skill is a placeholder, so it must not drag a competency's
+   denominator down to a number the learner can never reach today.
+   ================================================================== */
+
+/** Mastered-ready over total-ready for one competency or dimension. */
+export interface CoverageStat {
+  /** `ready` skills that build this competency/dimension. */
+  total: number;
+  /** Of those, how many the learner has mastered. */
+  mastered: number;
+  /** mastered / total, or 0 when there is nothing ready to cover yet. */
+  fraction: number;
+}
+
+function statOf(skills: Skill[], masteredIds: ReadonlySet<string>): CoverageStat {
+  const ready = skills.filter((s) => s.status === 'ready');
+  const mastered = ready.filter((s) => masteredIds.has(s.id)).length;
+  return {
+    total: ready.length,
+    mastered,
+    fraction: ready.length === 0 ? 0 : mastered / ready.length,
+  };
+}
+
+/**
+ * Coverage for a single competency: count `ready` ladder skills tagged with it
+ * and how many are mastered. (Tracks are off-ladder and excluded, matching the
+ * mastery denominator.)
+ */
+export function competencyCoverage(
+  competency: Competency,
+  masteredIds: ReadonlySet<string>,
+): CoverageStat {
+  return statOf(
+    allSkills.filter((s) => s.competency === competency),
+    masteredIds,
+  );
+}
+
+/**
+ * Coverage for a whole dimension (or the cross-cutting bucket): every `ready`
+ * ladder skill whose competency rolls up into that group.
+ */
+export function dimensionCoverage(
+  group: CompetencyGroup,
+  masteredIds: ReadonlySet<string>,
+): CoverageStat {
+  return statOf(
+    allSkills.filter((s) => COMPETENCIES[s.competency].group === group),
+    masteredIds,
+  );
+}
+
+/** Coverage for every competency at once, keyed by competency id. */
+export function allCompetencyCoverage(
+  masteredIds: ReadonlySet<string>,
+): Record<Competency, CoverageStat> {
+  const out = {} as Record<Competency, CoverageStat>;
+  for (const id of Object.keys(COMPETENCIES) as Competency[]) {
+    out[id] = competencyCoverage(id, masteredIds);
+  }
+  return out;
 }

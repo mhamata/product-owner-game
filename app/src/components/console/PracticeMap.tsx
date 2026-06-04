@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   levels,
   tracks,
@@ -9,10 +9,11 @@ import {
   TOTAL_SKILLS,
   TOTAL_LADDER_SKILLS,
   deriveSkillState,
-  isLevelComplete,
+  isLevelCertified,
   isLevelCurrent,
   isLevelUnlocked,
 } from '@/curriculum/data';
+import { canTestOut } from '@/curriculum/placement';
 import type { Level } from '@/curriculum/types';
 import { useLearnStore } from '@/store/learnStore';
 import { useIndustryStore } from '@/store/industryStore';
@@ -24,13 +25,14 @@ import { ModalityIcons } from './skillMeta';
 import {
   ArrowRightIcon,
   BuildingIcon,
+  CapIcon,
   CaretDownIcon,
-  CheckIcon,
   CircleDotIcon,
   ClockIcon,
   FlameIcon,
   LayersIcon,
   LockIcon,
+  XIcon,
 } from './Icon';
 
 const padIndex = (n: number) => String(n).padStart(2, '0');
@@ -45,32 +47,44 @@ const BRANCH_NOTE: Record<Level['branch'], string | null> = {
 };
 
 /**
- * One LEVEL on the Practice Map: a labelled header (locked / active / complete),
- * then its units, each a sub-header over a grid of skill cards. Locked levels
- * collapse to a one-line "locknote" listing their units so the map stays
- * scannable, exactly the pattern the old per-unit map used, lifted up a tier.
+ * One LEVEL on the Practice Map: a labelled header (locked / available / in
+ * progress / certified), then its units, each a sub-header over a grid of skill
+ * cards. Locked levels collapse to a one-line "locknote" listing their units so
+ * the map stays scannable, exactly the pattern the old per-unit map used, lifted
+ * up a tier.
+ *
+ * `isNextCore` is true for the single locked level that sits immediately after
+ * the last certified one: the one it is fair to skip-ahead into via test-out.
  */
 function LevelSection({
   level,
   masteredIds,
   progress,
+  isNextCore,
 }: {
   level: Level;
   masteredIds: ReadonlySet<string>;
   progress: Record<string, { mastery: number }>;
+  isNextCore: boolean;
 }) {
   const units = getUnitsForLevel(level.id);
   const unlocked = isLevelUnlocked(level.id, masteredIds);
-  const done = isLevelComplete(level.id, masteredIds);
+  const certified = isLevelCertified(level.id, masteredIds);
   const current = isLevelCurrent(level.id, masteredIds);
-  // "Locked" = not yet reachable. An unlocked level that isn't current/done is
-  // still shown open (it's the next thing, or all coming-soon) so learners can
+  // "Locked" = not yet reachable. An unlocked level that isn't current/certified
+  // is still shown open (it's the next thing, or all coming-soon) so learners can
   // see what's ahead; only truly gated levels collapse.
   const collapsed = !unlocked;
   const branchNote = BRANCH_NOTE[level.branch];
 
-  const statusPill = done
-    ? { cls: 'border-good-line bg-good-050 text-good', icon: <CheckIcon size={13} />, label: 'Complete' }
+  // Test out is offered where skip-ahead is meaningful: an unlocked level you
+  // have not certified (prove it instead of grinding), or the single next locked
+  // core level (true skip-ahead for an experienced PM). Only when a challenge can
+  // actually be assembled for the level.
+  const testable = !certified && (unlocked || isNextCore) && canTestOut(level.id);
+
+  const statusPill = certified
+    ? { cls: 'border-good-line bg-good-050 text-good', icon: <CapIcon size={13} />, label: 'Certified' }
     : current
       ? { cls: 'border-accent-100 bg-accent-050 text-accent', icon: <CircleDotIcon size={13} />, label: 'In progress' }
       : unlocked
@@ -84,7 +98,7 @@ function LevelSection({
         <span
           className={[
             'mono whitespace-nowrap rounded-console-sm border px-[10px] py-1 text-[11px] uppercase tracking-[0.14em]',
-            done
+            certified
               ? 'border-good-line bg-good-050 text-good'
               : current
                 ? 'border-accent-100 bg-accent-050 text-accent'
@@ -106,28 +120,59 @@ function LevelSection({
             {branchNote}
           </span>
         )}
-        <span
-          className={`mono ml-auto inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.1em] ${statusPill.cls}`}
-        >
-          {statusPill.icon}
-          {statusPill.label}
-        </span>
+        <div className="mono ml-auto flex flex-wrap items-center gap-2">
+          {testable && (
+            <Link
+              href={`/learn/testout/${level.id}`}
+              aria-label={`Test out of ${level.label}`}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-paper px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
+            >
+              <CapIcon size={12} />
+              Test out
+            </Link>
+          )}
+          <span
+            className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.1em] ${statusPill.cls}`}
+          >
+            {statusPill.icon}
+            {statusPill.label}
+          </span>
+        </div>
       </div>
 
-      {/* level summary */}
+      {/* level summary, with a "Level N certified" affordance once earned */}
+      {certified && (
+        <div className="mt-3 flex items-center gap-2 text-[13px] text-good">
+          <CapIcon size={15} className="flex-none" />
+          <span className="font-semibold">Level {padIndex(level.order)} certified</span>
+          <span className="text-slate">· every ready skill mastered</span>
+        </div>
+      )}
       <p className={['mt-3 max-w-[64ch] text-[14px]', collapsed ? 'text-mute' : 'text-slate'].join(' ')}>
         {level.summary}
       </p>
 
       {collapsed ? (
-        <div className="mt-3 flex items-start gap-2.5 text-[13px] text-mute">
-          <LockIcon size={15} className="mt-0.5 flex-none text-faint" />
-          <span>
-            Unlocks as you master earlier levels ·{' '}
-            <span className="mono text-[11.5px] tracking-[0.02em] text-faint">
-              {units.map((u) => u.title).join(' · ')}
+        <div className="mt-3 flex flex-col gap-3">
+          <div className="flex items-start gap-2.5 text-[13px] text-mute">
+            <LockIcon size={15} className="mt-0.5 flex-none text-faint" />
+            <span>
+              Unlocks as you master earlier levels ·{' '}
+              <span className="mono text-[11.5px] tracking-[0.02em] text-faint">
+                {units.map((u) => u.title).join(' · ')}
+              </span>
             </span>
-          </span>
+          </div>
+          {testable && (
+            <Link
+              href={`/learn/testout/${level.id}`}
+              className="mono inline-flex w-fit items-center gap-1.5 rounded-console border border-line bg-paper px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
+            >
+              <CapIcon size={13} />
+              Test out of {level.label}
+              <ArrowRightIcon size={13} />
+            </Link>
+          )}
         </div>
       ) : (
         <div className="mt-5 flex flex-col gap-7">
@@ -159,6 +204,70 @@ function LevelSection({
         </div>
       )}
     </section>
+  );
+}
+
+const HINT_DISMISS_KEY = 'praxis-testout-hint-dismissed';
+
+/**
+ * First-run self-placement nudge: a subtle, dismissible one-liner pointing an
+ * experienced PM at the test-out flow so they can skip ahead instead of starting
+ * at skill one. Shown only before any progress exists; dismissal is remembered
+ * (localStorage) so it never nags. SSR-safe: hidden on the server + first paint,
+ * revealed after we read the dismiss flag, so there is no hydration flash.
+ */
+function TestOutHint({ targetLevelId }: { targetLevelId: string }) {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    // Defer the reveal to the next frame so the state update is not synchronous
+    // within the effect (mirrors ProgressRing's mount pattern) and stays
+    // SSR-safe: the server + first paint render nothing, then we read the flag.
+    const id = requestAnimationFrame(() => {
+      let dismissed = false;
+      try {
+        dismissed = localStorage.getItem(HINT_DISMISS_KEY) === '1';
+      } catch {
+        dismissed = false;
+      }
+      if (!dismissed) setShow(true);
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  if (!show) return null;
+
+  const dismiss = () => {
+    try {
+      localStorage.setItem(HINT_DISMISS_KEY, '1');
+    } catch {
+      /* best-effort: dismissal just won't persist if storage is unavailable */
+    }
+    setShow(false);
+  };
+
+  return (
+    <div className="mt-5 flex flex-wrap items-center gap-2.5 rounded-console-lg border border-line bg-panel px-4 py-3">
+      <CapIcon size={16} className="flex-none text-accent" />
+      <p className="text-[13.5px] leading-[1.5] text-ink-2">
+        New to product, or already experienced? You can{' '}
+        <Link
+          href={`/learn/testout/${targetLevelId}`}
+          className="font-semibold text-accent underline underline-offset-2 hover:text-accent-700"
+        >
+          test out of a level
+        </Link>{' '}
+        to place yourself.
+      </p>
+      <button
+        type="button"
+        onClick={dismiss}
+        aria-label="Dismiss the test-out tip"
+        className="ml-auto inline-flex h-7 w-7 flex-none items-center justify-center rounded-console border border-line bg-paper text-faint transition-[border-color,color] duration-150 hover:border-faint hover:text-slate"
+      >
+        <XIcon size={14} />
+      </button>
+    </div>
   );
 }
 
@@ -196,6 +305,17 @@ export function PracticeMap() {
   const masteredCount = masteredIds.size;
   const overall = TOTAL_SKILLS > 0 ? masteredCount / TOTAL_SKILLS : 0;
   const overallPct = Math.round(overall * 100);
+
+  // The single locked CORE level it is fair to skip-ahead into: the lowest-order
+  // core level that is still locked. (Its predecessor must be certified for it to
+  // be the *next* one; the lowest locked core level always satisfies that.) Used
+  // to surface a "Test out" affordance on the next rung, not on every far level.
+  const nextCoreLevelId = useMemo(() => {
+    const lockedCore = levels
+      .filter((l) => l.branch === 'core' && !isLevelUnlocked(l.id, masteredIds))
+      .sort((a, b) => a.order - b.order);
+    return lockedCore[0]?.id ?? null;
+  }, [masteredIds]);
 
   return (
     <>
@@ -306,6 +426,11 @@ export function PracticeMap() {
               </div>
               <span className="mono tnum text-[12px] text-slate">{overallPct}%</span>
             </div>
+
+            {/* first-run self-placement nudge (only before any progress) */}
+            {hasHydrated && masteredCount === 0 && (
+              <TestOutHint targetLevelId={levels[0].id} />
+            )}
           </header>
 
           {/* the career ladder */}
@@ -316,6 +441,7 @@ export function PracticeMap() {
                 level={level}
                 masteredIds={masteredIds}
                 progress={progress}
+                isNextCore={level.id === nextCoreLevelId}
               />
             ))}
           </div>

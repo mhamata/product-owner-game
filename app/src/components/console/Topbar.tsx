@@ -1,11 +1,17 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { CapIcon } from './Icon';
 
 /**
  * Sticky top utility bar with the `praxis.` mono wordmark, matching the
  * mockup's `.topbar`. `right` lets each screen slot in its own controls
  * (e.g. the lesson's close affordance) without a screen-toggle that doesn't
  * apply to a routed app.
+ *
+ * When no `right` is given, the bar shows the default nav: a link to the
+ * Progress / profile view (level certifications + competency matrix). Screens
+ * that need their own right-hand control (a lesson's close X, the profile's
+ * "Map" link) pass `right` to replace it.
  *
  * `context` is the wordmark suffix after "v0 ·", "console" on the learning
  * path (default), "simulation" on the sim route (matches sim-b.html).
@@ -30,7 +36,15 @@ export function Topbar({
             v0 · {context}
           </span>
         </Link>
-        {right}
+        {right ?? (
+          <Link
+            href="/progress"
+            className="mono inline-flex items-center gap-1.5 rounded-console border border-line bg-paper px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
+          >
+            <CapIcon size={13} />
+            Progress
+          </Link>
+        )}
       </div>
     </header>
   );

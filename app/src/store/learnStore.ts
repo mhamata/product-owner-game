@@ -44,6 +44,15 @@ interface LearnActions {
   recordResult: (skillId: string, score: number) => void;
   /** Convenience: mark a skill fully mastered (score = 1). */
   masterSkill: (skillId: string) => void;
+  /**
+   * Record a passing PLACEMENT (test-out) result for a whole level: mark every
+   * given skill mastered. This is legitimate because passing the placement
+   * challenge demonstrates the same competence the lessons gate on (see
+   * src/curriculum/placement.ts). A FAIL must never call this: it records
+   * nothing, by design. Skills already mastered are left untouched (no double
+   * streak credit), so re-testing a level you've certified is a no-op.
+   */
+  recordPlacementPass: (skillIds: readonly string[]) => void;
   /** True if the skill is at/above the mastery threshold. */
   isMastered: (skillId: string) => boolean;
   /** Set of mastered skill ids: the input to curriculum state derivation. */
@@ -128,6 +137,42 @@ export const useLearnStore = create<LearnStore>()(
       },
 
       masterSkill: (skillId) => get().recordResult(skillId, 1),
+
+      recordPlacementPass: (skillIds) => {
+        set((s) => {
+          const progress = { ...s.progress };
+          let { streak, lastActiveDay } = s;
+          let masteredAnyNew = false;
+
+          // Mark each skill fully mastered. We mirror recordResult's per-skill
+          // bookkeeping (best-score, masteredAt) but extend the streak only ONCE
+          // for the whole batch and only if something newly crossed the bar, so
+          // testing out of a level is one consistency credit, not one per skill.
+          for (const id of skillIds) {
+            const prev = progress[id] ?? { mastery: 0, attempts: 0 };
+            const wasMastered = prev.mastery >= MASTERY_THRESHOLD;
+            if (!wasMastered) masteredAnyNew = true;
+            progress[id] = {
+              mastery: MASTERY_THRESHOLD,
+              attempts: prev.attempts + 1,
+              masteredAt: prev.masteredAt ?? Date.now(),
+            };
+          }
+
+          if (masteredAnyNew) {
+            const day = today();
+            if (lastActiveDay === null) {
+              streak = 1;
+            } else if (lastActiveDay !== day) {
+              const gap = dayDiff(lastActiveDay, day);
+              streak = gap === 1 ? streak + 1 : 1;
+            }
+            lastActiveDay = day;
+          }
+
+          return { progress, streak, lastActiveDay };
+        });
+      },
 
       isMastered: (skillId) =>
         (get().progress[skillId]?.mastery ?? 0) >= MASTERY_THRESHOLD,
