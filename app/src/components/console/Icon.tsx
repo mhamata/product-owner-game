@@ -356,3 +356,62 @@ export function CircleIcon({ size = 12, ...props }: IconProps) {
     </svg>
   );
 }
+
+/** Clock — "coming soon" treatment on not-yet-built skills. */
+export function ClockIcon({ size = 13, ...props }: IconProps) {
+  return (
+    <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="12 7 12 12 15.5 14" />
+    </svg>
+  );
+}
+
+/** Stacked layers — specialization tracks (off-ladder depth). */
+export function LayersIcon({ size = 14, ...props }: IconProps) {
+  return (
+    <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
+      <path d="M12 2 2 7l10 5 10-5-10-5Z" />
+      <path d="M2 12l10 5 10-5" />
+      <path d="M2 17l10 5 10-5" />
+    </svg>
+  );
+}
+
+/** Book — reading/reference modality. */
+export function BookIcon({ size = 13, ...props }: IconProps) {
+  return (
+    <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
+      <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17.5H6.5A2.5 2.5 0 0 0 4 22Z" />
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+    </svg>
+  );
+}
+
+/** Speech bubble — roleplay/communication modality. */
+export function MessageIcon({ size = 13, ...props }: IconProps) {
+  return (
+    <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
+      <path d="M21 11.5a8.5 8.5 0 0 1-12.2 7.7L3 21l1.8-5.8A8.5 8.5 0 1 1 21 11.5Z" />
+    </svg>
+  );
+}
+
+/** Scales — judgment modality (decisions under ambiguity). */
+export function ScaleIcon({ size = 13, ...props }: IconProps) {
+  return (
+    <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
+      <path d="M12 3v18M6 21h12M3 8l3-5 3 5a3 3 0 0 1-6 0Zm12 0 3-5 3 5a3 3 0 0 1-6 0Z" />
+    </svg>
+  );
+}
+
+/** Document/file — artifact modality (PRDs, story maps). */
+export function FileIcon({ size = 13, ...props }: IconProps) {
+  return (
+    <svg {...base(size, props)} {...strokeProps} strokeWidth={2}>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+      <path d="M14 2v6h6M9 13h6M9 17h6" />
+    </svg>
+  );
+}

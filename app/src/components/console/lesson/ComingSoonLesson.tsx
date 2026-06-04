@@ -2,39 +2,57 @@
 
 import Link from 'next/link';
 import type { Skill } from '@/curriculum/types';
-import { getUnitForSkill } from '@/curriculum/data';
+import { COMPETENCIES } from '@/curriculum/types';
+import { getUnitForSkill, getLevel } from '@/curriculum/data';
 import { Topbar } from '../Topbar';
-import { ArrowRightIcon, ChevronRightIcon } from '../Icon';
+import { ModalityIcons } from '../skillMeta';
+import { ArrowRightIcon, ChevronRightIcon, ClockIcon } from '../Icon';
 
 const padIndex = (n: number) => String(n).padStart(2, '0');
 
 /**
- * Placeholder for skills that map to an existing drill but don't yet have a
- * full Console lesson loop (everything except value-vs-effort in Phase 1).
- * When the skill links to a method, we offer a jump to its library drill so
- * the screen isn't a dead end.
+ * Placeholder for `coming-soon` skills — every new ladder skill plus the
+ * specialization tracks. It names the level/unit, the competency the skill
+ * builds, and the planned practice modalities, then offers a jump to the linked
+ * method (when one exists) so the screen isn't a dead end.
  */
 export function ComingSoonLesson({ skill }: { skill: Skill }) {
   const unit = getUnitForSkill(skill.id);
+  const level = skill.level ? getLevel(skill.level) : undefined;
+  const competency = COMPETENCIES[skill.competency].label;
+
+  const context = unit
+    ? `${level ? `${level.label} · ` : ''}Unit ${padIndex(unit.number)}`
+    : 'Specialization track';
 
   return (
     <>
       <Topbar />
       <main className="flex-auto">
         <div className="mx-auto flex max-w-[720px] flex-col items-start px-6 pt-16">
-          <span className="mono rounded-console-sm border border-line bg-panel-2 px-2 py-0.5 text-[10.5px] uppercase tracking-[0.12em] text-mute">
-            {unit ? `Unit ${padIndex(unit.number)}` : 'Skill'} · {skill.title}
+          <span className="mono inline-flex items-center gap-2 rounded-console-sm border border-line bg-panel-2 px-2 py-0.5 text-[10.5px] uppercase tracking-[0.12em] text-mute">
+            <ClockIcon size={12} />
+            {context} · {skill.title}
           </span>
 
           <h1 className="mt-4 text-[28px] font-bold tracking-[-0.02em] text-ink">
             Lesson coming soon
           </h1>
-          <p className="mt-2 max-w-[48ch] text-[15px] text-slate">
-            The Console lesson loop for <b className="font-semibold text-ink">{skill.title}</b> is
-            being built. Today, only{' '}
-            <span className="mono text-[13.5px] text-accent">Value vs Effort</span>{' '}
-            ships the full interactive drill.
+          <p className="mt-2 max-w-[52ch] text-[15px] text-slate">
+            The practice loop for{' '}
+            <b className="font-semibold text-ink">{skill.title}</b> is on the
+            roadmap. It builds the{' '}
+            <span className="mono text-[13.5px] text-accent">{competency}</span>{' '}
+            competency. Meanwhile, the playable drills across Discovery,
+            Prioritization, Estimation, and Launch are live on the map.
           </p>
+
+          <div className="mt-5 flex items-center gap-2.5">
+            <span className="mono text-[11px] uppercase tracking-[0.12em] text-faint">
+              Planned formats
+            </span>
+            <ModalityIcons modalities={skill.modalities} />
+          </div>
 
           <div className="mt-7 flex flex-wrap gap-3">
             {skill.methodId && (

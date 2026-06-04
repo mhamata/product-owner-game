@@ -14,12 +14,14 @@ import {
   resolvePreMortemDrill,
   resolvePrFaqDrill,
 } from '@/curriculum/drills';
+import { getLessonContent } from '@/curriculum/lessons';
 import { ValueVsEffortLesson } from './ValueVsEffortLesson';
 import { ScoreRankLesson } from './ScoreRankLesson';
 import { ClassificationLesson } from './ClassificationLesson';
 import { SizingLesson } from './SizingLesson';
 import { SequencingLesson } from './SequencingLesson';
 import { FreeTextGradeLesson } from './FreeTextGradeLesson';
+import { ConceptLesson } from './ConceptLesson';
 import { ComingSoonLesson } from './ComingSoonLesson';
 
 /** First segment of a "X · Y" scenario string, e.g. "SaaS". */
@@ -54,6 +56,16 @@ export function LessonRouter({ skill }: { skill: Skill }) {
   const momTest = useMemo(() => resolveMomTestDrill(industry), [industry]);
   const preMortem = useMemo(() => resolvePreMortemDrill(industry), [industry]);
   const prFaq = useMemo(() => resolvePrFaqDrill(industry), [industry]);
+
+  // Concept lessons take precedence: a skill whose modality includes 'lesson'
+  // and that has authored teaching content renders the structured ConceptLesson
+  // (industry-aware via the resolved context inside the component). Skills that
+  // also carry a drill aren't in the lesson registry, so the drill switch below
+  // still owns them; this only ever fires for lesson-only skills.
+  const lesson = getLessonContent(skill.id);
+  if (lesson && skill.modalities.includes('lesson')) {
+    return <ConceptLesson skill={skill} content={lesson} industry={industry} />;
+  }
 
   switch (skill.id) {
     case 'value-vs-effort':

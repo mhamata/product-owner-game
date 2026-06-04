@@ -1,9 +1,12 @@
 import { notFound } from 'next/navigation';
-import { allSkills, getSkill } from '@/curriculum/data';
+import { everySkill, getSkill } from '@/curriculum/data';
 import { LessonRouter } from '@/components/console/lesson/LessonRouter';
 
 export async function generateStaticParams() {
-  return allSkills.map((s) => ({ skillId: s.id }));
+  // Every skill — ladder + specialization tracks — gets a static lesson route.
+  // `ready` skills render their drill; `coming-soon` skills (incl. all tracks)
+  // render the placeholder via the LessonRouter's default branch.
+  return everySkill.map((s) => ({ skillId: s.id }));
 }
 
 export async function generateMetadata({
@@ -27,8 +30,9 @@ export async function generateMetadata({
  * client because drill definitions carry a `score` function that cannot be
  * passed across the server→client boundary as a prop.
  *
- * Phase 2 ships every deterministic (client-graded) skill; the free-text /
- * LLM-graded drills still fall through to "Coming soon".
+ * `ready` skills route to their existing drill/lesson loop; `coming-soon`
+ * skills (every new ladder skill + all specialization tracks) fall through to
+ * the "Coming soon" placeholder.
  */
 export default async function LearnPage({
   params,

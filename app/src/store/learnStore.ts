@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { allSkills } from '@/curriculum/data';
+import { masterableSkills } from '@/curriculum/data';
 
 /**
  * Per-skill mastery record.
@@ -132,10 +132,13 @@ export const useLearnStore = create<LearnStore>()(
       isMastered: (skillId) =>
         (get().progress[skillId]?.mastery ?? 0) >= MASTERY_THRESHOLD,
 
+      // Only `ready` (masterable) skills can be mastered. `coming-soon` skills
+      // carry no progress and never enter this set, so the curriculum gating
+      // (deriveSkillState / isLevelUnlocked) is driven purely by playable work.
       masteredIds: () => {
         const { progress } = get();
         return new Set(
-          allSkills
+          masterableSkills
             .filter((s) => (progress[s.id]?.mastery ?? 0) >= MASTERY_THRESHOLD)
             .map((s) => s.id),
         );
