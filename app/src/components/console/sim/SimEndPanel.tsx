@@ -19,6 +19,7 @@ import {
 } from '../Icon';
 import { DIMENSIONS } from './dimensions';
 import { deriveRunCompetencies, deriveArchetype } from './competency';
+import { useSimDifficultyStore, MAX_DIFFICULTY_TIER } from '@/store/simDifficultyStore';
 import { useSimEvidenceStore } from '@/store/simEvidenceStore';
 import { COMPETENCIES, type Competency } from '@/curriculum/types';
 
@@ -71,6 +72,20 @@ export function SimEndPanel({
     recordRun(runCompetencies);
   }, [recordRun, runCompetencies]);
   const archetype = useMemo(() => deriveArchetype(score), [score]);
+
+  // Adaptive difficulty: acing this run (a strong overall score) unlocks the
+  // next tier for the player's next attempt at this scenario. Capture the tier
+  // this run was PLAYED at once, so the idempotent bump (max of current and
+  // playedTier + 1) cannot over-ratchet on a re-render.
+  const recordDifficulty = useSimDifficultyStore((s) => s.recordResult);
+  const playedTier = useMemo(
+    () => useSimDifficultyStore.getState().tiers[scenario.id] ?? 0,
+    [scenario.id],
+  );
+  const aced = score.total >= 80;
+  useEffect(() => {
+    if (aced) recordDifficulty(scenario.id, playedTier, true);
+  }, [aced, recordDifficulty, scenario.id, playedTier]);
 
   async function generateRetro() {
     setLoading(true);
@@ -142,6 +157,12 @@ export function SimEndPanel({
             </span>
             <span className="flex-1 text-[13px] leading-snug text-slate">{archetype.blurb}</span>
           </div>
+
+          {aced && playedTier < MAX_DIFFICULTY_TIER && (
+            <p className="mono mt-2.5 text-[12px] text-accent">
+              You aced it. Your next run of this scenario steps up to Hard +{playedTier + 1}.
+            </p>
+          )}
 
           {/* total + revenue result */}
           <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] gap-4 max-[560px]:grid-cols-1">

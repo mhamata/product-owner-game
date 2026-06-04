@@ -5,10 +5,12 @@ import type { GameScore } from '@/engine/score';
 import type { Action, GameState, IterationOutcome, Scenario } from '@/engine/types';
 import { calculateScore } from '@/engine/score';
 import { getScenarioForIndustry } from '@/scenarios';
+import { applyDifficulty } from '@/scenarios/difficulty';
 import { useGameStore } from '@/store/gameStore';
 import { useCoachStore } from '@/store/coachStore';
 import { useIndustryStore } from '@/store/industryStore';
 import { useCalibrationStore } from '@/store/calibrationStore';
+import { useSimDifficultyStore } from '@/store/simDifficultyStore';
 import { DEFAULT_INDUSTRY } from '@/curriculum/industries';
 import { Topbar } from '../Topbar';
 import { CircleDotIcon, RestartIcon } from '../Icon';
@@ -66,26 +68,34 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
   const storedIndustry = useIndustryStore((s) => s.industry);
   const industry = industryHydrated ? storedIndustry : DEFAULT_INDUSTRY;
 
+  // Adaptive difficulty: the scenario ratchets to the hardest tier the player
+  // has earned by acing it. Read hydration-safely (tier 0 until the store loads,
+  // matching SSR), and gate new-game creation on it so a fresh game is built at
+  // the right tier rather than at 0 then rebuilt.
+  const difficultyHydrated = useSimDifficultyStore((s) => s.hasHydrated);
+  const earnedTier = useSimDifficultyStore((s) => s.tiers[scenarioId] ?? 0);
+  const effectiveTier = difficultyHydrated ? earnedTier : 0;
+
   const hydrated = useHydrated();
 
   // Assemble the scenario for the active industry. Structurally identical across
   // industries (same engine balance); only the displayed story differs.
-  const scenario = useMemo(
-    () => getScenarioForIndustry(scenarioId, industry),
-    [scenarioId, industry],
-  );
+  const scenario = useMemo(() => {
+    const base = getScenarioForIndustry(scenarioId, industry);
+    return base ? applyDifficulty(base, effectiveTier) : base;
+  }, [scenarioId, industry, effectiveTier]);
 
   // Ensure a game exists for this scenario (mirrors the old GameView bootstrap).
   // Also rebuild when the player switches home industry, so the running sim and
   // the engine both reflect the chosen theme. We wait for BOTH stores to
   // rehydrate so we never clobber a persisted in-progress game with the default.
   useEffect(() => {
-    if (!hydrated || !industryHydrated || !scenario) return;
+    if (!hydrated || !industryHydrated || !difficultyHydrated || !scenario) return;
     const needsNewGame = !state || currentId !== scenarioId || gameIndustry !== industry;
     if (needsNewGame) {
       newGame(scenarioId, { scenario, industry });
     }
-  }, [hydrated, industryHydrated, state, currentId, gameIndustry, scenarioId, industry, scenario, newGame]);
+  }, [hydrated, industryHydrated, difficultyHydrated, state, currentId, gameIndustry, scenarioId, industry, scenario, newGame]);
 
   // Local step cursor (0..5). Clamped against the engine phase below.
   const [step, setStep] = useState(0);
@@ -258,6 +268,11 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
         context="simulation"
         right={
           <div className="flex items-center gap-3">
+            {effectiveTier > 0 && (
+              <span className="mono inline-flex items-center rounded-full border border-accent-100 bg-accent-050 px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-accent">
+                Hard +{effectiveTier}
+              </span>
+            )}
             <span className="mono inline-flex items-center gap-[9px] rounded-full border border-line bg-paper px-3 py-1.5 text-[11px] uppercase tracking-[0.1em] text-slate">
               <CircleDotIcon size={7} className="flex-none text-accent" />
               Sprint {game.iterationNumber} / {game.totalIterations}
