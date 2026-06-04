@@ -1,12 +1,17 @@
-import type {
-  CustomerState,
-  EventEffect,
-  PBI,
-  StakeholderState,
-  EconomyState,
-  TeamState,
-  TechState,
-} from '@/engine/types';
+import type { ScenarioStructure } from './structure';
+
+// The industry-neutral Structural* types live in ./structure now (shared by
+// every ladder scenario). Re-exported here so older imports from this module,
+// and buildScenario, keep resolving.
+export type {
+  ScenarioStructure,
+  StructuralPBI,
+  StructuralCustomer,
+  StructuralStakeholder,
+  StructuralEventOption,
+  StructuralEventEffect,
+  StructuralEventCard,
+} from './structure';
 
 /**
  * Scenario 01: STRUCTURAL CORE (industry-neutral).
@@ -35,66 +40,8 @@ import type {
 /** The structural id this scenario assembles to. Load-bearing FK; do not change. */
 export const SCENARIO_01_ID = '01-canadian-launch';
 
-/**
- * A PBI with its display string (`title`) removed. Everything that remains is
- * structural. `buildScenario` re-attaches the per-industry title.
- */
-export type StructuralPBI = Omit<PBI, 'title'>;
-
-/** A customer with its display string (`name`) removed. */
-export type StructuralCustomer = Omit<CustomerState, 'name'>;
-
-/** A stakeholder with its display strings (`name`, `role`) removed. */
-export type StructuralStakeholder = Omit<StakeholderState, 'name' | 'role'>;
-
-/**
- * An event option without its display strings. `effects` is fully structural,
- * including any `add-pbi` whose PBI is a {@link StructuralPBI} (title attached
- * per industry).
- */
-export interface StructuralEventOption {
-  id: string;
-  /** Effects, but any `add-pbi` carries a title-less structural PBI. */
-  effects: StructuralEventEffect[];
-}
-
-/** An EventEffect where `add-pbi` carries a title-less structural PBI. */
-export type StructuralEventEffect =
-  | Exclude<EventEffect, { kind: 'add-pbi' }>
-  | { kind: 'add-pbi'; pbi: StructuralPBI };
-
-/** An event card without its display strings (`narrative`, option labels). */
-export interface StructuralEventCard {
-  id: string;
-  category:
-    | 'stakeholder'
-    | 'team'
-    | 'customer'
-    | 'vendor'
-    | 'market'
-    | 'tech'
-    | 'strategic'
-    | 'regulatory';
-  baseWeight: number;
-  trigger: 'random' | 'forced' | 'weighted' | 'state-gated';
-  forcedAtIteration?: number;
-  options: StructuralEventOption[];
-}
-
-/** The complete industry-neutral skeleton of scenario 01. */
-export interface ScenarioStructure {
-  id: string;
-  totalIterations: number;
-  targetRevenue: number;
-  initialBacklog: StructuralPBI[];
-  discoveryPool: StructuralPBI[];
-  customers: StructuralCustomer[];
-  stakeholders: StructuralStakeholder[];
-  team: TeamState;
-  tech: TechState;
-  economy: EconomyState;
-  eventDeck: StructuralEventCard[];
-}
+// (The Structural* types and ScenarioStructure moved to ./structure; they are
+// imported and re-exported at the top of this file.)
 
 export const scenario01Structure: ScenarioStructure = {
   id: SCENARIO_01_ID,
