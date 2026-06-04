@@ -18,8 +18,9 @@ import {
   TargetIcon,
 } from '../Icon';
 import { DIMENSIONS } from './dimensions';
-import { deriveRunCompetencies, deriveArchetype } from './competency';
+import { deriveRunCompetencies, deriveArchetype, deriveReviewFocus } from './competency';
 import { useSimDifficultyStore, MAX_DIFFICULTY_TIER } from '@/store/simDifficultyStore';
+import { useReviewStore } from '@/store/reviewStore';
 import { useSimEvidenceStore } from '@/store/simEvidenceStore';
 import { COMPETENCIES, type Competency } from '@/curriculum/types';
 
@@ -86,6 +87,14 @@ export function SimEndPanel({
   useEffect(() => {
     if (aced) recordDifficulty(scenario.id, playedTier, true);
   }, [aced, recordDifficulty, scenario.id, playedTier]);
+
+  // Surface the run's thinnest area: pull its judgment cards to the front of the
+  // spaced-repetition deck, so a sim weakness becomes targeted review.
+  const resurface = useReviewStore((s) => s.resurface);
+  const reviewFocus = useMemo(() => deriveReviewFocus(score), [score]);
+  useEffect(() => {
+    if (reviewFocus) resurface(reviewFocus.cardIds);
+  }, [reviewFocus, resurface]);
 
   async function generateRetro() {
     setLoading(true);
@@ -264,6 +273,20 @@ export function SimEndPanel({
                   </div>
                 ))}
               </div>
+              {reviewFocus && (
+                <p className="mt-3.5 text-[13px] leading-[1.55] text-slate">
+                  Thinnest read this run:{' '}
+                  <b className="font-semibold text-ink">{reviewFocus.label}</b>. I pulled those
+                  judgment cards to the front of your{' '}
+                  <Link
+                    href="/review"
+                    className="font-semibold text-accent no-underline hover:underline"
+                  >
+                    review deck
+                  </Link>
+                  .
+                </p>
+              )}
             </section>
           )}
 

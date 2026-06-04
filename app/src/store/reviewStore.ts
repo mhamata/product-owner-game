@@ -164,6 +164,12 @@ interface ReviewState {
 interface ReviewActions {
   /** Record a review outcome for a card and reschedule it. */
   review: (scenarioId: string, result: ReviewResult) => void;
+  /**
+   * Pull the given cards to the front of the deck (due today), e.g. when the
+   * simulator surfaces a weakness. Only moves cards already scheduled out; an
+   * unseen card is due already, so it is left untouched.
+   */
+  resurface: (ids: string[]) => void;
   /** Ids due today, in deck order (includes never-seen cards). */
   dueToday: () => string[];
   /** Count of cards due today. The Topbar badge reads this. */
@@ -189,6 +195,19 @@ export const useReviewStore = create<ReviewStore>()(
         set((s) => {
           const next = scheduleNext(s.schedules[scenarioId], result);
           return { schedules: { ...s.schedules, [scenarioId]: next } };
+        });
+      },
+
+      resurface: (ids) => {
+        set((s) => {
+          const day = todayISO();
+          const next = { ...s.schedules };
+          for (const id of ids) {
+            const cur = next[id];
+            // Only pull a card that was scheduled out; an unseen card is due now.
+            if (cur && dayDiff(day, cur.due) > 0) next[id] = { ...cur, due: day };
+          }
+          return { schedules: next };
         });
       },
 

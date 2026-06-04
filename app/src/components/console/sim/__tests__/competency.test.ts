@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { GameScore } from '@/engine/score';
-import { deriveRunCompetencies, deriveArchetype } from '../competency';
+import { deriveRunCompetencies, deriveArchetype, deriveReviewFocus } from '../competency';
 import { useSimEvidenceStore } from '@/store/simEvidenceStore';
+import { useReviewStore, todayISO } from '@/store/reviewStore';
 
 const score: GameScore = {
   valueDelivered: 80,
@@ -70,5 +71,45 @@ describe('deriveArchetype', () => {
       total: 60,
     });
     expect(a.label).toBe('Balanced operator');
+  });
+});
+
+describe('deriveReviewFocus', () => {
+  it('returns null for a strong run with no thin spot', () => {
+    const r = deriveReviewFocus({
+      valueDelivered: 80,
+      customerLoyalty: 75,
+      teamHealth: 72,
+      stakeholderTrust: 90,
+      productIntegrity: 78,
+      total: 79,
+    });
+    expect(r).toBeNull();
+  });
+
+  it('focuses prioritization when value delivered is the weakest dimension', () => {
+    const r = deriveReviewFocus({
+      valueDelivered: 20,
+      customerLoyalty: 80,
+      teamHealth: 80,
+      stakeholderTrust: 80,
+      productIntegrity: 80,
+      total: 68,
+    });
+    expect(r?.competency).toBe('prioritization');
+    expect(r?.cardIds.length ?? 0).toBeGreaterThan(0);
+  });
+});
+
+describe('reviewStore.resurface', () => {
+  beforeEach(() => useReviewStore.getState().resetReviews());
+
+  it('pulls a scheduled-out card to today and leaves unseen cards untouched', () => {
+    const r = useReviewStore.getState();
+    r.review('card-a', 'correct'); // promotes: next due is in the future
+    expect(useReviewStore.getState().getSchedule('card-a')?.due).not.toBe(todayISO());
+    r.resurface(['card-a', 'card-unseen']);
+    expect(useReviewStore.getState().getSchedule('card-a')?.due).toBe(todayISO());
+    expect(useReviewStore.getState().getSchedule('card-unseen')).toBeUndefined();
   });
 });

@@ -1,6 +1,11 @@
 import type { GameScore } from '@/engine/score';
 import type { Competency } from '@/curriculum/types';
 import { rungForScenario } from '@/scenarios/ladder';
+import {
+  JUDGMENT_SCENARIOS,
+  JUDGMENT_COMPETENCY_LABEL,
+  type JudgmentCompetency,
+} from '@/curriculum/judgment';
 
 /**
  * Map a finished simulation run to a per-competency 0-100 read.
@@ -90,4 +95,38 @@ export function deriveArchetype(score: GameScore): RunArchetype {
     label: top.label,
     blurb: `You leaned hardest on ${top.phrase}. There was no single right line here: ${top.foil} run was just as valid, it would have traded differently.`,
   };
+}
+
+/**
+ * Pick the judgment-deck cards to resurface after a run, from where the player
+ * was thinnest. Each scoreboard dimension maps to the kind of decision its
+ * weakness implies; the run's lowest dimension chooses the focus, and we return
+ * the matching cards so the sim can pull them to the front of the spaced-
+ * repetition deck. A run that was strong everywhere (no dimension under 70)
+ * returns null: there is nothing to single out.
+ */
+const DIMENSION_REVIEW_FOCUS: Record<Exclude<keyof GameScore, 'total'>, JudgmentCompetency> = {
+  valueDelivered: 'prioritization',
+  customerLoyalty: 'discovery-delivery',
+  teamHealth: 'scope-quality',
+  stakeholderTrust: 'stakeholder-influence',
+  productIntegrity: 'scope-quality',
+};
+
+export interface ReviewFocus {
+  competency: JudgmentCompetency;
+  label: string;
+  cardIds: string[];
+}
+
+export function deriveReviewFocus(score: GameScore): ReviewFocus | null {
+  const dims = Object.keys(DIMENSION_REVIEW_FOCUS) as Array<Exclude<keyof GameScore, 'total'>>;
+  const weakest = dims.map((d) => ({ d, v: score[d] })).sort((a, b) => a.v - b.v)[0];
+  if (weakest.v >= 70) return null; // a strong run: nothing to single out
+
+  const competency = DIMENSION_REVIEW_FOCUS[weakest.d];
+  const cardIds = JUDGMENT_SCENARIOS.filter((s) => s.competency === competency).map((s) => s.id);
+  if (cardIds.length === 0) return null;
+
+  return { competency, label: JUDGMENT_COMPETENCY_LABEL[competency], cardIds };
 }
