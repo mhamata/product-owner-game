@@ -46,12 +46,17 @@ export function SimEndPanel({
   const [retro, setRetro] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [missingKey, setMissingKey] = useState(false);
+  // Calm note for the global at-capacity ceiling: the run is fine, the retro is
+  // just deferred. Distinct from the missing-key note (different message) and
+  // from a real error (different tone).
+  const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function generateRetro() {
     setLoading(true);
     setError(null);
     setMissingKey(false);
+    setNotice(null);
     try {
       const r = await fetch('/api/retro', {
         method: 'POST',
@@ -68,6 +73,12 @@ export function SimEndPanel({
         throw new Error(text || `HTTP ${r.status}`);
       }
       const data = await r.json();
+      // A 200 can carry a calm "unavailable" payload (the global at-capacity
+      // ceiling) instead of a retro. Show it as a quiet note, not an error.
+      if (data.unavailable) {
+        setNotice(data.message ?? 'The retrospective is unavailable right now.');
+        return;
+      }
       setRetro(data.retro);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
@@ -201,6 +212,8 @@ export function SimEndPanel({
                 in <code className="mono rounded bg-panel-2 px-1.5 py-0.5 text-[12px] text-ink">.env.local</code>.
                 Your full decision log is below. Everything the retro would analyze is captured there.
               </p>
+            ) : notice ? (
+              <p className="mt-3 text-[13px] leading-[1.6] text-slate">{notice}</p>
             ) : error ? (
               <p className="mt-3 rounded-console border border-bad-line bg-bad-050 p-2.5 text-[12px] text-bad-700">
                 Couldn&apos;t generate the retro: {error}

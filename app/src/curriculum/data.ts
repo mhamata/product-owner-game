@@ -122,6 +122,12 @@ const SOON_LESSON: Modality[] = ['lesson'];
 // SEPARATE skills so both are reachable (the lesson router keys a skill to one
 // modality, with no precedence collision). See src/curriculum/artifacts.
 const ARTIFACT: Modality[] = ['artifact'];
+// An AI roleplay practice skill: the learner argues a position with an
+// in-character counterpart who pushes back, then gets scored against a visible
+// rubric (influence without authority). Like the artifacts, each roleplay is its
+// OWN skill carrying only the 'roleplay' modality, sitting beside a sibling
+// influence concept lesson, so both stay reachable. See src/curriculum/roleplay.
+const ROLEPLAY: Modality[] = ['roleplay'];
 
 const LEVEL_UNITS: LevelUnitSeeds = {
   /* ---------------------------------------------------------------
@@ -143,7 +149,11 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Working in a Team',
       blurb: 'How product, engineering, and design build together.',
       skills: [
-        { id: 'working-with-eng-design', title: 'Working with Eng & Design', competency: 'team-leadership', modalities: ['lesson', 'roleplay'], status: 'ready' },
+        { id: 'working-with-eng-design', title: 'Working with Eng & Design', competency: 'team-leadership', modalities: ['lesson'], status: 'ready' },
+        // Roleplay practice skill, beside the lesson above: persuade an eng lead
+        // to accept a scope cut without bulldozing the partnership. The roleplay
+        // modality lives on this dedicated skill, not on the concept lesson above.
+        { id: 'roleplay-scope-cut', title: 'Roleplay: get an eng lead to accept a scope cut', competency: 'team-leadership', modalities: ROLEPLAY, status: 'ready' },
         { id: 'agile-scrum', title: 'Agile & Scrum Basics', competency: 'delivery', methodId: 'shape-up', modalities: ['lesson', 'reading'], status: 'ready' },
       ],
     },
@@ -293,9 +303,13 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       title: 'Influence',
       blurb: 'Move people and decisions without the org chart.',
       skills: [
-        { id: 'stakeholder-management', title: 'Stakeholder Management', competency: 'stakeholder-mgmt', methodId: 'raci', modalities: ['lesson', 'roleplay'], status: 'ready' },
-        { id: 'influence-without-authority', title: 'Influence Without Authority', competency: 'stakeholder-mgmt', modalities: ['lesson', 'roleplay'], status: 'ready' },
-        { id: 'managing-up', title: 'Managing Up', competency: 'managing-up', modalities: ['lesson', 'roleplay'], status: 'ready' },
+        { id: 'stakeholder-management', title: 'Stakeholder Management', competency: 'stakeholder-mgmt', methodId: 'raci', modalities: ['lesson'], status: 'ready' },
+        { id: 'influence-without-authority', title: 'Influence Without Authority', competency: 'stakeholder-mgmt', modalities: ['lesson'], status: 'ready' },
+        // Roleplay practice skill, beside the influence lesson above: defend a
+        // committed roadmap to a VP pushing their pet feature, without folding
+        // and without burning the relationship.
+        { id: 'roleplay-defend-roadmap', title: 'Roleplay: defend your roadmap to a VP', competency: 'stakeholder-mgmt', modalities: ROLEPLAY, status: 'ready' },
+        { id: 'managing-up', title: 'Managing Up', competency: 'managing-up', modalities: ['lesson'], status: 'ready' },
       ],
     },
   ],
@@ -321,7 +335,11 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       skills: [
         { id: 'multi-team-strategy', title: 'Multi-Team Strategy', competency: 'strategic-impact', modalities: SOON_LESSON, status: 'ready' },
         { id: 'platform-portfolio-thinking', title: 'Platform & Portfolio Thinking', competency: 'vision-roadmap', modalities: SOON_LESSON, status: 'ready' },
-        { id: 'force-multiplier-influence', title: 'Force-Multiplier Influence', competency: 'team-leadership', modalities: ['lesson', 'roleplay'], status: 'ready' },
+        { id: 'force-multiplier-influence', title: 'Force-Multiplier Influence', competency: 'team-leadership', modalities: ['lesson'], status: 'ready' },
+        // Roleplay practice skill, beside the influence lesson above: defuse a
+        // churning enterprise customer escalation without lying or over-committing
+        // to an unscalable custom build. A senior cross-org influence test.
+        { id: 'roleplay-customer-escalation', title: 'Roleplay: handle a churning enterprise customer', competency: 'stakeholder-mgmt', modalities: ROLEPLAY, status: 'ready' },
       ],
     },
   ],
@@ -337,7 +355,11 @@ const LEVEL_UNITS: LevelUnitSeeds = {
       skills: [
         { id: 'empowered-teams', title: 'Empowered Teams', competency: 'team-leadership', modalities: SOON_LESSON, status: 'ready' },
         { id: 'org-design', title: 'Org Design', competency: 'team-leadership', modalities: SOON_LESSON, status: 'ready' },
-        { id: 'hiring-coaching-pms', title: 'Hiring & Coaching PMs', competency: 'team-leadership', modalities: ['lesson', 'roleplay'], status: 'ready' },
+        { id: 'hiring-coaching-pms', title: 'Hiring & Coaching PMs', competency: 'team-leadership', modalities: ['lesson'], status: 'ready' },
+        // Roleplay practice skill, beside the people-leadership lesson above: give
+        // a senior stakeholder a clear no on a tempting one-off without burning a
+        // relationship you will need again. A leadership stakeholder test.
+        { id: 'roleplay-say-no', title: 'Roleplay: say no without burning the relationship', competency: 'stakeholder-mgmt', modalities: ROLEPLAY, status: 'ready' },
       ],
     },
     {

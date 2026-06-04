@@ -16,7 +16,9 @@ import {
 } from '@/curriculum/drills';
 import { getLessonContent } from '@/curriculum/lessons';
 import { getArtifactContent } from '@/curriculum/artifacts';
+import { getRoleplayScenario } from '@/curriculum/roleplay';
 import { ArtifactLesson } from './ArtifactLesson';
+import { RoleplayLesson } from './RoleplayLesson';
 import { ValueVsEffortLesson } from './ValueVsEffortLesson';
 import { ScoreRankLesson } from './ScoreRankLesson';
 import { ClassificationLesson } from './ClassificationLesson';
@@ -68,6 +70,17 @@ export function LessonRouter({ skill }: { skill: Skill }) {
   const artifact = getArtifactContent(skill.id);
   if (artifact && skill.modalities.includes('artifact')) {
     return <ArtifactLesson skill={skill} content={artifact} industry={industry} />;
+  }
+
+  // Roleplay skills render the AI roleplay loop (argue a position with an
+  // in-character counterpart, get scored against a visible rubric). Like the
+  // artifacts, each roleplay is its OWN skill carrying only the 'roleplay'
+  // modality, keyed to authored scenario content, so it never collides with the
+  // influence concept lesson that teaches the same topic. Industry flavour is
+  // resolved inside the component.
+  const roleplay = getRoleplayScenario(skill.id);
+  if (roleplay && skill.modalities.includes('roleplay')) {
+    return <RoleplayLesson skill={skill} scenario={roleplay} industry={industry} />;
   }
 
   // Concept skills render the structured ConceptLesson (industry-aware via the

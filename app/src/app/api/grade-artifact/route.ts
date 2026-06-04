@@ -1,8 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 import {
   checkRateLimit,
+  checkGlobalBudget,
   clientKeyFromRequest,
   rateLimitedResponse,
+  recordModelCall,
 } from '@/lib/rateLimit';
 
 /**
@@ -17,11 +19,16 @@ import {
  *
  * GUARDRAILS (in priority order)
  * ------------------------------
- *  1. RATE LIMIT + COST CAP. A public, unauthenticated POST that calls a paid
- *     model must be capped. We sliding-window limit per client (session token or
- *     IP) and use a cheap model (Haiku) with a bounded max_tokens, so the worst
+ *  1. GLOBAL CEILING. Before any spend, the route consults the process-wide
+ *     model-call ceiling (src/lib/rateLimit.ts). Once it is reached we return a
+ *     calm 200 { unavailable, reason: 'at capacity' } and do NOT call the model.
+ *     This is the hard cost cap: it holds even when an attacker rotates the
+ *     session token and IP per request, which the per-client limit cannot stop.
+ *  2. RATE LIMIT + PER-CALL COST CAP. A public, unauthenticated POST that calls a
+ *     paid model must be capped. We sliding-window limit per client (session token
+ *     or IP) and use a cheap model (Haiku) with a bounded max_tokens, so the worst
  *     case spend per caller per window is small and predictable.
- *  2. GRACEFUL DEGRADATION. Production runs with no ANTHROPIC_API_KEY today, and
+ *  3. GRACEFUL DEGRADATION. Production runs with no ANTHROPIC_API_KEY today, and
  *     should stay free and functional. With no key we return a clear, NON-error
  *     "grading unavailable" payload (HTTP 200) so the lesson can show a calm
  *     fallback and preserve the learner's writing, exactly like /api/grade's UI.
@@ -240,8 +247,23 @@ export async function POST(request: Request) {
     });
   }
 
+  // 3) Global ceiling: the hard cost cap. Even with a key and the per-client limit
+  //    passed, refuse once the process has spent its global model-call budget so
+  //    no amount of client-key/IP rotation can run up the bill. Same calm 200
+  //    `unavailable` shape the UI already handles, and NO model call.
+  const budget = checkGlobalBudget();
+  if (!budget.allowed) {
+    return Response.json({
+      unavailable: true,
+      reason: 'at capacity',
+      message: 'Live grading is at capacity right now. Your draft is saved below. Please try again later.',
+    });
+  }
+
   const client = new Anthropic({ apiKey });
   try {
+    // Count the call against the global ceiling at the moment we spend.
+    recordModelCall();
     const response = await client.messages.create({
       model: GRADER_MODEL,
       max_tokens: MAX_OUTPUT_TOKENS,

@@ -62,18 +62,25 @@ function makeSessionId(): string {
 
 export function useArtifactGrade() {
   const [state, setState] = useState<ArtifactGradeState>(INITIAL);
-  const sessionId = useRef<string>('');
-  if (!sessionId.current) sessionId.current = makeSessionId();
+  // Lazy-init the per-tab session id exactly once. The `== null` guard is the
+  // pattern react-hooks/refs expects for one-time ref initialization (a falsy
+  // empty-string seed would trip the "no ref access during render" rule).
+  const sessionId = useRef<string | null>(null);
+  if (sessionId.current == null) sessionId.current = makeSessionId();
 
   const grade = useCallback(
     async (resolved: ResolvedArtifact, brief: string, submission: string) => {
       setState({ ...INITIAL, loading: true });
       try {
+        // Reading the ref inside the callback (not during render) is the allowed
+        // pattern; the render-time guard above guarantees it is set, the fallback
+        // is purely defensive so the header is never empty.
+        const session = sessionId.current ?? makeSessionId();
         const r = await fetch('/api/grade-artifact', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-praxis-session': sessionId.current,
+            'x-praxis-session': session,
           },
           body: JSON.stringify({
             skillId: resolved.skillId,

@@ -24,12 +24,16 @@ export function EndGamePanel({
 }) {
   const { newGame } = useGameStore();
   const [retro, setRetro] = useState<string | null>(null);
+  // A calm, non-error note for the "unavailable" 200 (no key, or the global
+  // at-capacity ceiling): the run is fine, the retro just isn't generated.
+  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function generateRetro() {
     setLoading(true);
     setError(null);
+    setNotice(null);
     try {
       const r = await fetch('/api/retro', {
         method: 'POST',
@@ -41,6 +45,13 @@ export function EndGamePanel({
         throw new Error(text || `HTTP ${r.status}`);
       }
       const data = await r.json();
+      // A 200 can carry a calm "unavailable" payload (no key, or the global
+      // at-capacity ceiling) instead of a retro. Show it as a quiet note, not an
+      // error: the decision log below still has everything.
+      if (data.unavailable) {
+        setNotice(data.message ?? 'The retrospective is unavailable right now.');
+        return;
+      }
       setRetro(data.retro);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
@@ -93,9 +104,14 @@ export function EndGamePanel({
               Failed: {error}
             </p>
           )}
+          {notice && (
+            <p className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded p-2">
+              {notice}
+            </p>
+          )}
           {retro ? (
             <div className="prose prose-sm max-w-none whitespace-pre-wrap">{retro}</div>
-          ) : !loading ? (
+          ) : !loading && !notice ? (
             <p className="text-sm text-gray-500">
               Requires <code className="bg-gray-100 px-1">ANTHROPIC_API_KEY</code> in{' '}
               <code className="bg-gray-100 px-1">.env.local</code>.

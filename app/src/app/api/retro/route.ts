@@ -4,8 +4,9 @@ import type { GameScore } from '@/engine/score';
 import { getScenario } from '@/scenarios';
 import {
   checkRateLimit,
+  checkGlobalBudget,
   clientKeyFromRequest,
-  rateLimitedResponse,
+  recordModelCall,
 } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
@@ -62,6 +63,23 @@ export async function POST(request: Request) {
   const scenario = getScenario(body.scenarioId);
   if (!scenario) return new Response('Unknown scenario', { status: 400 });
 
+  // Global ceiling: the hard cost cap. The retro uses a larger (Opus) model, so
+  // bounding total calls matters most here. Even with a key and the per-client
+  // limit passed, refuse once the process has spent its global model-call budget,
+  // so no amount of client-key/IP rotation can run up the bill. We answer with a
+  // calm 200 { unavailable, reason: 'at capacity' } (NOT the 429 text path and
+  // NOT a 500) so the client shows a quiet "try later" note and never calls the
+  // model.
+  const budget = checkGlobalBudget();
+  if (!budget.allowed) {
+    return Response.json({
+      unavailable: true,
+      reason: 'at capacity',
+      message:
+        'The AI retrospective is at capacity right now. Your full decision log is below. Please try again later.',
+    });
+  }
+
   const client = new Anthropic({ apiKey });
 
   const log = body.state.eventLog.map(
@@ -107,6 +125,8 @@ Generate a structured retrospective with:
 Tone: constructive, specific, never shaming. Cite evidence from the decisions log. Under 700 words.`;
 
   try {
+    // Count the call against the global ceiling at the moment we spend.
+    recordModelCall();
     const response = await client.messages.create({
       model: 'claude-opus-4-7',
       max_tokens: 2000,

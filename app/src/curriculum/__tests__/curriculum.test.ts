@@ -272,3 +272,56 @@ describe('navigation helpers', () => {
     }
   });
 });
+
+describe('roleplay practice skills are wired into the influence units', () => {
+  // Each roleplay is a SEPARATE practice skill (modality 'roleplay' only, ready),
+  // added beside an influence concept lesson the way the artifacts were added,
+  // never overwriting the lesson. This pins the wiring and the invariant.
+  const ROLEPLAY_SKILLS: { id: string; unitId: string; sibling: string }[] = [
+    { id: 'roleplay-scope-cut', unitId: 'foundations-u2', sibling: 'working-with-eng-design' },
+    { id: 'roleplay-defend-roadmap', unitId: 'senior-u4', sibling: 'influence-without-authority' },
+    { id: 'roleplay-customer-escalation', unitId: 'staff-u2', sibling: 'force-multiplier-influence' },
+    { id: 'roleplay-say-no', unitId: 'director-u1', sibling: 'hiring-coaching-pms' },
+  ];
+
+  it.each(ROLEPLAY_SKILLS)(
+    '$id is a ready, roleplay-only ladder skill in $unitId',
+    ({ id, unitId }) => {
+      const skill = getSkill(id);
+      expect(skill).toBeDefined();
+      expect(skill?.status).toBe('ready');
+      expect(skill?.modalities).toEqual(['roleplay']);
+      expect(skill?.level).toBeDefined();
+      expect(getUnitForSkill(id)?.id).toBe(unitId);
+    },
+  );
+
+  it('adds each roleplay beside its influence lesson sibling without overwriting it', () => {
+    for (const { id, unitId, sibling } of ROLEPLAY_SKILLS) {
+      const unit = units.find((u) => u.id === unitId);
+      expect(unit).toBeDefined();
+      const ids = unit?.skills.map((s) => s.id) ?? [];
+      // Both the roleplay practice skill and its concept-lesson sibling live in
+      // the same unit, as distinct skills.
+      expect(ids).toContain(id);
+      expect(ids).toContain(sibling);
+      // The sibling keeps its concept lesson (modality includes 'lesson'); it was
+      // not replaced by the roleplay.
+      expect(getSkill(sibling)?.modalities).toContain('lesson');
+    }
+  });
+
+  it('keeps every unit within the 2-4 skill invariant after the additions', () => {
+    // A second, explicit guard alongside the generic units check: the roleplay
+    // additions must not push any unit out of range.
+    for (const unit of units) {
+      expect(unit.skills.length).toBeGreaterThanOrEqual(2);
+      expect(unit.skills.length).toBeLessThanOrEqual(4);
+    }
+  });
+
+  it('counts the four roleplay skills among the masterable (ready) ladder skills', () => {
+    const readyIds = new Set(masterableSkills.map((s) => s.id));
+    for (const { id } of ROLEPLAY_SKILLS) expect(readyIds.has(id)).toBe(true);
+  });
+});

@@ -1,8 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 import {
   checkRateLimit,
+  checkGlobalBudget,
   clientKeyFromRequest,
   rateLimitedResponse,
+  recordModelCall,
 } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
@@ -90,8 +92,23 @@ export async function POST(request: Request) {
   const rubric = RUBRICS[body.drill];
   if (!rubric) return Response.json({ error: 'Unknown drill' }, { status: 400 });
 
+  // Global ceiling: the hard cost cap. Even with a key and the per-client limit
+  // passed, refuse once the process has spent its global model-call budget so no
+  // amount of client-key/IP rotation can run up the bill. Calm 200 with the same
+  // `unavailable` shape the UI already handles, and NO model call.
+  const budget = checkGlobalBudget();
+  if (!budget.allowed) {
+    return Response.json({
+      unavailable: true,
+      reason: 'at capacity',
+      message: 'Grading is at capacity right now. Please try again later.',
+    });
+  }
+
   const client = new Anthropic({ apiKey });
   try {
+    // Count the call against the global ceiling at the moment we spend.
+    recordModelCall();
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1200,

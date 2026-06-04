@@ -1,8 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   checkRateLimit,
+  checkGlobalBudget,
   clientKeyFromRequest,
+  countReply,
   rateLimitedResponse,
+  recordModelCall,
+  recordReply,
   _resetRateLimitState,
 } from '../rateLimit';
 
@@ -124,5 +128,89 @@ describe('rateLimitedResponse', () => {
     expect(res.headers.get('X-RateLimit-Limit')).toBe('10');
     const body = (await res.json()) as { retryAfterSeconds: number };
     expect(body.retryAfterSeconds).toBe(42);
+  });
+});
+
+describe('per-client reply counter (server-authoritative roleplay turn cap)', () => {
+  it('starts at zero for an unseen key', () => {
+    expect(countReply('roleplay:session:abc:reply:scn')).toBe(0);
+  });
+
+  it('increments on each recorded reply and reports the running total', () => {
+    const key = 'roleplay:session:abc:reply:scn';
+    expect(recordReply(key)).toBe(1);
+    expect(recordReply(key)).toBe(2);
+    expect(countReply(key)).toBe(2);
+  });
+
+  it('keeps a separate count per key (session/scenario)', () => {
+    const a = 'roleplay:session:abc:reply:scn';
+    const b = 'roleplay:session:xyz:reply:scn';
+    recordReply(a);
+    recordReply(a);
+    expect(countReply(a)).toBe(2);
+    // A different client+session counts independently.
+    expect(countReply(b)).toBe(0);
+  });
+
+  it('does not decay with time: it is a session lifetime count, not a window', () => {
+    const key = 'roleplay:session:abc:reply:scn';
+    recordReply(key);
+    vi.setSystemTime(60 * 60 * 1000); // an hour later
+    // The count is intentionally not a rolling window; the turn cap is per
+    // session for its whole life, so a slow looping client cannot wait it out.
+    expect(countReply(key)).toBe(1);
+  });
+});
+
+describe('global usage ceiling (the hard cost cap)', () => {
+  // The module reads its ceiling from env once at import, so under test we drive
+  // the COUNT up to whatever that ceiling is rather than hard-coding 500. We read
+  // the ceiling back from the first check.
+  it('allows calls below the ceiling and blocks once it is reached', () => {
+    const { ceiling } = checkGlobalBudget();
+    expect(ceiling).toBeGreaterThan(0);
+
+    for (let i = 0; i < ceiling; i += 1) {
+      const before = checkGlobalBudget();
+      expect(before.allowed).toBe(true);
+      expect(before.used).toBe(i);
+      recordModelCall();
+    }
+
+    // At the ceiling, the next check refuses (this is the path a route turns into
+    // a calm "at capacity" 200, calling no model).
+    const atCap = checkGlobalBudget();
+    expect(atCap.allowed).toBe(false);
+    expect(atCap.used).toBe(ceiling);
+  });
+
+  it('counts calls across DIFFERENT client keys against one shared ceiling', () => {
+    // The whole point of the global ceiling: rotating the client key/IP does not
+    // mint fresh budget, because the ceiling is not keyed by client at all.
+    const { ceiling } = checkGlobalBudget();
+    for (let i = 0; i < ceiling; i += 1) {
+      // Pretend each call came from a brand-new client; the global counter does
+      // not care, so the ceiling still bites.
+      clientKeyFromRequest(
+        new Request('http://x', { headers: { 'x-praxis-session': `rotating-${i}` } }),
+        'roleplay',
+      );
+      recordModelCall();
+    }
+    expect(checkGlobalBudget().allowed).toBe(false);
+  });
+
+  it('frees budget as calls age out of the 24h rolling window', () => {
+    const { ceiling } = checkGlobalBudget();
+    // Fill the window at t=0.
+    for (let i = 0; i < ceiling; i += 1) recordModelCall();
+    expect(checkGlobalBudget().allowed).toBe(false);
+
+    // Just past 24h, every recorded call has aged out, so the window is clear.
+    vi.setSystemTime(24 * 60 * 60 * 1000 + 1);
+    const after = checkGlobalBudget();
+    expect(after.allowed).toBe(true);
+    expect(after.used).toBe(0);
   });
 });
