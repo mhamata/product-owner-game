@@ -1,5 +1,5 @@
 import type { Competency, LevelId } from '@/curriculum/types';
-import { isLevelCertified } from '@/curriculum/data';
+import { isLevelCertified, getLevel } from '@/curriculum/data';
 
 /**
  * One rung of the simulation ladder.
@@ -83,4 +83,12 @@ export function rungForScenario(scenarioId: string): LadderRung | undefined {
 export function isRungUnlocked(rung: LadderRung, masteredIds: ReadonlySet<string>): boolean {
   if (rung.unlockOnCertified === null) return true;
   return isLevelCertified(rung.unlockOnCertified, masteredIds);
+}
+
+/**
+ * Display label of the level whose certification unlocks this rung, for the
+ * "Certify X to unlock" affordance. Null for the always-open tutorial rung.
+ */
+export function gateLevelLabel(rung: LadderRung): string | null {
+  return rung.unlockOnCertified ? getLevel(rung.unlockOnCertified)?.label ?? null : null;
 }

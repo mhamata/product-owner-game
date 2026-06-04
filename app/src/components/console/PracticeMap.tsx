@@ -22,6 +22,7 @@ import { Topbar } from './Topbar';
 import { SkillCard } from './SkillCard';
 import { ProgressRing } from './ProgressRing';
 import { ModalityIcons } from './skillMeta';
+import { SIM_LADDER, isRungUnlocked, gateLevelLabel } from '@/scenarios/ladder';
 import {
   ArrowRightIcon,
   BuildingIcon,
@@ -30,6 +31,7 @@ import {
   CircleDotIcon,
   ClockIcon,
   FlameIcon,
+  FlaskIcon,
   LayersIcon,
   LockIcon,
   XIcon,
@@ -303,6 +305,10 @@ export function PracticeMap() {
   );
 
   const masteredCount = masteredIds.size;
+  const unlockedSimCount = useMemo(
+    () => SIM_LADDER.filter((r) => isRungUnlocked(r, masteredIds)).length,
+    [masteredIds],
+  );
   const overall = TOTAL_SKILLS > 0 ? masteredCount / TOTAL_SKILLS : 0;
   const overallPct = Math.round(overall * 100);
 
@@ -446,37 +452,72 @@ export function PracticeMap() {
             ))}
           </div>
 
-          {/* Capstone: entry point to the existing live simulation */}
+          {/* Simulations: the gated scenario ladder. First Sprint is the
+              always-open tutorial; each higher rung opens when its gate level is
+              certified, then stays freely replayable (the free-play sandbox). */}
           <section className="mt-11">
             <div className="flex items-center gap-3 border-b-2 border-line pb-3">
-              <span className="mono whitespace-nowrap rounded-console-sm border border-line bg-panel-2 px-[10px] py-1 text-[11px] uppercase tracking-[0.14em] text-mute">
-                Capstone
+              <span className="mono inline-flex items-center gap-1.5 whitespace-nowrap rounded-console-sm border border-line bg-panel-2 px-[10px] py-1 text-[11px] uppercase tracking-[0.14em] text-mute">
+                <FlaskIcon size={13} />
+                Simulator
               </span>
               <span className="text-[19px] font-extrabold tracking-[-0.02em] text-ink">
-                Full Simulation
+                Decision Simulations
               </span>
               <span className="mono ml-auto inline-flex items-center gap-1.5 whitespace-nowrap text-[11px] uppercase tracking-[0.1em] text-mute">
-                Preview
+                {hasHydrated ? `${unlockedSimCount} / ${SIM_LADDER.length} open` : `${SIM_LADDER.length} rungs`}
               </span>
             </div>
-            <div className="mt-4">
-              <Link
-                href="/play/01-canadian-launch"
-                className="group flex max-w-[480px] items-center justify-between gap-3 rounded-console-lg border border-line bg-paper p-4 no-underline transition-[border-color,box-shadow] hover:border-faint hover:shadow-console-sm"
-              >
-                <span>
-                  <span className="block text-[15px] font-semibold tracking-[-0.01em] text-ink">
-                    Run a full product cycle
-                  </span>
-                  <span className="mono mt-0.5 block text-[11.5px] text-faint">
-                    Apply every skill end-to-end · multi-iteration sim
-                  </span>
-                </span>
-                <span className="mono inline-flex flex-none items-center gap-1.5 rounded-console border border-line bg-panel px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate transition-colors group-hover:border-faint group-hover:text-ink">
-                  Open
-                  <ArrowRightIcon size={13} />
-                </span>
-              </Link>
+            <p className="mt-3 max-w-[64ch] text-[14px] text-slate">
+              Run a full product cycle under pressure. Each rung retunes the same
+              engine for a higher altitude and opens when you certify the level
+              below it. Replay any open rung as often as you like.
+            </p>
+
+            <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(248px,1fr))] gap-3.5 max-[560px]:grid-cols-1">
+              {SIM_LADDER.map((rung) => {
+                if (isRungUnlocked(rung, masteredIds)) {
+                  return (
+                    <Link
+                      key={rung.scenarioId}
+                      href={`/play/${rung.scenarioId}`}
+                      className="group flex flex-col gap-2.5 rounded-console-lg border border-line bg-paper p-4 no-underline transition-[border-color,box-shadow] hover:border-faint hover:shadow-console-sm"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-[15px] font-semibold tracking-[-0.01em] text-ink">
+                          {rung.title}
+                        </span>
+                        <span className="mono flex-none rounded-console-sm border border-line bg-panel px-2 py-0.5 text-[10px] uppercase tracking-[0.1em] text-mute">
+                          {rung.altitude}
+                        </span>
+                      </div>
+                      <p className="text-[12.5px] leading-snug text-slate">{rung.tagline}</p>
+                      <span className="mono mt-1 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-accent">
+                        {rung.unlockOnCertified === null ? 'Start here' : 'Play'}
+                        <ArrowRightIcon size={12} />
+                      </span>
+                    </Link>
+                  );
+                }
+                return (
+                  <div
+                    key={rung.scenarioId}
+                    aria-disabled="true"
+                    className="flex flex-col gap-2.5 rounded-console-lg border border-dashed border-line bg-panel/60 p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="text-[15px] font-semibold tracking-[-0.01em] text-mute">
+                        {rung.title}
+                      </span>
+                      <LockIcon size={14} className="flex-none text-faint" />
+                    </div>
+                    <p className="text-[12.5px] leading-snug text-faint">{rung.tagline}</p>
+                    <span className="mono mt-1 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.06em] text-faint">
+                      Certify {gateLevelLabel(rung)} to unlock
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </section>
 
