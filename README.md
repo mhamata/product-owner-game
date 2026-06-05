@@ -30,7 +30,6 @@ Certification, an adaptive test-out for skills you already have, and a competenc
 - **Zustand 5** with persistence for all learner state (no account needed, everything is local)
 - **Anthropic SDK** for artifact grading and roleplay
 - **Vitest** for the test suite
-- **Zod** for runtime validation at the API boundary
 
 ## Run it locally
 
