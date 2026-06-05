@@ -6,6 +6,7 @@ import {
   levels,
   tracks,
   getUnitsForLevel,
+  getLevel,
   TOTAL_SKILLS,
   TOTAL_LADDER_SKILLS,
   deriveSkillState,
@@ -28,6 +29,8 @@ import {
   BuildingIcon,
   CapIcon,
   CaretDownIcon,
+  CheckIcon,
+  ChevronRightIcon,
   CircleDotIcon,
   ClockIcon,
   FlameIcon,
@@ -309,6 +312,14 @@ export function PracticeMap() {
     () => SIM_LADDER.filter((r) => isRungUnlocked(r, masteredIds)).length,
     [masteredIds],
   );
+  // Specialization tracks open as one bundle once Senior is certified, the same
+  // certify-to-unlock gate the sim rungs use. They are off-ladder depth, so they
+  // unlock together rather than one prerequisite at a time.
+  const tracksUnlocked = useMemo(
+    () => isLevelCertified('senior', masteredIds),
+    [masteredIds],
+  );
+  const seniorLabel = getLevel('senior')?.label ?? 'Senior';
   const overall = TOTAL_SKILLS > 0 ? masteredCount / TOTAL_SKILLS : 0;
   const overallPct = Math.round(overall * 100);
 
@@ -521,7 +532,10 @@ export function PracticeMap() {
             </div>
           </section>
 
-          {/* Specialization tracks: off-ladder depth (coming soon) */}
+          {/* Specialization tracks: off-ladder depth, gated behind Senior
+              certification (the same certify-to-unlock gate the sim rungs use).
+              This is built, test-covered content, not a placeholder: each card
+              opens into its skills once the gate clears. */}
           <section className="mt-11 pb-16">
             <div className="flex flex-wrap items-center gap-3 border-b-2 border-line pb-3">
               <span className="mono inline-flex items-center gap-1.5 whitespace-nowrap rounded-console-sm border border-line bg-panel-2 px-[10px] py-1 text-[11px] uppercase tracking-[0.14em] text-mute">
@@ -532,13 +546,22 @@ export function PracticeMap() {
                 Specializations
               </span>
               <span className="mono ml-auto inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-panel-2 px-2.5 py-1 text-[11px] uppercase tracking-[0.1em] text-mute">
-                <ClockIcon size={13} />
-                Coming soon
+                {hasHydrated && tracksUnlocked ? (
+                  <>
+                    <LayersIcon size={13} />
+                    Open
+                  </>
+                ) : (
+                  <>
+                    <LockIcon size={13} />
+                    Unlocks at {seniorLabel}
+                  </>
+                )}
               </span>
             </div>
             <p className="mt-3 max-w-[64ch] text-[14px] text-slate">
-              Go deep on a domain once you reach Senior. These run beside the
-              ladder, not on it.
+              Go deep on a domain once you certify {seniorLabel}. These run beside
+              the ladder, not on it.
             </p>
 
             <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(248px,1fr))] gap-3.5 max-[560px]:grid-cols-1">
@@ -546,10 +569,47 @@ export function PracticeMap() {
                 const modalities = Array.from(
                   new Set(track.skills.flatMap((s) => s.modalities)),
                 );
+
+                // Locked: the dashed, certify-to-unlock treatment the sim rungs
+                // use. Pre-hydration we always render locked so the server and
+                // the first client paint agree; the store fills in after mount.
+                if (!hasHydrated || !tracksUnlocked) {
+                  return (
+                    <div
+                      key={track.id}
+                      aria-disabled="true"
+                      className="flex flex-col gap-2.5 rounded-console-lg border border-dashed border-line bg-panel/60 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-[15px] font-semibold tracking-[-0.01em] text-mute">
+                          {track.label}
+                        </span>
+                        <LayersIcon size={15} className="flex-none text-faint" />
+                      </div>
+                      <p className="text-[12.5px] leading-snug text-slate">
+                        {track.summary}
+                      </p>
+                      <div className="mt-1 flex items-center justify-between gap-2">
+                        <span className="mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
+                          {track.skills.length} skills
+                        </span>
+                        <ModalityIcons modalities={modalities} />
+                      </div>
+                      <span className="mono mt-1 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.06em] text-faint">
+                        <LockIcon size={12} />
+                        Certify {seniorLabel} to unlock
+                      </span>
+                    </div>
+                  );
+                }
+
+                // Unlocked: a live card whose skills each link straight into the
+                // lesson, so a learner picks within the domain rather than being
+                // walked across track boundaries by the linear "next" helper.
                 return (
                   <div
                     key={track.id}
-                    className="flex flex-col gap-2.5 rounded-console-lg border border-dashed border-line bg-panel/60 p-4"
+                    className="flex flex-col gap-2.5 rounded-console-lg border border-line bg-paper p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <span className="text-[15px] font-semibold tracking-[-0.01em] text-ink">
@@ -560,11 +620,29 @@ export function PracticeMap() {
                     <p className="text-[12.5px] leading-snug text-slate">
                       {track.summary}
                     </p>
-                    <div className="mt-1 flex items-center justify-between gap-2">
-                      <span className="mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
-                        {track.skills.length} skills
-                      </span>
-                      <ModalityIcons modalities={modalities} />
+                    <div className="mt-1 flex flex-col gap-1.5">
+                      {track.skills.map((s) => {
+                        const mastered = masteredIds.has(s.id);
+                        return (
+                          <Link
+                            key={s.id}
+                            href={`/learn/${s.id}`}
+                            className="group flex items-center justify-between gap-2 rounded-console border border-line bg-panel px-2.5 py-1.5 no-underline transition-[border-color,background-color] hover:border-faint hover:bg-panel-2"
+                          >
+                            <span className="text-[13px] font-medium tracking-[-0.01em] text-ink">
+                              {s.title}
+                            </span>
+                            {mastered ? (
+                              <CheckIcon size={14} className="flex-none text-good" />
+                            ) : (
+                              <ChevronRightIcon
+                                size={14}
+                                className="flex-none text-faint transition-colors group-hover:text-accent"
+                              />
+                            )}
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                 );
