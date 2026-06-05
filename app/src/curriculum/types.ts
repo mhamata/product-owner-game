@@ -150,9 +150,10 @@ export const COMPETENCIES: Record<Competency, CompetencyMeta> = {
 /* ------------------------------------------------------------------
    MODALITIES: *how* a skill is practised.
 
-   A skill can use several. `lesson`, `drill`, `sim`, and `artifact` have working
-   content today; the rest (roleplay / judgment / reading / reference) are
-   planned formats and render as informational tags for now.
+   A skill can use several. `lesson`, `drill`, `sim`, `artifact`, and `roleplay`
+   have working per-skill content today, and `judgment` is practised in the
+   spaced-repetition review deck. `reading` and `reference` remain planned
+   formats and render as informational tags for now.
    ------------------------------------------------------------------ */
 export type Modality =
   | 'lesson'
@@ -176,8 +177,8 @@ export const MODALITIES: Record<Modality, ModalityMeta> = {
   drill: { id: 'drill', label: 'Drill', live: true },
   artifact: { id: 'artifact', label: 'Artifact', live: true },
   sim: { id: 'sim', label: 'Sim', live: true },
-  roleplay: { id: 'roleplay', label: 'Roleplay', live: false },
-  judgment: { id: 'judgment', label: 'Judgment', live: false },
+  roleplay: { id: 'roleplay', label: 'Roleplay', live: true },
+  judgment: { id: 'judgment', label: 'Judgment', live: true },
   reading: { id: 'reading', label: 'Reading', live: false },
   reference: { id: 'reference', label: 'Reference', live: false },
 };
