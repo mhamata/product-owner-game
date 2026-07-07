@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { Topbar } from '@/components/console/Topbar';
 import { UnavailableOrError, Spinner } from '@/components/console/lesson/verdictUi';
 import {
@@ -10,6 +11,7 @@ import {
   RestartIcon,
   ShieldIcon,
   UsersIcon,
+  RocketIcon,
 } from '@/components/console/Icon';
 import { browserClient } from '@/lib/supabase/client';
 import { useAuthStore, type SyncPhase } from '@/store/authStore';
@@ -335,6 +337,16 @@ function SignedInCard() {
           error={syncError}
         />
       </div>
+
+      {/* One-line entry point to /upgrade. Reachable from here only for now —
+          no Topbar nav link yet (see UpgradeView). */}
+      <Link
+        href="/upgrade"
+        className="mono mt-4 inline-flex w-fit items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-accent underline-offset-2 hover:underline"
+      >
+        <RocketIcon size={13} />
+        Upgrade · Interview Gym
+      </Link>
 
       <p className="mt-4 text-[12.5px] leading-[1.55] text-slate">
         Signing out leaves your progress in this browser — nothing is deleted. Sign back in on any
