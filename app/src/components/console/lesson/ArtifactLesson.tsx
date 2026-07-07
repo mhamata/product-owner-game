@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Skill } from '@/curriculum/types';
 import type { IndustryId } from '@/curriculum/industries';
@@ -14,19 +14,25 @@ import {
   resolveArtifact,
 } from '@/curriculum/artifacts';
 import { getNextSkill, getUnitForSkill, TOTAL_SKILLS } from '@/curriculum/data';
+import {
+  appendVersion,
+  canSubmitAnother,
+  latestVersion,
+  loadVersionHistory,
+  MAX_VERSIONS,
+  nextVersionNumber,
+  saveVersionHistory,
+  type VersionHistory,
+} from '@/lib/artifactVersionsV2';
 import { useLearnStore } from '@/store/learnStore';
 import { Topbar } from '../Topbar';
 import { CompletionOverlay } from './CompletionOverlay';
-import { useArtifactGrade } from './useArtifactGrade';
-// Shared AI-graded-modality UI (also used by RoleplayLesson): the rubric verdict,
-// the graceful unavailable/error card, the honest "not yet mastered" overlay, and
-// the inline spinner. One styling system, not a parallel one.
-import {
-  DraftSavedOverlay,
-  Spinner,
-  UnavailableOrError,
-  Verdict,
-} from './verdictUi';
+import { useArtifactGradeV2 } from './useArtifactGradeV2';
+// Shared AI-graded-modality UI (also used by RoleplayLesson): the graceful
+// unavailable/error card, the honest "not yet mastered" overlay, and the inline
+// spinner. The V2 verdict pieces live in verdictV2Ui.
+import { DraftSavedOverlay, Spinner, UnavailableOrError } from './verdictUi';
+import { AnnotatedSubmission, VerdictV2 } from './verdictV2Ui';
 import {
   CheckIcon,
   ChevronRightIcon,
@@ -38,19 +44,21 @@ import {
 const padIndex = (n: number) => String(n).padStart(2, '0');
 
 /**
- * Phases of the artifact loop:
+ * Phases of the artifact loop (V2: inline annotations + revise-and-resubmit):
  *  - write:    the learner reads the brief + rubric and drafts. Submit is gated
- *              until the draft clears a minimum bar (`isSubmittable`).
- *  - graded:   the rubric verdict is shown (per-criterion band + comment,
- *              strengths, gaps, overall). A passing verdict offers Continue
- *              (records mastery); a non-passing one offers Revise; the
- *              grading-unavailable fallback offers both Revise and Continue with
- *              the draft preserved.
- *  - complete: the exit screen, which tells the truth about what happened. A
- *              genuine pass (mastery recorded) shows the shared "Skill mastered"
- *              celebration; a sub-pass or "Continue anyway" path recorded nothing
- *              and shows an honest "draft saved, not yet mastered" screen with the
- *              count unchanged.
+ *              until the draft clears a minimum bar (`isSubmittable`). On a
+ *              REVISE, we return here with the same values pre-filled; the next
+ *              submit carries the previous submission + verdict so the grade
+ *              reports the delta.
+ *  - graded:   the V2 verdict is shown (topFix + rubric bands + inline
+ *              annotations pinned to numbered blocks + the delta view on a
+ *              revision). Passing offers Continue (records mastery); otherwise
+ *              "Revise & resubmit" reopens the editor, up to MAX_VERSIONS total.
+ *  - complete: the honest exit screen (celebration only on a genuine pass).
+ *
+ * Versions are persisted to localStorage per skillId so the trajectory (v1 → v2)
+ * survives a reload. Grading degrades gracefully: when the verdict is null or
+ * grading is unavailable, the draft is preserved and the learner can move on.
  */
 type Phase = 'write' | 'graded' | 'complete';
 
@@ -86,7 +94,24 @@ export function ArtifactLesson({
   const [values, setValues] = useState<ArtifactValues>({});
   const [phase, setPhase] = useState<Phase>('write');
   const [rubricOpen, setRubricOpen] = useState(true);
-  const { verdict, unavailable, error, loading, grade, reset } = useArtifactGrade();
+  // Version history is persisted per skill; hydrated on mount so a reload keeps
+  // the trajectory. Starts empty on the server to avoid a hydration mismatch.
+  const [history, setHistory] = useState<VersionHistory>({
+    skillId: skill.id,
+    versions: [],
+  });
+  const { verdict, unavailable, error, loading, grade, reset } = useArtifactGradeV2();
+
+  // Hydrate the persisted version history on mount. Deferred into an animation
+  // frame so the effect body never calls setState synchronously
+  // (react-hooks/set-state-in-effect), matching the sim's ShipStep pattern; the
+  // server render starts from the empty history, avoiding a hydration mismatch.
+  useEffect(() => {
+    const raf = window.requestAnimationFrame(() => {
+      setHistory(loadVersionHistory(skill.id));
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, [skill.id]);
 
   const unit = useMemo(() => getUnitForSkill(skill.id), [skill.id]);
   const nextSkill = useMemo(() => getNextSkill(skill.id), [skill.id]);
@@ -97,33 +122,60 @@ export function ArtifactLesson({
     return { index: idx === -1 ? 1 : idx + 1, total: unit.skills.length };
   }, [unit, skill.id]);
 
-  // The count to show on the completion screen.
-  //  - On a genuine pass we record mastery, so the celebratory overlay shows the
-  //    incremented count (this skill now counts, unless it was already mastered).
-  //  - On a sub-pass or the "Continue anyway" path nothing is recorded, so the
-  //    honest overlay must show the UNCHANGED count: no phantom +1.
+  // The count to show on the completion screen (see the honest-completion note
+  // at the bottom): +1 only on a genuine pass this attempt records.
   const masteredCountAfterPass = masteredCountNow() + (alreadyMastered ? 0 : 1);
   const ready = isSubmittable(resolved, values);
   const locked = phase !== 'write';
   const progressPct = phase === 'write' ? 40 : phase === 'graded' ? 70 : 100;
 
-  // A passing verdict is the only path that records mastery on Continue. The
-  // unavailable fallback and a sub-pass verdict still let the learner move on
-  // (the draft + feedback are preserved either way), matching the free-text
-  // drills, but only a genuine pass writes competence to the store.
+  // A passing verdict is the only path that records mastery on Continue.
   const passed = verdict ? verdict.passed || verdict.overallScore >= PASS_SCORE : false;
+
+  // How many versions have been graded, and whether a revision is still allowed.
+  const versionCount = history.versions.length;
+  const revisionsLeft = canSubmitAnother(history);
+  const nextVersion = nextVersionNumber(history);
 
   const setField = (key: string, v: string) =>
     setValues((prev) => ({ ...prev, [key]: v }));
 
   async function handleSubmit() {
     if (!ready || loading) return;
-    const submission = composeSubmission(resolved, values);
-    await grade(resolved, briefText, submission);
+    const composed = composeSubmission(resolved, values);
+
+    // On the second+ attempt, carry the previous submission + verdict so the
+    // grader can report the delta. `previousVerdict` sends only the parts the
+    // grader replays (criteria + annotations + score).
+    const prev = latestVersion(history);
+    const revision =
+      prev && prev.verdict
+        ? {
+            previousSubmission: prev.submission,
+            previousVerdict: {
+              criteria: prev.verdict.criteria,
+              annotations: prev.verdict.annotations,
+              overallScore: prev.verdict.overallScore,
+            },
+          }
+        : undefined;
+
+    const graded = await grade(resolved, briefText, composed, revision);
     setPhase('graded');
+
+    // Persist this version (verdict may be null on an unparseable grade; we still
+    // record the submission so the trajectory and revise-cap stay honest).
+    setHistory((current) => {
+      const next = appendVersion(current, composed, graded, Date.now());
+      saveVersionHistory(next);
+      return next;
+    });
   }
 
   function handleRevise() {
+    // Keep `values` (the editor is pre-filled with the same draft) and return to
+    // the write phase. The next submit will attach the previous version as the
+    // revision context.
     reset();
     setPhase('write');
   }
@@ -134,6 +186,11 @@ export function ArtifactLesson({
   }
 
   const goHome = () => router.push('/');
+
+  // The submission whose annotations we render inline: the latest graded one.
+  const gradedVersion = latestVersion(history);
+  const showAnnotated =
+    phase === 'graded' && verdict !== null && gradedVersion !== undefined;
 
   return (
     <>
@@ -176,6 +233,11 @@ export function ArtifactLesson({
                 {unit ? `Unit ${padIndex(unit.number)}` : 'Skill'} · {skill.title}
               </span>
               <span className="eyebrow">{resolved.scenarioTag}</span>
+              {versionCount > 0 && (
+                <span className="mono tnum rounded-console-sm border border-line bg-panel px-2 py-0.5 text-[10.5px] uppercase tracking-[0.12em] text-slate">
+                  v{Math.min(nextVersion, MAX_VERSIONS)} / {MAX_VERSIONS}
+                </span>
+              )}
             </div>
 
             <h2 className="mt-4 text-[24px] font-bold leading-[1.25] tracking-[-0.015em] text-ink max-[560px]:text-[21px]">
@@ -307,7 +369,24 @@ export function ArtifactLesson({
                   Write a real draft in each section to enable grading. Aim for substance over length.
                 </p>
               )}
+              {phase === 'write' && ready && versionCount > 0 && revisionsLeft && (
+                <p className="text-[12px] leading-[1.5] text-slate">
+                  Revising version {versionCount}. Your next grade will show what changed.
+                </p>
+              )}
             </div>
+
+            {/* the marked-up draft: numbered blocks + inline annotations, pinned
+                to the block they reference. Rendered in the scrollable body (not
+                the dock) because it is tall. */}
+            {showAnnotated && (
+              <section className="mt-[22px]">
+                <AnnotatedSubmission
+                  submission={gradedVersion!.submission}
+                  annotations={verdict!.annotations}
+                />
+              </section>
+            )}
           </div>
         </div>
 
@@ -335,21 +414,24 @@ export function ArtifactLesson({
                     note="Your draft is saved above. Without grading this skill cannot be marked mastered, but you can keep the draft and move on, or revise it."
                   />
                 ) : verdict ? (
-                  <Verdict verdict={verdict} passed={passed} />
+                  <VerdictV2 verdict={verdict} passed={passed} history={history} />
                 ) : null}
               </div>
             )}
 
             {phase !== 'complete' && (
               <div className="pointer-events-auto flex gap-2.5">
-                {phase === 'graded' && (
+                {/* Revise & resubmit: available in the graded phase whenever a
+                    revision is still allowed (under the MAX_VERSIONS cap) and the
+                    draft was preserved (hidden on a hard error with no draft). */}
+                {phase === 'graded' && revisionsLeft && !(error && !verdict) && (
                   <button
                     type="button"
                     onClick={handleRevise}
                     className="mono inline-flex flex-none items-center justify-center gap-2 rounded-console border border-line bg-paper px-[18px] py-[15px] text-[13px] font-semibold uppercase tracking-[0.08em] text-slate shadow-console-md transition-colors duration-150 hover:border-faint hover:text-ink active:translate-y-px"
                   >
                     <RestartIcon size={14} />
-                    Revise
+                    Revise &amp; resubmit
                   </button>
                 )}
 
@@ -376,6 +458,8 @@ export function ArtifactLesson({
                           <Spinner />
                           Grading your draft
                         </>
+                      ) : versionCount > 0 ? (
+                        `Submit version ${nextVersion} for grading`
                       ) : (
                         'Submit for grading'
                       )

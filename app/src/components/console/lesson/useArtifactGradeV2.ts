@@ -2,47 +2,26 @@
 
 import { useCallback, useRef, useState } from 'react';
 import type { ResolvedArtifact } from '@/curriculum/artifacts';
+import type {
+  ArtifactVerdictV2,
+  PreviousVerdictSummary,
+} from '@/lib/artifactGraderV2';
 
 /**
- * Client hook for the V1 artifact grading round-trip, mirroring `useLLMGrade` but
- * typed to the `/api/grade-artifact` verdict shape.
+ * Client hook for the V2 artifact grading round-trip (inline annotations +
+ * revise-and-resubmit). Mirrors `useArtifactGrade` and shares the same
+ * `/api/grade-artifact` endpoint, sending `v: 2` so the route takes the V2 path
+ * and, on a revision, the previous submission + verdict so the grade can report
+ * the delta.
  *
- * RETAINED (not deleted) after grading V2 shipped: `ArtifactLesson` now grades via
- * `useArtifactGradeV2` (inline annotations + revise-and-resubmit), but this V1 hook
- * and the V1 route path stay in place so the Phase-0 calibration study and any
- * V1-only fallback keep a working, un-annotated grading round-trip to call.
- *
- * The three terminal states the UI cares about are explicit:
- *  - `verdict`:      a structured rubric result (criteria + strengths/gaps/overall)
- *  - `unavailable`:  grading is off (no API key in this environment); a calm,
- *                    NON-error fallback so the learner's draft is preserved
+ * The three terminal states are the same as V1:
+ *  - `verdict`:      a V2 rubric result (criteria + annotations + topFix + delta)
+ *  - `unavailable`:  grading is off (no API key); a calm, NON-error fallback
  *  - `error`:        a real failure (rate limit, network, model error)
- *
- * A per-session token is sent so the rate limiter can budget per learner rather
- * than per shared office IP. It is a random id kept only in memory for this tab.
  */
 
-/** Per-criterion verdict returned by the grader. */
-export interface CriterionVerdict {
-  id: string;
-  label: string;
-  /** 0-3 band. */
-  score: number;
-  comment: string;
-}
-
-export interface ArtifactVerdict {
-  criteria: CriterionVerdict[];
-  strengths: string[];
-  gaps: string[];
-  overall: string;
-  /** 0-100 rollup. */
-  overallScore: number;
-  passed: boolean;
-}
-
-export interface ArtifactGradeState {
-  verdict: ArtifactVerdict | null;
+export interface ArtifactGradeV2State {
+  verdict: ArtifactVerdictV2 | null;
   /** Set when grading is off (no key). Carries the calm fallback message. */
   unavailable: string | null;
   /** Set on a real error (rate limit, network, model). */
@@ -50,7 +29,7 @@ export interface ArtifactGradeState {
   loading: boolean;
 }
 
-const INITIAL: ArtifactGradeState = {
+const INITIAL: ArtifactGradeV2State = {
   verdict: null,
   unavailable: null,
   error: null,
@@ -65,21 +44,26 @@ function makeSessionId(): string {
   return `s-${Math.random().toString(36).slice(2)}-${Date.now()}`;
 }
 
-export function useArtifactGrade() {
-  const [state, setState] = useState<ArtifactGradeState>(INITIAL);
-  // Lazy-init the per-tab session id exactly once. The `== null` guard is the
-  // pattern react-hooks/refs expects for one-time ref initialization (a falsy
-  // empty-string seed would trip the "no ref access during render" rule).
+/** The optional previous-attempt context sent on a revision. */
+export interface RevisionContext {
+  previousSubmission: string;
+  previousVerdict: PreviousVerdictSummary;
+}
+
+export function useArtifactGradeV2() {
+  const [state, setState] = useState<ArtifactGradeV2State>(INITIAL);
   const sessionId = useRef<string | null>(null);
   if (sessionId.current == null) sessionId.current = makeSessionId();
 
   const grade = useCallback(
-    async (resolved: ResolvedArtifact, brief: string, submission: string) => {
+    async (
+      resolved: ResolvedArtifact,
+      brief: string,
+      submission: string,
+      revision?: RevisionContext,
+    ) => {
       setState({ ...INITIAL, loading: true });
       try {
-        // Reading the ref inside the callback (not during render) is the allowed
-        // pattern; the render-time guard above guarantees it is set, the fallback
-        // is purely defensive so the header is never empty.
         const session = sessionId.current ?? makeSessionId();
         const r = await fetch('/api/grade-artifact', {
           method: 'POST',
@@ -88,17 +72,20 @@ export function useArtifactGrade() {
             'x-praxis-session': session,
           },
           body: JSON.stringify({
+            v: 2,
             skillId: resolved.skillId,
             artifactTitle: resolved.title,
             brief,
             rubric: resolved.rubric,
             graderInstructions: resolved.graderInstructions,
             submission,
+            previousSubmission: revision?.previousSubmission,
+            previousVerdict: revision?.previousVerdict,
           }),
         });
 
         const data = (await r.json()) as {
-          verdict?: ArtifactVerdict | null;
+          verdict?: ArtifactVerdictV2 | null;
           unavailable?: boolean;
           message?: string;
           error?: string;
@@ -113,30 +100,32 @@ export function useArtifactGrade() {
                 ? 'You are sending submissions too quickly. Please wait a moment and try again.'
                 : `Grading failed (HTTP ${r.status}).`),
           });
-          return;
+          return null;
         }
 
         if (data.unavailable) {
           setState({ ...INITIAL, unavailable: data.message ?? 'Grading is unavailable.' });
-          return;
+          return null;
         }
 
         if (data.verdict) {
           setState({ ...INITIAL, verdict: data.verdict });
-          return;
+          return data.verdict;
         }
 
-        // Model replied but not as parseable JSON: treat as a soft error so the
-        // learner can retry, with their draft preserved.
+        // Model replied but not as parseable JSON: soft error so the learner can
+        // retry, with their draft preserved.
         setState({
           ...INITIAL,
           error: 'Grading came back in an unexpected format. Please try again.',
         });
+        return null;
       } catch (e) {
         setState({
           ...INITIAL,
           error: e instanceof Error ? e.message : 'Request failed',
         });
+        return null;
       }
     },
     [],
