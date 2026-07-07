@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { CapIcon } from './Icon';
+import { CapIcon, UsersIcon } from './Icon';
 import { ReviewNavLink } from './review/ReviewNavLink';
 
 /**
@@ -39,6 +39,13 @@ export function Topbar({
         </Link>
         {right ?? (
           <nav className="flex items-center gap-2">
+            <Link
+              href="/interview"
+              className="mono inline-flex items-center gap-1.5 rounded-console border border-line bg-paper px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
+            >
+              <UsersIcon size={13} />
+              Interview
+            </Link>
             <ReviewNavLink />
             <Link
               href="/progress"
