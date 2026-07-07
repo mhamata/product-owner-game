@@ -56,6 +56,15 @@ interface PersistedSession {
   messages: InterviewMessage[];
   /** Whether the candidate had already ended the interview when it was saved. */
   ended: boolean;
+  /**
+   * The committee scorecard, once the transcript has been graded. OPTIONAL and
+   * added at PERSIST_VERSION 1 (no bump): older saves simply lack it and still
+   * parse + resume unchanged. The readiness report reads this to aggregate a
+   * candidate's scored interviews without a re-grade round-trip.
+   */
+  scorecard?: InterviewScorecard;
+  /** When the scorecard was produced (ms epoch), for ordering in the report. */
+  scoredAt?: number;
 }
 
 /**
@@ -186,10 +195,24 @@ export function InterviewSession({ interviewCase }: { interviewCase: PublicInter
      ------------------------------------------------------------------ */
 
   const persist = useCallback(
-    (next: InterviewMessage[], ended: boolean) => {
+    (
+      next: InterviewMessage[],
+      ended: boolean,
+      // The graded result, passed only on a successful score. Omitting it (the
+      // common per-turn write) leaves the fields absent, so a live save never
+      // carries a scorecard and the readiness report only ever sees real grades.
+      scored?: { scorecard: InterviewScorecard; scoredAt: number },
+    ) => {
       if (typeof window === 'undefined') return;
       try {
-        const payload: PersistedSession = { version: PERSIST_VERSION, messages: next, ended };
+        const payload: PersistedSession = {
+          version: PERSIST_VERSION,
+          messages: next,
+          ended,
+          ...(scored
+            ? { scorecard: scored.scorecard, scoredAt: scored.scoredAt }
+            : {}),
+        };
         window.localStorage.setItem(persistKey(interviewCase.id), JSON.stringify(payload));
         // Back the transcript up to the account when signed in (no-op otherwise).
         notifySyncKeyChanged(persistKey(interviewCase.id));
@@ -325,7 +348,10 @@ export function InterviewSession({ interviewCase }: { interviewCase: PublicInter
       setScorecard(result.scorecard);
       setUnavailable(null);
       setPhase('scored');
-      persist(messages, true);
+      // Persist the scorecard + when it was graded alongside the transcript, so
+      // the readiness report can aggregate this scored interview. This is still
+      // the single `persist` write path (and so it syncs for free).
+      persist(messages, true, { scorecard: result.scorecard, scoredAt: Date.now() });
     } else if (result.kind === 'unavailable') {
       setUnavailable(result.message);
       setScorecard(null);

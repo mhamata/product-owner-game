@@ -106,7 +106,7 @@ export function loadVersionHistory(skillId: string): VersionHistory {
     const raw = window.localStorage.getItem(storageKey(skillId));
     if (!raw) return empty;
     const parsed = JSON.parse(raw) as unknown;
-    return coerceHistory(skillId, parsed);
+    return coerceVersionHistory(skillId, parsed);
   } catch {
     return empty;
   }
@@ -136,8 +136,13 @@ export function clearVersionHistory(skillId: string): void {
   }
 }
 
-/** Defensively coerce parsed JSON back into a VersionHistory, capping length. */
-function coerceHistory(skillId: string, parsed: unknown): VersionHistory {
+/**
+ * Defensively coerce parsed JSON back into a VersionHistory, capping length.
+ * Exported so the readiness report can reuse the EXACT same coercion when it
+ * reads the raw `praxis:artifact-v2:*` family, rather than re-deriving the cap +
+ * empty-submission dropping and risking drift.
+ */
+export function coerceVersionHistory(skillId: string, parsed: unknown): VersionHistory {
   const empty: VersionHistory = { skillId, versions: [] };
   if (!parsed || typeof parsed !== 'object') return empty;
   const rawVersions = (parsed as { versions?: unknown }).versions;
