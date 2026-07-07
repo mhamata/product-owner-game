@@ -90,7 +90,7 @@ describe('stripe webhook: sprint purchase', () => {
   it('grants the sprint entitlement and bumps the budget on a completed payment checkout', async () => {
     nextEvent = {
       type: 'checkout.session.completed',
-      data: { object: { mode: 'payment', client_reference_id: 'user-1', metadata: {} } },
+      data: { object: { mode: 'payment', payment_status: 'paid', client_reference_id: 'user-1', metadata: {} } },
     };
     const res = await POST(webhookRequest());
     expect(res.status).toBe(200);
@@ -103,10 +103,28 @@ describe('stripe webhook: sprint purchase', () => {
   it('falls back to metadata.praxis_user_id when client_reference_id is absent', async () => {
     nextEvent = {
       type: 'checkout.session.completed',
-      data: { object: { mode: 'payment', client_reference_id: null, metadata: { praxis_user_id: 'user-meta' } } },
+      data: {
+        object: {
+          mode: 'payment',
+          payment_status: 'paid',
+          client_reference_id: null,
+          metadata: { praxis_user_id: 'user-meta' },
+        },
+      },
     };
     await POST(webhookRequest());
     expect(upsertEntitlementSpy.mock.calls[0][0]).toBe('user-meta');
+  });
+
+  it('does not grant on an unpaid payment checkout (async payment methods settle later)', async () => {
+    nextEvent = {
+      type: 'checkout.session.completed',
+      data: { object: { mode: 'payment', payment_status: 'unpaid', client_reference_id: 'user-1', metadata: {} } },
+    };
+    const res = await POST(webhookRequest());
+    expect(res.status).toBe(200);
+    expect(upsertEntitlementSpy).not.toHaveBeenCalled();
+    expect(bumpBudgetOnGrantSpy).not.toHaveBeenCalled();
   });
 
   it('acknowledges a subscription-mode checkout without granting (the subscription events do that)', async () => {
@@ -172,11 +190,24 @@ describe('stripe webhook: ignore + retry semantics', () => {
     expect(upsertEntitlementSpy).not.toHaveBeenCalled();
   });
 
+  it('returns 200 without writing when a subscription event has no period end (would never expire)', async () => {
+    // No items → periodEndOf() is null → a null expiry is a never-expiring grant.
+    // The webhook must refuse it rather than upsert an unbounded entitlement.
+    nextEvent = {
+      type: 'customer.subscription.updated',
+      data: { object: { metadata: { praxis_user_id: 'user-9' }, items: { data: [] } } },
+    };
+    const res = await POST(webhookRequest());
+    expect(res.status).toBe(200);
+    expect(upsertEntitlementSpy).not.toHaveBeenCalled();
+    expect(bumpBudgetOnGrantSpy).not.toHaveBeenCalled();
+  });
+
   it('returns 500 so Stripe retries when the entitlement write fails', async () => {
     upsertEntitlementSpy.mockRejectedValueOnce(new Error('supabase down'));
     nextEvent = {
       type: 'checkout.session.completed',
-      data: { object: { mode: 'payment', client_reference_id: 'user-1', metadata: {} } },
+      data: { object: { mode: 'payment', payment_status: 'paid', client_reference_id: 'user-1', metadata: {} } },
     };
     const res = await POST(webhookRequest());
     expect(res.status).toBe(500);

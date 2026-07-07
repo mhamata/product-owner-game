@@ -87,6 +87,20 @@ export async function POST(request: Request) {
         // checkout completion is acknowledged here without action.
         if (session.mode !== 'payment') break;
 
+        // The wedge is CARD-ONLY by design. Cards settle synchronously, so a
+        // completed payment-mode session arrives 'paid'. Asynchronous methods
+        // (bank debits etc.) fire this event 'unpaid' and settle later — or
+        // never — via `checkout.session.async_payment_succeeded`, which we do
+        // NOT handle. Granting on 'unpaid' would hand out a sprint before the
+        // money lands, so we require 'paid'. If async methods are ever enabled
+        // in the Stripe dashboard, add an async_payment_succeeded handler FIRST.
+        if (session.payment_status !== 'paid') {
+          console.warn(
+            `[stripe-webhook] checkout.session.completed payment_status=${session.payment_status} (not paid); ignoring.`,
+          );
+          break;
+        }
+
         const userId =
           session.client_reference_id ??
           (typeof session.metadata?.praxis_user_id === 'string'
@@ -110,7 +124,17 @@ export async function POST(request: Request) {
           console.warn(`[stripe-webhook] ${event.type} without praxis_user_id metadata; ignoring.`);
           break;
         }
-        await upsertEntitlement(userId, subscriptionEntitlement(periodEndOf(sub)));
+        // A null period end would make subscriptionEntitlement() yield
+        // expires_at: null — a NEVER-EXPIRING grant. Never hand that out. Like
+        // the missing-userId case this is acknowledged (200): retrying won't
+        // conjure a period end, and a corrected re-send from Stripe upserts and
+        // catches up.
+        const periodEnd = periodEndOf(sub);
+        if (periodEnd === null) {
+          console.warn(`[stripe-webhook] ${event.type} for ${userId} has no period end; ignoring.`);
+          break;
+        }
+        await upsertEntitlement(userId, subscriptionEntitlement(periodEnd));
         await bumpBudgetOnGrant(userId);
         break;
       }

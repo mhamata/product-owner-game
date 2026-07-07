@@ -47,8 +47,14 @@ export function sprintEntitlement(now: Date): EntitlementRow {
 /**
  * A subscription grants the entitlement until its current period end. Stripe
  * sends `current_period_end` as UNIX SECONDS; JS Date wants milliseconds, so we
- * multiply by 1000. A missing/zero period end yields a null expiry rather than
- * the 1970 epoch — the webhook logs and ignores that malformed case.
+ * multiply by 1000.
+ *
+ * This function stays null-tolerant defensively — a missing/zero period end
+ * yields a null expiry rather than the 1970 epoch. But the WEBHOOK never lets a
+ * null reach here: it guards on `periodEndOf(sub) === null`, logs, and ignores
+ * the event, precisely because a null expiry would be a NEVER-EXPIRING grant
+ * (see `EntitlementRow.expires_at`). So the null branch below is belt-and-braces,
+ * not a live path.
  */
 export function subscriptionEntitlement(currentPeriodEndUnixSeconds: number | null | undefined): EntitlementRow {
   const expires_at =
