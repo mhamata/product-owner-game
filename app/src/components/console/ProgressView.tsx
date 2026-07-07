@@ -31,6 +31,7 @@ import {
   CheckIcon,
   CircleDotIcon,
   ClockIcon,
+  FileIcon,
   FlameIcon,
   LockIcon,
 } from './Icon';
@@ -339,6 +340,27 @@ export function ProgressView() {
               have mastered every ready skill in it.
             </p>
           </header>
+
+          {/* Entry point to the readiness report: the shareable record that
+              aggregates scored interviews + graded artifacts, with the work
+              samples attached. A calm link card, not a status metric. */}
+          <Link
+            href="/report"
+            className="mt-5 flex flex-wrap items-center gap-3 rounded-console-lg border border-line bg-paper p-[14px_16px] no-underline transition-[border-color] duration-150 hover:border-faint"
+          >
+            <span className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-console border border-line bg-panel text-slate">
+              <FileIcon size={17} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-[14px] font-semibold text-ink">
+                Readiness report
+              </span>
+              <span className="mono block text-[11px] text-faint">
+                Your scored interviews and graded artifacts, ready to share or print
+              </span>
+            </span>
+            <ArrowRightIcon size={15} className="ml-auto flex-none text-faint" />
+          </Link>
 
           {/* LEVEL CERTIFICATIONS */}
           <section className="mt-8">

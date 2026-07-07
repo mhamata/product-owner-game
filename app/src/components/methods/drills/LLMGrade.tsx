@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { authHeaders } from '@/lib/supabase/client';
 
 export interface GradeResult {
   parsed?: Record<string, unknown> | null;
@@ -18,7 +19,8 @@ export function useLLMGrade(drill: 'jtbd' | 'mom-test' | 'pre-mortem' | 'pr-faq'
     try {
       const r = await fetch('/api/grade', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // Bearer token when signed in (empty spread when anonymous/unconfigured).
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({ drill, input, context }),
       });
       const data = (await r.json()) as GradeResult;

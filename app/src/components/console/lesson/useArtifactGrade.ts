@@ -1,11 +1,17 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import { authHeaders } from '@/lib/supabase/client';
 import type { ResolvedArtifact } from '@/curriculum/artifacts';
 
 /**
- * Client hook for the artifact grading round-trip, mirroring `useLLMGrade` but
+ * Client hook for the V1 artifact grading round-trip, mirroring `useLLMGrade` but
  * typed to the `/api/grade-artifact` verdict shape.
+ *
+ * RETAINED (not deleted) after grading V2 shipped: `ArtifactLesson` now grades via
+ * `useArtifactGradeV2` (inline annotations + revise-and-resubmit), but this V1 hook
+ * and the V1 route path stay in place so the Phase-0 calibration study and any
+ * V1-only fallback keep a working, un-annotated grading round-trip to call.
  *
  * The three terminal states the UI cares about are explicit:
  *  - `verdict`:      a structured rubric result (criteria + strengths/gaps/overall)
@@ -81,6 +87,8 @@ export function useArtifactGrade() {
           headers: {
             'Content-Type': 'application/json',
             'x-praxis-session': session,
+            // Bearer token when signed in (empty spread when anonymous/unconfigured).
+            ...(await authHeaders()),
           },
           body: JSON.stringify({
             skillId: resolved.skillId,

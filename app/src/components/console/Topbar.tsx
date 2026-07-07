@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { CapIcon } from './Icon';
+import { CapIcon, UsersIcon } from './Icon';
 import { ReviewNavLink } from './review/ReviewNavLink';
+import { AccountNavLink } from '@/components/auth/AccountNavLink';
 
 /**
  * Sticky top utility bar with the `praxis.` mono wordmark, matching the
@@ -39,6 +40,13 @@ export function Topbar({
         </Link>
         {right ?? (
           <nav className="flex items-center gap-2">
+            <Link
+              href="/interview"
+              className="mono inline-flex items-center gap-1.5 rounded-console border border-line bg-paper px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
+            >
+              <UsersIcon size={13} />
+              Interview
+            </Link>
             <ReviewNavLink />
             <Link
               href="/progress"
@@ -47,6 +55,7 @@ export function Topbar({
               <CapIcon size={13} />
               Progress
             </Link>
+            <AccountNavLink />
           </nav>
         )}
       </div>

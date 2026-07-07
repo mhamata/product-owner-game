@@ -6,6 +6,7 @@ import type { GameState, Scenario } from '@/engine/types';
 import type { GameScore } from '@/engine/score';
 import { useGameStore } from '@/store/gameStore';
 import { useIndustryStore } from '@/store/industryStore';
+import { authHeaders } from '@/lib/supabase/client';
 import { DEFAULT_INDUSTRY } from '@/curriculum/industries';
 import { cn } from '@/lib/cn';
 import { Topbar } from '../Topbar';
@@ -104,7 +105,8 @@ export function SimEndPanel({
     try {
       const r = await fetch('/api/retro', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // Bearer token when signed in (empty spread when anonymous/unconfigured).
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({ state, scenarioId: scenario.id, score }),
       });
       if (!r.ok) {

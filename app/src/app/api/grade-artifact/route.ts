@@ -6,6 +6,22 @@ import {
   rateLimitedResponse,
   recordModelCall,
 } from '@/lib/rateLimit';
+import {
+  gradeArtifact,
+  buildUserContent,
+  GRADER_MODEL,
+  MAX_OUTPUT_TOKENS,
+  type ArtifactGradeRequest,
+} from '@/lib/artifactGrader';
+import {
+  gradeArtifactV2,
+  buildUserContentV2,
+  GRADER_MODEL_V2,
+  MAX_OUTPUT_TOKENS as MAX_OUTPUT_TOKENS_V2,
+  type PreviousVerdictSummary,
+} from '@/lib/artifactGraderV2';
+import { authMode, getUserFromRequest } from '@/lib/supabase/server';
+import { actualCallCents, estimateCallCents, logUsage, reserveBudget, settleBudget } from '@/lib/budget';
 
 /**
  * AI-graded artifact endpoint: the differentiator of the knowledge center.
@@ -17,8 +33,15 @@ import {
  * free-form "rate this", so the client sends the rubric and we score each
  * criterion against its own descriptors.
  *
- * GUARDRAILS (in priority order)
- * ------------------------------
+ * TWO GRADING VERSIONS, ONE GUARDRAIL STACK:
+ *  - V1 (`@/lib/artifactGrader`) — the whole-submission rubric grade, shared
+ *    with the Phase-0 calibration harness (`scripts/calibrate.ts`) so the
+ *    calibration study and production grade identically. Requests without
+ *    `v: 2` take this path, byte-for-byte unchanged.
+ *  - V2 (`@/lib/artifactGraderV2`) — adds block-anchored inline annotations
+ *    and the revise-and-resubmit delta. Same rubric bands; richer feedback.
+ *
+ * This route owns only the guardrails around them:
  *  1. GLOBAL CEILING. Before any spend, the route consults the process-wide
  *     model-call ceiling (src/lib/rateLimit.ts). Once it is reached we return a
  *     calm 200 { unavailable, reason: 'at capacity' } and do NOT call the model.
@@ -41,179 +64,28 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /* ------------------------------------------------------------------
-   Cap configuration. ~10 submissions per 10 minutes per client, and a tight
-   token ceiling so a single graded call stays cheap on Haiku.
+   Cap configuration. ~10 submissions per 10 minutes per client; the per-call
+   token ceilings live with the grading cores in @/lib/artifactGrader{,V2}.
    ------------------------------------------------------------------ */
 const RATE_LIMIT = { limit: 10, windowMs: 10 * 60 * 1000 };
-const MAX_OUTPUT_TOKENS = 900;
-/** Hard cap on submission size so a giant paste cannot inflate input cost. */
-const MAX_SUBMISSION_CHARS = 8000;
-/**
- * Hard cap on the TOTAL assembled user content (brief + rubric descriptors +
- * grader instructions + submission + the labels that frame them). The
- * submission alone is already clamped, but the brief, rubric, and grader
- * instructions come from the client too, so a crafted body could pad them to
- * inflate input tokens past the intended per-call cap even with a small
- * submission. Clamping the assembled whole closes that. The ceiling sits well
- * above any authored artifact (legitimate content uses a small fraction of it),
- * so only an abusive body is ever truncated. ~12k chars is roughly 3k input
- * tokens: bounded and cheap on Haiku.
- */
-const MAX_USER_CONTENT_CHARS = 12000;
-const GRADER_MODEL = 'claude-haiku-4-5-20251001';
 
-/** One rubric criterion the model scores against, with its own level guide. */
-export interface RubricCriterionInput {
-  /** Stable id echoed back in the per-criterion result. */
-  id: string;
-  /** Short human label, e.g. "Problem clarity". */
-  label: string;
-  /** What a strong answer on this criterion looks like. */
-  descriptor: string;
-}
+// Re-export the request/verdict types under their historical names so existing
+// importers of this route's contract keep compiling.
+export type { RubricCriterionInput, ArtifactVerdict, CriterionVerdict } from '@/lib/artifactGrader';
+export type { ArtifactVerdictV2 } from '@/lib/artifactGraderV2';
 
-interface ArtifactGradeRequest {
-  /** Skill id, for logging/debugging only (grading is rubric-driven). */
-  skillId: string;
-  /** Title of the deliverable, e.g. "One-page PRD". */
-  artifactTitle: string;
-  /** The scenario brief the learner was given, for grading context. */
-  brief: string;
-  /** The rubric the learner saw: the bar each criterion is scored against. */
-  rubric: RubricCriterionInput[];
-  /** Extra grader instructions specific to this artifact. */
-  graderInstructions?: string;
-  /** The learner's submission (assembled prose). */
-  submission: string;
-}
-
-/** Per-criterion verdict shape we ask the model to return. */
-interface CriterionVerdict {
-  id: string;
-  label: string;
-  /** 0-3 band: 0 missing, 1 weak, 2 solid, 3 excellent. */
-  score: number;
-  comment: string;
-}
-
-/** The structured verdict the lesson renders. */
-interface ArtifactVerdict {
-  criteria: CriterionVerdict[];
-  strengths: string[];
-  gaps: string[];
-  overall: string;
-  /** 0-100 rollup the UI turns into a pass/keep-going state. */
-  overallScore: number;
-  passed: boolean;
-}
-
-/**
- * The fixed grading contract, sent as the system prompt. The variable rubric
- * and submission go in the user turn so the system prompt stays cacheable and
- * the model treats the rubric as data to grade against, not instructions to
- * follow.
- */
-const SYSTEM_PROMPT = `You are a senior product leader grading a trainee PM's written deliverable for a portfolio review.
-
-You will receive: the deliverable title, the scenario brief the trainee was given, a RUBRIC (a list of criteria, each with an id, a label, and a descriptor of what "strong" looks like), optional extra grader instructions, and the trainee's SUBMISSION.
-
-Grade ONLY against the rubric. For each criterion, score the submission on this band:
-- 0 = missing or off-track
-- 1 = attempted but weak
-- 2 = solid, meets the bar
-- 3 = excellent, exceeds the bar
-
-Rules:
-- Judge what is written, not what you imagine they meant. Reward specificity; penalize vague, generic, or buzzword answers.
-- Keep every comment to one or two sentences, concrete and actionable. Name the fix, not just the flaw.
-- Do not invent facts that are not in the brief or submission.
-- Be constructive and specific. Never shame.
-
-Return ONLY a JSON object, no prose around it, in exactly this shape:
-{
-  "criteria": [{ "id": "<criterion id>", "label": "<criterion label>", "score": 0-3, "comment": "<one to two sentences>" }],
-  "strengths": ["<two to three concrete strengths>"],
-  "gaps": ["<two to three concrete, prioritized gaps>"],
-  "overall": "<two to three sentence verdict>",
-  "overallScore": 0-100,
-  "passed": <true if the work meets the bar overall, else false>
-}
-Compute overallScore as the sum of criterion scores divided by the maximum possible (criteria count times 3), times 100, rounded to a whole number. Set passed to true when overallScore is at least 70.`;
-
-/** Build the user-turn content from the (variable) rubric + submission. */
-function buildUserContent(body: ArtifactGradeRequest): string {
-  const rubricLines = body.rubric
-    .map((c, i) => `${i + 1}. [id: ${c.id}] ${c.label}: ${c.descriptor}`)
-    .join('\n');
-
-  const submission = body.submission.slice(0, MAX_SUBMISSION_CHARS);
-
-  const assembled = [
-    `DELIVERABLE: ${body.artifactTitle}`,
-    '',
-    'SCENARIO BRIEF:',
-    body.brief,
-    '',
-    'RUBRIC (score each criterion 0-3 against its descriptor):',
-    rubricLines,
-    body.graderInstructions ? `\nADDITIONAL GRADER INSTRUCTIONS:\n${body.graderInstructions}` : '',
-    '',
-    'TRAINEE SUBMISSION:',
-    submission,
-  ].join('\n');
-
-  // Defensive final cap on the whole assembled user turn: the brief, rubric, and
-  // grader instructions are client-supplied too, so bound the total so a padded
-  // request body cannot push input tokens past the per-call cost cap.
-  return assembled.slice(0, MAX_USER_CONTENT_CHARS);
-}
-
-/** Coerce the model's loose JSON into the typed verdict, clamping scores. */
-function normalizeVerdict(
-  parsed: Record<string, unknown>,
-  rubric: RubricCriterionInput[],
-): ArtifactVerdict {
-  const byId = new Map(rubric.map((c) => [c.id, c]));
-  const rawCriteria = Array.isArray(parsed.criteria) ? parsed.criteria : [];
-
-  const criteria: CriterionVerdict[] = rawCriteria.map((raw) => {
-    const c = (raw ?? {}) as Record<string, unknown>;
-    const id = typeof c.id === 'string' ? c.id : '';
-    const label = typeof c.label === 'string' ? c.label : (byId.get(id)?.label ?? id);
-    const score = clampBand(c.score);
-    const comment = typeof c.comment === 'string' ? c.comment : '';
-    return { id, label, score, comment };
-  });
-
-  const strengths = toStringArray(parsed.strengths);
-  const gaps = toStringArray(parsed.gaps);
-  const overall = typeof parsed.overall === 'string' ? parsed.overall : '';
-
-  // Prefer the model's rollup, but recompute from the bands if it is missing or
-  // out of range, so the UI always has a trustworthy 0-100.
-  const computed = criteria.length
-    ? Math.round((criteria.reduce((s, c) => s + c.score, 0) / (criteria.length * 3)) * 100)
-    : 0;
-  const modelScore = typeof parsed.overallScore === 'number' ? parsed.overallScore : NaN;
-  const overallScore =
-    Number.isFinite(modelScore) && modelScore >= 0 && modelScore <= 100
-      ? Math.round(modelScore)
-      : computed;
-
-  const passed = typeof parsed.passed === 'boolean' ? parsed.passed : overallScore >= 70;
-
-  return { criteria, strengths, gaps, overall, overallScore, passed };
-}
-
-function clampBand(value: unknown): number {
-  const n = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(n)) return 0;
-  return Math.max(0, Math.min(3, Math.round(n)));
-}
-
-function toStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((v): v is string => typeof v === 'string' && v.trim().length > 0);
+/** The route's request body: the V1 contract plus the optional V2 fields. */
+interface GradeRouteRequest extends ArtifactGradeRequest {
+  /**
+   * Grading version. Unset (or anything but 2) => the EXACT V1 path, untouched,
+   * so the Phase-0 calibration study is unaffected. `2` => inline annotations +
+   * revise-and-resubmit via `artifactGraderV2`.
+   */
+  v?: 2;
+  /** V2 revision only: the submission the previous verdict graded. */
+  previousSubmission?: string;
+  /** V2 revision only: the criteria + annotations from the previous grade. */
+  previousVerdict?: PreviousVerdictSummary;
 }
 
 export async function POST(request: Request) {
@@ -222,9 +94,9 @@ export async function POST(request: Request) {
   const limit = checkRateLimit(key, RATE_LIMIT);
   if (!limit.allowed) return rateLimitedResponse(limit);
 
-  let body: ArtifactGradeRequest;
+  let body: GradeRouteRequest;
   try {
-    body = (await request.json()) as ArtifactGradeRequest;
+    body = (await request.json()) as GradeRouteRequest;
   } catch {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
@@ -236,7 +108,22 @@ export async function POST(request: Request) {
     return Response.json({ error: 'A rubric is required to grade' }, { status: 400 });
   }
 
-  // 2) Graceful degradation: no key, no spend. Return a calm 200 the UI can show
+  const isV2 = body.v === 2;
+
+  // 2) Identity (Phase-0 substrate). Default 'off' preserves today's anonymous
+  //    behavior exactly; with PRAXIS_AUTH_MODE=required the caller must present
+  //    a valid Supabase JWT. (The budget reserve happens later, immediately
+  //    before the spend, so early exits below can never leak a reservation.)
+  let userId: string | null = null;
+  if (authMode() === 'required') {
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return Response.json({ error: 'Sign in to use AI grading.' }, { status: 401 });
+    }
+    userId = user.id;
+  }
+
+  // 3) Graceful degradation: no key, no spend. Return a calm 200 the UI can show
   //    while preserving the learner's writing (mirrors how the drills degrade).
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -247,7 +134,7 @@ export async function POST(request: Request) {
     });
   }
 
-  // 3) Global ceiling: the hard cost cap. Even with a key and the per-client limit
+  // 4) Global ceiling: the hard cost cap. Even with a key and the per-client limit
   //    passed, refuse once the process has spent its global model-call budget so
   //    no amount of client-key/IP rotation can run up the bill. Same calm 200
   //    `unavailable` shape the UI already handles, and NO model call.
@@ -260,35 +147,72 @@ export async function POST(request: Request) {
     });
   }
 
+  // 5) Per-user budget gate, last thing before the spend: reserve worst-case
+  //    cost atomically (the Postgres function is race-safe), settle the real
+  //    cost after the call — including settling back to zero on failure.
+  const model = isV2 ? GRADER_MODEL_V2 : GRADER_MODEL;
+  const maxOutputTokens = isV2 ? MAX_OUTPUT_TOKENS_V2 : MAX_OUTPUT_TOKENS;
+  const inputChars = isV2 ? buildUserContentV2(body).content.length : buildUserContent(body).length;
+  let reservedCents = 0;
+  if (userId) {
+    reservedCents = estimateCallCents(model, inputChars, maxOutputTokens);
+    const allowed = await reserveBudget(userId, reservedCents);
+    if (!allowed) {
+      return Response.json({
+        unavailable: true,
+        reason: 'allowance',
+        message:
+          'You have used this month’s AI grading allowance. Drills and review stay open; grading resets on the 1st.',
+      });
+    }
+  }
+
   const client = new Anthropic({ apiKey });
   try {
     // Count the call against the global ceiling at the moment we spend.
     recordModelCall();
-    const response = await client.messages.create({
-      model: GRADER_MODEL,
-      max_tokens: MAX_OUTPUT_TOKENS,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: buildUserContent(body) }],
-    });
 
-    const text = response.content
-      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-      .map((b) => b.text)
-      .join('');
+    if (isV2) {
+      const { verdict, raw, usage } = await gradeArtifactV2(client, body);
+      if (userId) {
+        const actual = actualCallCents(model, usage?.input_tokens ?? 0, usage?.output_tokens ?? 0);
+        await settleBudget(userId, reservedCents, actual);
+        await logUsage({
+          userId,
+          route: 'grade-artifact:v2',
+          model,
+          inputTokens: usage?.input_tokens ?? 0,
+          outputTokens: usage?.output_tokens ?? 0,
+          estimatedCents: actual,
+        });
+      }
+      return Response.json({ verdict, raw, v: 2 });
+    }
 
-    // Claude occasionally wraps JSON in prose or a code fence; extract the object.
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return Response.json({ raw: text, verdict: null });
+    const { verdict, raw, usage } = await gradeArtifact(client, body);
+    if (userId) {
+      const actual = actualCallCents(model, usage.inputTokens, usage.outputTokens);
+      await settleBudget(userId, reservedCents, actual);
+      await logUsage({
+        userId,
+        route: 'grade-artifact',
+        model,
+        inputTokens: usage.inputTokens,
+        outputTokens: usage.outputTokens,
+        estimatedCents: actual,
+      });
     }
-    try {
-      const parsed = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
-      const verdict = normalizeVerdict(parsed, body.rubric);
-      return Response.json({ verdict, raw: text });
-    } catch {
-      return Response.json({ raw: text, verdict: null });
-    }
+    return Response.json({ verdict, raw });
   } catch (e) {
+    // The model call failed: give the reservation back before reporting.
+    if (userId && reservedCents > 0) {
+      try {
+        await settleBudget(userId, reservedCents, 0);
+      } catch {
+        // Settlement is best-effort on the failure path; the monthly rollover
+        // self-heals any leaked reservation at the period boundary.
+      }
+    }
     const msg = e instanceof Error ? e.message : 'Unknown error';
     return Response.json({ error: `Grading failed: ${msg}` }, { status: 500 });
   }

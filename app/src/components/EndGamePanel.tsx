@@ -9,6 +9,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { authHeaders } from '@/lib/supabase/client';
 import type { GameState, Scenario } from '@/engine/types';
 import type { GameScore } from '@/engine/score';
 import { useGameStore } from '@/store/gameStore';
@@ -37,7 +38,8 @@ export function EndGamePanel({
     try {
       const r = await fetch('/api/retro', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // Bearer token when signed in (empty spread when anonymous/unconfigured).
+        headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
         body: JSON.stringify({ state, scenarioId: scenario.id, score }),
       });
       if (!r.ok) {
