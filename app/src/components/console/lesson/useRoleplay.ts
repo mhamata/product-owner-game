@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import { authHeaders } from '@/lib/supabase/client';
 import type { ResolvedRoleplay } from '@/curriculum/roleplay';
 import type { RoleplayMessage } from '@/curriculum/roleplay';
 
@@ -97,6 +98,8 @@ export function useRoleplay() {
       headers: {
         'Content-Type': 'application/json',
         'x-praxis-session': session,
+        // Bearer token when signed in (empty spread when anonymous/unconfigured).
+        ...(await authHeaders()),
       },
       body: JSON.stringify(payload),
     });

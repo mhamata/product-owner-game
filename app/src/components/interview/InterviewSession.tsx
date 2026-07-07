@@ -31,6 +31,7 @@ import {
 } from '@/components/console/Icon';
 import { Scorecard } from './Scorecard';
 import { useInterview, type InterviewScorecard } from './useInterview';
+import { notifySyncKeyChanged } from '@/lib/sync/notify';
 
 const padIndex = (n: number) => String(n).padStart(2, '0');
 
@@ -190,6 +191,8 @@ export function InterviewSession({ interviewCase }: { interviewCase: PublicInter
       try {
         const payload: PersistedSession = { version: PERSIST_VERSION, messages: next, ended };
         window.localStorage.setItem(persistKey(interviewCase.id), JSON.stringify(payload));
+        // Back the transcript up to the account when signed in (no-op otherwise).
+        notifySyncKeyChanged(persistKey(interviewCase.id));
       } catch {
         // Storage full or blocked (private mode): the session still works in
         // memory, it just will not survive a reload. Nothing to surface.
@@ -202,6 +205,8 @@ export function InterviewSession({ interviewCase }: { interviewCase: PublicInter
     if (typeof window === 'undefined') return;
     try {
       window.localStorage.removeItem(persistKey(interviewCase.id));
+      // Propagate the clear as a tombstone when signed in (no-op otherwise).
+      notifySyncKeyChanged(persistKey(interviewCase.id));
     } catch {
       // Best-effort; a stale save is harmless (it only offers a resume).
     }

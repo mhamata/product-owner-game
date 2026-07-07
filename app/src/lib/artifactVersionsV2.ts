@@ -3,6 +3,9 @@ import type {
   AnnotationSeverity,
   ArtifactVerdictV2,
 } from './artifactGraderV2';
+// Dependency-free seam to the sync engine (no store/supabase imports, so this
+// module stays cycle-free and its node-env unit tests keep running unchanged).
+import { notifySyncKeyChanged } from './sync/notify';
 
 /**
  * Pure helpers for the V2 revise-and-resubmit UI: version bookkeeping (persisted
@@ -114,6 +117,8 @@ export function saveVersionHistory(history: VersionHistory): void {
   if (typeof window === 'undefined') return;
   try {
     window.localStorage.setItem(storageKey(history.skillId), JSON.stringify(history));
+    // Let the sync engine back this change up when signed in (no-op otherwise).
+    notifySyncKeyChanged(storageKey(history.skillId));
   } catch {
     // Storage full or blocked (private mode): fall back to session-only memory.
   }
@@ -124,6 +129,8 @@ export function clearVersionHistory(skillId: string): void {
   if (typeof window === 'undefined') return;
   try {
     window.localStorage.removeItem(storageKey(skillId));
+    // Propagate the clear as a tombstone upsert when signed in (no-op otherwise).
+    notifySyncKeyChanged(storageKey(skillId));
   } catch {
     // ignore
   }

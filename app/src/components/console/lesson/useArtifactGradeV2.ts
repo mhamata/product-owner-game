@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import { authHeaders } from '@/lib/supabase/client';
 import type { ResolvedArtifact } from '@/curriculum/artifacts';
 import type {
   ArtifactVerdictV2,
@@ -70,6 +71,8 @@ export function useArtifactGradeV2() {
           headers: {
             'Content-Type': 'application/json',
             'x-praxis-session': session,
+            // Bearer token when signed in (empty spread when anonymous/unconfigured).
+            ...(await authHeaders()),
           },
           body: JSON.stringify({
             v: 2,
