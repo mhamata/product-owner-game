@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# calibration run outputs (reports are point-in-time; regenerate with npm run calibrate)
+/calibration-output/
