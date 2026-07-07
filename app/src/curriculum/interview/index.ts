@@ -2,6 +2,13 @@
  * Interview case registry, keyed by case id — the same two-line authoring
  * contract as artifacts and roleplay: import the case, list it, and the
  * runtime uniqueness check guards against id collisions.
+ *
+ * ⚠️ NEVER VALUE-IMPORT THIS BARREL FROM CLIENT COMPONENTS. It carries the
+ * authored cases, whose `brief` fields are the case ANSWERS — a value import
+ * bundles them into the browser JS. Client code takes values from the leaf
+ * `./types` (caps, band helpers) and receives case metadata as props from a
+ * server page that strips the brief. `import type` is erased and safe, but
+ * point it at the leaf anyway so nobody converts it to a value import here.
  */
 import type { InterviewCase } from './types';
 import { psRenterMaintenance } from './ps-renter-maintenance';

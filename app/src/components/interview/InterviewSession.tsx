@@ -9,13 +9,18 @@ import {
   useSyncExternalStore,
   type KeyboardEvent,
 } from 'react';
-import type { InterviewCase, InterviewMessage } from '@/curriculum/interview';
+// VALUE imports must come from the LEAF `interview/types`, never the barrel:
+// the barrel pulls in the authored cases, whose hidden `brief` fields (the case
+// ANSWERS) would be bundled into this client chunk. Type-only imports are erased
+// at compile time, but they live on the leaf too so no one "just adds a value"
+// to a barrel import line here.
+import type { InterviewCase, InterviewMessage } from '@/curriculum/interview/types';
 import {
   countCandidateTurns,
   MAX_CANDIDATE_TURNS,
   MAX_INTERVIEW_MESSAGE_CHARS,
   MIN_CANDIDATE_TURNS_TO_SCORE,
-} from '@/curriculum/interview';
+} from '@/curriculum/interview/types';
 import Link from 'next/link';
 import { Topbar } from '@/components/console/Topbar';
 import { useReducedMotion } from '@/components/console/sim/useReducedMotion';
