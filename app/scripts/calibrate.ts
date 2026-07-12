@@ -1,48 +1,29 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import Anthropic from '@anthropic-ai/sdk';
+import { DEFAULT_GATES } from '../src/calibration/agreement';
+import { CliUsageError, parseArgs, type CliOptions } from '../src/calibration/cliOptions';
 import { GOLDEN_SET, validateGoldenSet } from '../src/calibration/goldenSet';
 import { gradeGoldenSet } from '../src/calibration/runner';
 import { buildReport, renderMarkdown } from '../src/calibration/report';
-import type { GoldenArtifactType } from '../src/calibration/types';
 
 /**
  * THE PHASE-0 CALIBRATION RUN.
  *
- *   npm run calibrate                 grade the whole golden set once
- *   npm run calibrate -- --dry        validate the golden set, no API calls
+ *   npm run calibrate                    grade the whole golden set once (grader v1, frozen)
+ *   npm run calibrate -- --dry           validate the golden set, no API calls
  *   npm run calibrate -- --type prd-artifact
- *   npm run calibrate -- --runs 3     grade every item 3x (variance check)
- *   npm run calibrate -- --limit 5    first N items only (smoke test)
+ *   npm run calibrate -- --runs 3        grade every item 3x (variance check)
+ *   npm run calibrate -- --limit 5       first N items only (smoke test)
+ *   npm run calibrate -- --grader v2     grade with gradeArtifactV2 instead of the frozen v1 contract
  *
  * Reads ANTHROPIC_API_KEY from the environment (or app/.env.local). Writes
- * calibration-output/report.md + report.json. Exit code 1 when any evaluable
- * gate fails — CI-friendly, but remember: gates on synthetic-seed provenance
- * are drift tracking, not the go/no-go evidence.
+ * calibration-output/report.md + report.json (grader v1) or report.v2.md +
+ * report.v2.json (grader v2, so it never overwrites the frozen v1 baseline).
+ * Exit code 1 when any evaluable gate fails — CI-friendly, but remember:
+ * gates on synthetic-seed provenance are drift tracking, not the go/no-go
+ * evidence.
  */
-
-interface CliOptions {
-  dry: boolean;
-  type?: GoldenArtifactType;
-  runs: number;
-  limit?: number;
-}
-
-function parseArgs(argv: string[]): CliOptions {
-  const options: CliOptions = { dry: false, runs: 1 };
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
-    if (arg === '--dry') options.dry = true;
-    else if (arg === '--type') options.type = argv[++i] as GoldenArtifactType;
-    else if (arg === '--runs') options.runs = Math.max(1, Number(argv[++i]) || 1);
-    else if (arg === '--limit') options.limit = Math.max(1, Number(argv[++i]) || 1);
-    else {
-      console.error(`Unknown argument: ${arg}`);
-      process.exit(2);
-    }
-  }
-  return options;
-}
 
 /**
  * Next.js loads .env.local for the app; this CLI runs outside Next, so mirror
@@ -63,7 +44,17 @@ function loadEnvLocal() {
 
 async function main() {
   loadEnvLocal();
-  const options = parseArgs(process.argv.slice(2));
+
+  let options: CliOptions;
+  try {
+    options = parseArgs(process.argv.slice(2));
+  } catch (e) {
+    if (e instanceof CliUsageError) {
+      console.error(e.message);
+      process.exit(2);
+    }
+    throw e;
+  }
 
   // 1) Integrity first: never spend against a malformed golden set.
   const problems = validateGoldenSet();
@@ -78,10 +69,16 @@ async function main() {
   if (options.limit) items = items.slice(0, options.limit);
 
   const provenances = [...new Set(items.map((i) => i.provenance))];
-  console.log(`Golden set: ${items.length} items (${provenances.join(', ')}) · runs per item: ${options.runs}`);
+  // The v1 default keeps this line byte-for-byte identical to before the
+  // --grader flag existed; the grader note only appears for v2.
+  const graderNote = options.grader === 'v2' ? ' · grader: v2' : '';
+  console.log(
+    `Golden set: ${items.length} items (${provenances.join(', ')}) · runs per item: ${options.runs}${graderNote}`,
+  );
 
   if (options.dry) {
-    console.log('Dry run: golden set is structurally sound. No API calls made.');
+    const dryGraderNote = options.grader === 'v2' ? ' (grader v2)' : '';
+    console.log(`Dry run${dryGraderNote}: golden set is structurally sound. No API calls made.`);
     return;
   }
 
@@ -99,6 +96,7 @@ async function main() {
   const runs = await gradeGoldenSet(client, items, {
     runs: options.runs,
     concurrency: 4,
+    grader: options.grader,
     onProgress: (done, total) => {
       process.stdout.write(`\r  graded ${done}/${total}`);
     },
@@ -106,13 +104,15 @@ async function main() {
   process.stdout.write('\n');
   console.log(`Graded ${runs.length} runs in ${((Date.now() - started) / 1000).toFixed(1)}s`);
 
-  // 3) Report.
-  const report = buildReport(items, runs);
+  // 3) Report. v2 gets its own filenames (`report.v2.*`) so it never
+  // overwrites the frozen v1 baseline report.
+  const report = buildReport(items, runs, DEFAULT_GATES, options.grader);
+  const reportBase = options.grader === 'v2' ? 'report.v2' : 'report';
   const outDir = join(process.cwd(), 'calibration-output');
   mkdirSync(outDir, { recursive: true });
-  writeFileSync(join(outDir, 'report.json'), JSON.stringify(report, null, 2));
-  writeFileSync(join(outDir, 'report.md'), renderMarkdown(report));
-  console.log(`Wrote ${join(outDir, 'report.md')} and report.json`);
+  writeFileSync(join(outDir, `${reportBase}.json`), JSON.stringify(report, null, 2));
+  writeFileSync(join(outDir, `${reportBase}.md`), renderMarkdown(report));
+  console.log(`Wrote ${join(outDir, `${reportBase}.md`)} and ${reportBase}.json`);
 
   // 4) Gate summary to stdout + exit code.
   console.log('');
