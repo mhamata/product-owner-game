@@ -1,0 +1,897 @@
+<meta charset="utf-8">
+<title>Praxis Sim 2.0 — UI Concept</title>
+<style>
+  :root {
+    --page-bg: #eef1f4;
+    --page-ink: #1b2430;
+    --page-dim: #5b6877;
+    --page-line: #d6dde3;
+    --page-card: #ffffff;
+    --accent: #2f8f81;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page-bg: #0c0f14;
+      --page-ink: #e6ebf1;
+      --page-dim: #8a97a6;
+      --page-line: #232c37;
+      --page-card: #131922;
+      --accent: #4fb3a3;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page-bg: #0c0f14; --page-ink: #e6ebf1; --page-dim: #8a97a6;
+    --page-line: #232c37; --page-card: #131922; --accent: #4fb3a3;
+  }
+  :root[data-theme="light"] {
+    --page-bg: #eef1f4; --page-ink: #1b2430; --page-dim: #5b6877;
+    --page-line: #d6dde3; --page-card: #ffffff; --accent: #2f8f81;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page-bg); color: var(--page-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  /* ---------- page header ---------- */
+  .eyebrow {
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 10px;
+  }
+  h1 {
+    font-family: "Avenir Next", "Avenir", -apple-system, system-ui, sans-serif;
+    font-size: clamp(26px, 4vw, 38px); font-weight: 650; line-height: 1.1;
+    margin: 0 0 12px; text-wrap: balance; max-width: 22ch;
+  }
+  .lede { color: var(--page-dim); font-size: 16px; line-height: 1.55; max-width: 58ch; margin: 0 0 8px; }
+  .lede strong { color: var(--page-ink); font-weight: 600; }
+  .hint { font-size: 13px; color: var(--page-dim); margin-bottom: 24px; }
+
+  /* ---------- theme preview toggle ---------- */
+  .theme-toggle {
+    display: inline-flex; gap: 0; border: 1px solid var(--page-line); border-radius: 999px;
+    padding: 3px; margin-bottom: 20px; background: var(--page-card);
+  }
+  .tt {
+    font: inherit; font-size: 12.5px; font-weight: 650; color: var(--page-dim);
+    background: none; border: 0; border-radius: 999px; padding: 6px 16px; cursor: pointer;
+  }
+  .tt.on { background: var(--accent); color: #fff; }
+  .tt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .toggle-row { display: flex; align-items: center; gap: 12px; }
+  .toggle-row span { font-size: 12px; color: var(--page-dim); }
+
+  /* ---------- layout: phone + rail ---------- */
+  .stage { display: grid; grid-template-columns: 400px minmax(260px, 340px); gap: 48px; justify-content: center; align-items: start; }
+  @media (max-width: 880px) { .stage { grid-template-columns: minmax(0, 400px); } }
+
+  /* ---------- annotation rail ---------- */
+  .rail { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 14px; }
+  .rail-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--page-dim); font-weight: 600; }
+  .note {
+    background: var(--page-card); border: 1px solid var(--page-line);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .note h3 { margin: 0 0 5px; font-size: 14px; font-weight: 650; }
+  .note p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--page-dim); }
+  .note-set { display: none; flex-direction: column; gap: 14px; }
+  .note-set.on { display: flex; }
+
+  /* ================= PHONE ================= */
+  /* The product ships light + dark. Every color below is a token; the
+     light theme redefines the tokens, never the components. */
+  .phone {
+    --g-bg: #10151d;
+    --g-card: #171e28;
+    --g-card-hi: #1c2634;
+    --g-chip: #1b2431;
+    --g-input: #10151d;
+    --g-line: #26303d;
+    --g-line2: #34404e;
+    --g-ink: #e8edf3;
+    --g-body: #b8c2ce;
+    --g-dim: #8a97a6;
+    --g-dimmer: #5f6d7d;
+    --g-accent: #4fb3a3;
+    --g-on-accent: #0c1116;
+    --g-good: #63b57f;
+    --g-warn: #e1a23c;
+    --g-crit: #d96c5f;
+    --g-btn-off: #1d2733;
+    --g-veil: rgba(5, 8, 12, 0.6);
+    --g-cliff: #0b0f15;
+    --g-tabbar: rgba(13, 18, 25, 0.96);
+    --g-recap1: #182230;
+    --g-recap2: #141b25;
+    --g-fog-line: #34404e;
+    --g-fog-bg: rgba(23, 30, 40, 0.55);
+    --g-hatch-crit: rgba(217, 108, 95, 0.16);
+    --g-hatch-warn: rgba(225, 162, 60, 0.14);
+    --g-frame: #2a3441;
+    --g-shadow: 0 24px 60px rgba(5, 10, 18, 0.45), 0 2px 8px rgba(5, 10, 18, 0.3);
+    --g-pop-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
+
+    width: 390px; max-width: 100%; height: 800px; margin: 0 auto;
+    background: var(--g-bg); border-radius: 44px; border: 1px solid var(--g-frame);
+    box-shadow: var(--g-shadow);
+    overflow: hidden; position: relative;
+    color: var(--g-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  .phone[data-sim-theme="light"] {
+    --g-bg: #f1f4f7;
+    --g-card: #ffffff;
+    --g-card-hi: #ffffff;
+    --g-chip: #eaeff3;
+    --g-input: #f6f8fa;
+    --g-line: #dfe5eb;
+    --g-line2: #c9d3dc;
+    --g-ink: #17202b;
+    --g-body: #46545f;
+    --g-dim: #64737f;
+    --g-dimmer: #8b99a5;
+    --g-accent: #1f8577;
+    --g-on-accent: #ffffff;
+    --g-good: #2b8f54;
+    --g-warn: #a8720e;
+    --g-crit: #bc4a3c;
+    --g-btn-off: #e4e9ee;
+    --g-veil: rgba(23, 32, 43, 0.35);
+    --g-cliff: #f4f7f9;
+    --g-tabbar: rgba(255, 255, 255, 0.96);
+    --g-recap1: #ffffff;
+    --g-recap2: #f2f6f9;
+    --g-fog-line: #c2cdd6;
+    --g-fog-bg: rgba(240, 244, 247, 0.7);
+    --g-hatch-crit: rgba(188, 74, 60, 0.14);
+    --g-hatch-warn: rgba(168, 114, 14, 0.13);
+    --g-frame: #d4dce3;
+    --g-shadow: 0 24px 60px rgba(60, 80, 100, 0.18), 0 2px 8px rgba(60, 80, 100, 0.1);
+    --g-pop-shadow: 0 10px 32px rgba(50, 70, 90, 0.2);
+  }
+  .phone, .phone * { -webkit-tap-highlight-color: transparent; }
+  .notch { height: 28px; display: flex; justify-content: center; align-items: flex-end; }
+  .notch::after { content: ""; width: 120px; height: 22px; background: #05080c; border-radius: 0 0 14px 14px; }
+
+  .app { position: absolute; inset: 0; padding-top: 28px; display: flex; flex-direction: column; }
+
+  /* app header */
+  .app-head { padding: 10px 18px 8px; display: flex; align-items: center; justify-content: space-between; }
+  .co { display: flex; flex-direction: column; gap: 1px; }
+  .co-name { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
+  .co-sub { font-size: 11px; color: var(--g-dim); }
+  .board-chip {
+    display: flex; align-items: center; gap: 7px; background: var(--g-card); border: 1px solid var(--g-line);
+    border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 600;
+  }
+  .board-chip .num { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
+  .board-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--g-warn); }
+
+  .screens { flex: 1; overflow: hidden; position: relative; }
+  .screen { position: absolute; inset: 0; overflow-y: auto; padding: 4px 16px 96px; display: none; scrollbar-width: none; }
+  .screen::-webkit-scrollbar { display: none; }
+  .screen.on { display: block; }
+
+  .s-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--g-dimmer); font-weight: 650; margin: 14px 4px 8px; }
+
+  /* ---------- inbox ---------- */
+  .recap {
+    background: linear-gradient(135deg, var(--g-recap1), var(--g-recap2)); border: 1px solid var(--g-line);
+    border-radius: 14px; padding: 12px 14px; margin: 6px 0 4px;
+  }
+  .recap .k { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--g-accent); font-weight: 700; }
+  .recap p { margin: 5px 0 0; font-size: 13px; line-height: 1.45; color: var(--g-body); }
+
+  .msg {
+    width: 100%; text-align: left; background: var(--g-card); border: 1px solid var(--g-line); color: inherit;
+    border-radius: 14px; padding: 13px 14px; margin-bottom: 10px; cursor: pointer;
+    display: flex; gap: 12px; align-items: flex-start; font: inherit; transition: border-color 0.15s;
+  }
+  .msg:hover { border-color: var(--g-line2); }
+  .msg:focus-visible, .opt:focus-visible, .tab:focus-visible, .phone button:focus-visible { outline: 2px solid var(--g-accent); outline-offset: 2px; }
+  .msg.done { opacity: 0.55; }
+  .ava {
+    width: 38px; height: 38px; border-radius: 12px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: #10151d;
+  }
+  .msg-body { flex: 1; min-width: 0; }
+  .msg-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .msg-who { font-weight: 650; font-size: 14px; }
+  .msg-role { font-size: 11px; color: var(--g-dim); font-weight: 400; }
+  .msg-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; flex: none; }
+  .tag-decision { color: var(--g-warn); }
+  .tag-signal { color: var(--g-accent); }
+  .tag-done { color: var(--g-good); }
+  .msg-text { margin: 5px 0 0; font-size: 13px; line-height: 1.45; color: var(--g-body); }
+  .trust { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 10px; color: var(--g-dim); }
+  .trust-bar { width: 64px; height: 4px; border-radius: 2px; background: var(--g-line); overflow: hidden; }
+  .trust-bar i { display: block; height: 100%; border-radius: 2px; background: var(--g-accent); }
+
+  .commit-wrap { padding: 10px 2px 0; }
+  .commit {
+    width: 100%; border: 0; border-radius: 14px; padding: 15px; font: inherit; font-weight: 700; font-size: 15px;
+    background: var(--g-btn-off); color: var(--g-dimmer); cursor: not-allowed; transition: all 0.2s;
+  }
+  .commit.armed { background: var(--g-accent); color: var(--g-on-accent); cursor: pointer; box-shadow: 0 4px 20px rgba(79, 179, 163, 0.35); }
+  .commit-sub { text-align: center; font-size: 11px; color: var(--g-dimmer); margin-top: 8px; font-variant-numeric: tabular-nums; }
+
+  /* ---------- decision sheet ---------- */
+  .sheet-veil { position: absolute; inset: 0; background: var(--g-veil); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 20; }
+  .sheet-veil.on { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 21;
+    background: var(--g-card); border-top: 1px solid var(--g-line2); border-radius: 24px 24px 0 0;
+    box-shadow: var(--g-pop-shadow);
+    padding: 18px 18px 26px; transform: translateY(110%); visibility: hidden;
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.28s;
+    max-height: 86%; overflow-y: auto;
+  }
+  .sheet.on { transform: translateY(0); visibility: visible; transition-delay: 0s, 0s; }
+  .sheet-grab { width: 36px; height: 4px; border-radius: 2px; background: var(--g-line2); margin: 0 auto 14px; }
+  .sheet h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+  .sheet .ctx { margin: 0 0 14px; font-size: 13px; line-height: 1.5; color: var(--g-body); }
+  .opt {
+    width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
+    background: var(--g-input); border: 1px solid var(--g-line); border-radius: 12px;
+    padding: 12px 13px; margin-bottom: 9px; transition: border-color 0.15s;
+  }
+  .opt:hover { border-color: var(--g-accent); }
+  .opt-title { font-size: 13.5px; font-weight: 650; margin-bottom: 6px; }
+  .fx { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fx span {
+    font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 999px;
+    background: var(--g-chip); border: 1px solid var(--g-line); color: var(--g-dim);
+  }
+  .fx .up { color: var(--g-good); } .fx .down { color: var(--g-crit); } .fx .warn { color: var(--g-warn); }
+  .opt.locked { opacity: 0.55; cursor: default; }
+  .opt.locked:hover { border-color: var(--g-line); }
+  .lock-line { font-size: 10.5px; color: var(--g-warn); margin-top: 6px; font-weight: 600; }
+  .why { margin-top: 4px; }
+  .why label { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--g-dimmer); font-weight: 700; }
+  .why input {
+    width: 100%; margin-top: 6px; background: var(--g-input); border: 1px solid var(--g-line); border-radius: 10px;
+    color: var(--g-ink); font: inherit; font-size: 13px; padding: 10px 12px;
+  }
+  .why input::placeholder { color: var(--g-dimmer); }
+  .why .foot { font-size: 10.5px; color: var(--g-dimmer); margin-top: 5px; }
+
+  /* ---------- toast ---------- */
+  .toast {
+    position: absolute; left: 16px; right: 16px; top: 40px; z-index: 30;
+    background: var(--g-card-hi); border: 1px solid var(--g-line2); border-left: 3px solid var(--g-accent);
+    border-radius: 12px; padding: 11px 14px; font-size: 12.5px; line-height: 1.4; color: var(--g-body);
+    box-shadow: var(--g-pop-shadow);
+    transform: translateY(-16px); opacity: 0; pointer-events: none; transition: all 0.25s;
+  }
+  .toast.on { transform: translateY(0); opacity: 1; }
+
+  /* ---------- product map ---------- */
+  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+  .mtile { background: var(--g-card); border: 1px solid var(--g-line); border-radius: 12px; padding: 10px 12px; position: relative; }
+  .mtile .k { font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--g-dimmer); font-weight: 700; }
+  .mtile .v { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; font-size: 19px; font-weight: 600; margin: 3px 0 2px; }
+  .mtile .v.warn { color: var(--g-warn); }
+  .mtile .d { font-size: 10.5px; color: var(--g-dim); }
+  .mtile .d .up { color: var(--g-good); } .mtile .d .down { color: var(--g-crit); }
+  .spark { position: absolute; right: 10px; top: 26px; width: 56px; height: 22px; }
+  .sp-good { stroke: var(--g-good); }
+  .sp-warn { stroke: var(--g-warn); }
+  .anno-dot { fill: var(--g-warn); }
+
+  .map { display: grid; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 62px; gap: 7px; margin-top: 4px; }
+  .district {
+    border-radius: 11px; border: 1px solid var(--g-line); background: var(--g-card); cursor: pointer;
+    padding: 9px 10px 16px; position: relative; overflow: hidden; text-align: left; color: inherit; font: inherit;
+    transition: border-color 0.15s;
+  }
+  .district:hover { border-color: var(--g-line2); }
+  .d-name, .d-meta { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .d-name { font-size: 12px; font-weight: 650; position: relative; z-index: 2; }
+  .d-meta { font-size: 10px; color: var(--g-dim); position: relative; z-index: 2; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .d-health { position: absolute; left: 10px; bottom: 8px; width: 40%; height: 3px; border-radius: 2px; background: var(--g-line); z-index: 2; }
+  .d-health i { display: block; height: 100%; border-radius: 2px; }
+  .h-good { background: var(--g-good); }
+  .h-warn { background: var(--g-warn); }
+  .h-crit { background: var(--g-crit); }
+  .h-none { background: var(--g-dimmer); }
+  .debt-hi::before {
+    content: ""; position: absolute; inset: 0; z-index: 1; opacity: 0.5;
+    background: repeating-linear-gradient(-45deg, transparent 0 7px, var(--g-hatch-crit) 7px 12px);
+  }
+  .debt-md::before {
+    content: ""; position: absolute; inset: 0; z-index: 1; opacity: 0.4;
+    background: repeating-linear-gradient(-45deg, transparent 0 9px, var(--g-hatch-warn) 9px 13px);
+  }
+  .district.dim { opacity: 0.62; }
+
+  .fog {
+    margin-top: 10px; border: 1px dashed var(--g-fog-line); border-radius: 12px; padding: 12px 14px;
+    background: var(--g-fog-bg); position: relative; overflow: hidden;
+  }
+  .fog .blurline { height: 7px; border-radius: 4px; background: var(--g-line); margin: 6px 0; filter: blur(2.5px); }
+  .fog .blurline:nth-child(3) { width: 82%; } .fog .blurline:nth-child(4) { width: 64%; }
+  .fog-head { display: flex; justify-content: space-between; align-items: center; }
+  .fog-title { font-size: 12.5px; font-weight: 650; color: var(--g-dim); }
+  .fog-unlock { font-size: 10.5px; color: var(--g-warn); font-weight: 650; margin-top: 8px; }
+
+  /* ---------- season ---------- */
+  .timeline { display: flex; gap: 5px; margin: 6px 2px 4px; }
+  .tl {
+    flex: 1; height: 26px; border-radius: 7px; background: var(--g-card); border: 1px solid var(--g-line);
+    display: flex; align-items: center; justify-content: center;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; color: var(--g-dimmer);
+  }
+  .tl.past { background: var(--g-chip); color: var(--g-dim); }
+  .tl.now { background: var(--g-accent); border-color: var(--g-accent); color: var(--g-on-accent); font-weight: 700; }
+
+  .card { background: var(--g-card); border: 1px solid var(--g-line); border-radius: 14px; padding: 13px 14px; margin-bottom: 10px; }
+  .card h4 { margin: 0 0 8px; font-size: 13.5px; font-weight: 700; }
+  .conf-bar { height: 8px; border-radius: 4px; background: var(--g-line); overflow: hidden; margin: 8px 0 6px; }
+  .conf-bar i { display: block; height: 100%; width: 62%; border-radius: 4px; background: linear-gradient(90deg, var(--g-crit), var(--g-warn) 55%, var(--g-warn)); }
+  .conf-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--g-dim); font-variant-numeric: tabular-nums; }
+  .exp { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .exp li { font-size: 12.5px; display: flex; justify-content: space-between; gap: 10px; color: var(--g-body); }
+  .pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; flex: none; align-self: center; }
+  .pill.ok { background: color-mix(in srgb, var(--g-good) 14%, transparent); color: var(--g-good); }
+  .pill.risk { background: color-mix(in srgb, var(--g-warn) 14%, transparent); color: var(--g-warn); }
+  .pill.off { background: color-mix(in srgb, var(--g-crit) 14%, transparent); color: var(--g-crit); }
+
+  .roster { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .person { background: var(--g-input); border: 1px solid var(--g-line); border-radius: 12px; padding: 10px 11px; }
+  .person .top { display: flex; gap: 8px; align-items: center; margin-bottom: 7px; }
+  .person .ava { width: 28px; height: 28px; border-radius: 9px; font-size: 11px; }
+  .person .nm { font-size: 12.5px; font-weight: 650; line-height: 1.1; }
+  .person .rl { font-size: 10px; color: var(--g-dim); }
+  .person .want { font-size: 10.5px; color: var(--g-dim); line-height: 1.4; }
+  .person .want b { color: var(--g-body); font-weight: 600; }
+  .oneone { margin-top: 8px; font-size: 10.5px; color: var(--g-accent); font-weight: 650; }
+
+  .cfile-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+  .cfile-rows .r { display: flex; justify-content: space-between; font-size: 12px; color: var(--g-body); font-variant-numeric: tabular-nums; }
+  .cfile-rows .r span:last-child { color: var(--g-dim); }
+  .cfile-btn {
+    margin-top: 11px; width: 100%; border: 1px solid var(--g-line2); background: transparent; color: var(--g-accent);
+    font: inherit; font-size: 12.5px; font-weight: 650; border-radius: 10px; padding: 9px; cursor: pointer;
+  }
+  .locked-card { opacity: 0.6; }
+  .locked-card p { margin: 4px 0 0; font-size: 11.5px; color: var(--g-dim); line-height: 1.45; }
+
+  /* ---------- cliffhanger ---------- */
+  .cliff {
+    position: absolute; inset: 0; z-index: 40; background: var(--g-cliff);
+    display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px;
+  }
+  .cliff.on { display: flex; }
+  .pulse { width: 14px; height: 14px; border-radius: 50%; background: var(--g-accent); margin-bottom: 28px; animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(79, 179, 163, 0.5); } 50% { box-shadow: 0 0 0 18px rgba(79, 179, 163, 0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .pulse { animation: none; }
+    .sheet, .toast, .msg, .commit { transition: none; }
+  }
+  .cliff h2 { font-family: "Avenir Next", "Avenir", -apple-system, system-ui, sans-serif; font-size: 24px; font-weight: 650; margin: 0 0 8px; }
+  .cliff p { color: var(--g-dim); font-size: 14px; line-height: 1.55; margin: 0 0 6px; max-width: 30ch; }
+  .cliff .fine { font-size: 11.5px; color: var(--g-dimmer); }
+  .cliff button {
+    margin-top: 30px; font: inherit; font-size: 13px; font-weight: 650; color: var(--g-accent);
+    background: transparent; border: 1px solid var(--g-line2); border-radius: 10px; padding: 10px 20px; cursor: pointer;
+  }
+
+  /* ---------- tab bar ---------- */
+  .tabs {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 15;
+    display: flex; background: var(--g-tabbar); border-top: 1px solid var(--g-line);
+    padding: 8px 8px calc(8px + 14px);
+  }
+  .tab {
+    flex: 1; background: none; border: 0; color: var(--g-dimmer); font: inherit; font-size: 10.5px; font-weight: 650;
+    display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer; border-radius: 10px;
+  }
+  .tab svg { width: 21px; height: 21px; }
+  .tab.on { color: var(--g-accent); }
+  .tab .bdg {
+    position: absolute; transform: translate(11px, -3px); width: 15px; height: 15px; border-radius: 50%;
+    background: var(--g-warn); color: var(--g-on-accent); font-size: 9.5px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums;
+  }
+  .phone[data-sim-theme="light"] .tab .bdg { color: #ffffff; }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">Praxis Sim 2.0 · UI concept · for approval</div>
+  <h1>One turn as a product manager at Relay</h1>
+  <p class="lede">The <strong>hybrid direction</strong> you approved: the turn arrives as an inbox of people, the product is a living map one tab away, and a season wrapper gives the career its shape. Fake data, real interactions.</p>
+  <p class="hint">Try it: resolve both decisions in the Standup, commit the sprint, then explore the Product and Season tabs. Tap districts on the map.</p>
+
+  <div class="toggle-row">
+    <div class="theme-toggle" role="group" aria-label="Product theme preview">
+      <button class="tt on" data-mode="dark">Dark</button>
+      <button class="tt" data-mode="light">Light</button>
+    </div>
+    <span>The product ships both — same tokens, two palettes.</span>
+  </div>
+
+  <div class="stage">
+    <!-- ================= PHONE ================= -->
+    <div class="phone" id="phone">
+      <div class="notch"></div>
+      <div class="app">
+        <div class="app-head">
+          <div class="co">
+            <span class="co-name">Relay</span>
+            <span class="co-sub">B2B SaaS · Series A · Sprint 7 of 13 · Q3</span>
+          </div>
+          <div class="board-chip" title="Board confidence"><span class="board-dot"></span> Board <span class="num">62</span></div>
+        </div>
+
+        <div class="screens">
+          <!-- ============ SCREEN: STANDUP ============ -->
+          <div class="screen on" id="scr-standup">
+            <div class="recap">
+              <span class="k">Previously on Relay</span>
+              <p>Sprint 6 shipped the pricing page rework, but capacity came in low — the checkout refactor slipped. Activation is drifting. Maya flagged the estimate on self-serve onboarding.</p>
+            </div>
+
+            <div class="s-label">Today · 2 decisions</div>
+
+            <button class="msg" id="msg-maya" data-sheet="sheet-maya">
+              <span class="ava" style="background:#e8a84c">MC</span>
+              <span class="msg-body">
+                <span class="msg-top">
+                  <span class="msg-who">Maya Chen <span class="msg-role">· Eng Lead</span></span>
+                  <span class="msg-tag tag-decision" id="tag-maya">Decision</span>
+                </span>
+                <p class="msg-text">“Self-serve onboarding is a 9-point sprint, not a 5. We can hit the date or the scope. Not both. Your call — but I need it today.”</p>
+                <span class="trust">Trust <span class="trust-bar"><i style="width:72%"></i></span> 72</span>
+              </span>
+            </button>
+
+            <button class="msg" id="msg-dana" data-sheet="sheet-dana">
+              <span class="ava" style="background:#7fa8e0">DW</span>
+              <span class="msg-body">
+                <span class="msg-top">
+                  <span class="msg-who">Dana Whitfield <span class="msg-role">· Sales</span></span>
+                  <span class="msg-tag tag-decision" id="tag-dana">Decision</span>
+                </span>
+                <p class="msg-text">“Northgate will sign a $180k annual — if SSO lands this quarter. I know it’s not on the roadmap. I need an answer before their board meets Thursday.”</p>
+                <span class="trust">Trust <span class="trust-bar"><i style="width:58%"></i></span> 58</span>
+              </span>
+            </button>
+
+            <div class="s-label">Signals</div>
+
+            <button class="msg" id="msg-signal" data-sheet="sheet-signal">
+              <span class="ava" style="background:#56b3a5">◔</span>
+              <span class="msg-body">
+                <span class="msg-top">
+                  <span class="msg-who">Metrics watch</span>
+                  <span class="msg-tag tag-signal">Signal</span>
+                </span>
+                <p class="msg-text">Activation dipped again: 41% → 34% over three sprints. Something in the new-user path isn’t landing.</p>
+              </span>
+            </button>
+
+            <div class="commit-wrap">
+              <button class="commit" id="commit" disabled>Commit Sprint 7</button>
+              <div class="commit-sub" id="commit-sub">2 decisions remaining</div>
+            </div>
+          </div>
+
+          <!-- ============ SCREEN: PRODUCT ============ -->
+          <div class="screen" id="scr-product">
+            <div class="s-label">This quarter</div>
+            <div class="metrics">
+              <div class="mtile">
+                <span class="k">WAU</span>
+                <div class="v">4,210</div>
+                <span class="d"><span class="up">▲ 6%</span> vs Sprint 6</span>
+                <svg class="spark" viewBox="0 0 56 22"><polyline class="sp-good" points="0,16 9,14 18,15 27,11 36,12 45,8 56,5" fill="none" stroke-width="1.5"/></svg>
+              </div>
+              <div class="mtile">
+                <span class="k">Activation</span>
+                <div class="v warn">34%</div>
+                <span class="d"><span class="down">▼ 7 pts</span> in 3 sprints</span>
+                <svg class="spark" viewBox="0 0 56 22"><polyline class="sp-warn" points="0,6 9,7 18,6 27,10 36,13 45,15 56,17" fill="none" stroke-width="1.5"/><circle class="anno-dot" cx="27" cy="10" r="2.5"/></svg>
+              </div>
+              <div class="mtile">
+                <span class="k">NRR</span>
+                <div class="v">108%</div>
+                <span class="d">board expects 110%</span>
+              </div>
+              <div class="mtile">
+                <span class="k">Runway</span>
+                <div class="v">14 mo</div>
+                <span class="d">burn steady</span>
+              </div>
+            </div>
+            <div class="commit-sub" style="text-align:left; margin:2px 4px 0;">● amber dot = your Sprint 5 pricing change — decisions are annotated on the charts they moved</div>
+
+            <div class="s-label">The product</div>
+            <div class="map">
+              <button class="district" style="grid-column: span 3; grid-row: span 2;" data-d="Onboarding">
+                <span class="d-name">Onboarding</span>
+                <span class="d-meta">1,120 users/wk · investing</span>
+                <span class="d-health"><i class="h-warn" style="width:55%"></i></span>
+              </button>
+              <button class="district debt-hi" style="grid-column: span 3; grid-row: span 2;" data-d="Checkout">
+                <span class="d-name">Checkout</span>
+                <span class="d-meta">debt rising · refactor slipped</span>
+                <span class="d-health"><i class="h-crit" style="width:34%"></i></span>
+              </button>
+              <button class="district" style="grid-column: span 4;" data-d="Core workflows">
+                <span class="d-name">Core workflows</span>
+                <span class="d-meta">healthy · 3,400 users/wk</span>
+                <span class="d-health"><i class="h-good" style="width:86%"></i></span>
+              </button>
+              <button class="district dim" style="grid-column: span 2;" data-d="Admin & SSO">
+                <span class="d-name">Admin · SSO</span>
+                <span class="d-meta">not built</span>
+                <span class="d-health"><i class="h-none" style="width:10%"></i></span>
+              </button>
+              <button class="district debt-md" style="grid-column: span 2;" data-d="Integrations">
+                <span class="d-name">Integrations</span>
+                <span class="d-meta">aging quietly</span>
+                <span class="d-health"><i class="h-warn" style="width:52%"></i></span>
+              </button>
+              <button class="district" style="grid-column: span 4;" data-d="Reporting">
+                <span class="d-name">Reporting</span>
+                <span class="d-meta">stable · low traffic</span>
+                <span class="d-health"><i class="h-good" style="width:70%"></i></span>
+              </button>
+            </div>
+            <div class="commit-sub" style="text-align:left; margin:6px 4px 0;">red hatching = tech debt you can see. The Sprint 3 shortcut lives in Checkout.</div>
+
+            <div class="fog">
+              <div class="fog-head">
+                <span class="fog-title">Cohort retention curves</span>
+                <span style="font-size:14px">🔒</span>
+              </div>
+              <div class="blurline"></div>
+              <div class="blurline"></div>
+              <div class="blurline"></div>
+              <div class="fog-unlock">Unlocks with Cohort Analysis — Analytics track · ~12 min. Skills grant vision, permanently.</div>
+            </div>
+          </div>
+
+          <!-- ============ SCREEN: SEASON ============ -->
+          <div class="screen" id="scr-season">
+            <div class="s-label">Q3 · sprint 7 of 13</div>
+            <div class="timeline">
+              <span class="tl past">1</span><span class="tl past">2</span><span class="tl past">3</span>
+              <span class="tl past">4</span><span class="tl past">5</span><span class="tl past">6</span>
+              <span class="tl now">7</span><span class="tl">8</span><span class="tl">9</span>
+              <span class="tl">10</span><span class="tl">11</span><span class="tl">12</span><span class="tl">13</span>
+            </div>
+            <div class="commit-sub" style="text-align:left; margin:0 4px 10px;">Sprint 13 = Quarterly Business Review. The board decides your season.</div>
+
+            <div class="card">
+              <h4>Board confidence</h4>
+              <div class="conf-bar"><i></i></div>
+              <div class="conf-row"><span>62 / 100 · drifting down</span><span>fired below 30</span></div>
+              <ul class="exp">
+                <li>Ship self-serve onboarding <span class="pill ok">on track</span></li>
+                <li>NRR ≥ 110% <span class="pill risk">at risk</span></li>
+                <li>SOC 2 in motion <span class="pill off">not started</span></li>
+              </ul>
+            </div>
+
+            <div class="s-label">Your people</div>
+            <div class="roster">
+              <div class="person">
+                <div class="top"><span class="ava" style="background:#e8a84c">MC</span><div><div class="nm">Maya Chen</div><div class="rl">Eng Lead</div></div></div>
+                <div class="trust">Trust <span class="trust-bar"><i style="width:72%"></i></span> 72</div>
+                <p class="want">wants: <b>no mid-sprint scope changes</b>. Remembers Sprint 3.</p>
+              </div>
+              <div class="person">
+                <div class="top"><span class="ava" style="background:#7fa8e0">DW</span><div><div class="nm">Dana Whitfield</div><div class="rl">Sales</div></div></div>
+                <div class="trust">Trust <span class="trust-bar"><i style="width:58%"></i></span> 58</div>
+                <p class="want">wants: <b>a roadmap she can sell</b>. Northgate is her whale.</p>
+              </div>
+              <div class="person">
+                <div class="top"><span class="ava" style="background:#b48fd9">PK</span><div><div class="nm">Priya Kade</div><div class="rl">Design</div></div></div>
+                <div class="trust">Trust <span class="trust-bar"><i style="width:81%"></i></span> 81</div>
+                <p class="want">wants: <b>research time before the Q4 bet</b>.</p>
+              </div>
+              <div class="person">
+                <div class="top"><span class="ava" style="background:#56b3a5">TO</span><div><div class="nm">Theo Okafor</div><div class="rl">Data</div></div></div>
+                <div class="trust">Trust <span class="trust-bar"><i style="width:66%"></i></span> 66</div>
+                <p class="want">wants: <b>someone to look at activation</b>. He’s been saying it for two sprints.</p>
+                <div class="oneone">→ 1 weekly 1:1 slot available</div>
+              </div>
+            </div>
+
+            <div class="s-label" style="margin-top:14px;">Career file</div>
+            <div class="card">
+              <h4>Your evidence, so far this run</h4>
+              <div class="cfile-rows">
+                <div class="r"><span>Decision log</span><span>23 decisions · 6 with rationale</span></div>
+                <div class="r"><span>Graded artifacts</span><span>PRD 78 · experiment plan 84</span></div>
+                <div class="r"><span>Incident record</span><span>1 sev-1 · resolved in 2 turns</span></div>
+                <div class="r"><span>Interview stories</span><span>3 drafted from this run</span></div>
+              </div>
+              <button class="cfile-btn">Preview Career File →</button>
+            </div>
+
+            <div class="card locked-card">
+              <h4>🔒 The job market</h4>
+              <p>Offers open at season’s end — matched to what this record proves, not what your resume claims. Finish strong, or get fired and rebuild somewhere smaller. Both make a story.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- toast -->
+        <div class="toast" id="toast"></div>
+
+        <!-- decision sheets -->
+        <div class="sheet-veil" id="veil"></div>
+
+        <div class="sheet" id="sheet-maya" role="dialog" aria-label="Decision: onboarding scope">
+          <div class="sheet-grab"></div>
+          <h2>Scope vs. date — Maya needs a call</h2>
+          <p class="ctx">Self-serve onboarding is the board’s #1 expectation. Maya’s team is at 82% morale and remembers the Sprint 3 crunch.</p>
+          <button class="opt" data-for="maya" data-toast="Scope cut. Maya: “We can do that well.” · Logged to your Career File with rationale.">
+            <div class="opt-title">Cut scope — ship signup + checklist, defer templates</div>
+            <div class="fx"><span class="up">▲ team morale</span><span class="up">▲ Maya trust</span><span>date holds</span><span class="warn">smaller launch</span></div>
+          </button>
+          <button class="opt" data-for="maya" data-toast="Date moved to Sprint 9. The board will notice. · Logged with rationale.">
+            <div class="opt-title">Hold scope — move the date to Sprint 9</div>
+            <div class="fx"><span class="down">▼ board confidence</span><span>quality holds</span><span class="warn">QBR gets tighter</span></div>
+          </button>
+          <button class="opt" data-for="maya" data-toast="Contractor engaged. Debt hatching will show on the map. · Logged with rationale.">
+            <div class="opt-title">Hold both — bring in a contractor</div>
+            <div class="fx"><span class="down">▼▼ tech debt</span><span class="down">▼ morale</span><span>date + scope hold</span></div>
+          </button>
+          <div class="opt locked" aria-disabled="true">
+            <div class="opt-title">Run a painted-door test on templates first</div>
+            <div class="fx"><span>de-risks the cut</span><span class="up">▲ evidence</span></div>
+            <div class="lock-line">🔒 Requires Experiment Design — Senior track. Skills unlock moves.</div>
+          </div>
+          <div class="why">
+            <label for="why-maya">Why? · one line</label>
+            <input id="why-maya" placeholder="e.g. Activation is the fire; templates don’t move it" />
+            <div class="foot">Goes into your Career File next to the decision. Interviewers ask “why” — so does Praxis.</div>
+          </div>
+        </div>
+
+        <div class="sheet" id="sheet-dana" role="dialog" aria-label="Decision: Northgate SSO">
+          <div class="sheet-grab"></div>
+          <h2>$180k on the table — if you build SSO</h2>
+          <p class="ctx">SSO is real work sitting in your weakest district. Committing it costs roughly a third of Q3 capacity. Dana’s trust is already thin.</p>
+          <button class="opt" data-for="dana" data-toast="Committed. Maya’s trust drops — capacity just got promised twice. · Logged with rationale.">
+            <div class="opt-title">Commit SSO this quarter</div>
+            <div class="fx"><span class="up">▲ board confidence</span><span class="up">▲ Dana trust</span><span class="down">▼ eng capacity</span><span class="down">▼ Maya trust</span></div>
+          </button>
+          <button class="opt" data-for="dana" data-toast="Counter-offered: security review now, SSO beta in Q4. Northgate is thinking. · Logged with rationale.">
+            <div class="opt-title">Counter — security review now, SSO beta early Q4</div>
+            <div class="fx"><span class="warn">deal at risk</span><span>capacity holds</span><span>trust holds</span></div>
+          </button>
+          <button class="opt" data-for="dana" data-toast="Declined. Dana goes quiet. The roadmap stays yours — for now. · Logged with rationale.">
+            <div class="opt-title">Decline — protect the quarter</div>
+            <div class="fx"><span class="down">▼ Dana trust</span><span class="down">▼ board confidence</span><span class="up">▲ focus</span></div>
+          </button>
+          <div class="why">
+            <label for="why-dana">Why? · one line</label>
+            <input id="why-dana" placeholder="e.g. One logo can’t set the roadmap for 4,000 users" />
+            <div class="foot">Goes into your Career File next to the decision.</div>
+          </div>
+        </div>
+
+        <div class="sheet" id="sheet-signal" role="dialog" aria-label="Signal: activation dip">
+          <div class="sheet-grab"></div>
+          <h2>Activation: 41% → 34%</h2>
+          <p class="ctx">Three sprints of drift. The topline chart won’t tell you which users are falling out — the cohort view would, but it’s still locked for you.</p>
+          <button class="opt" data-for="signal" data-goto="product" data-toast="Opening the product dashboard.">
+            <div class="opt-title">Open the dashboard</div>
+            <div class="fx"><span>see it yourself</span></div>
+          </button>
+          <button class="opt" data-for="signal" data-toast="Theo’s on it. His read lands in tomorrow’s standup. · This is a dataread exercise, in your own product.">
+            <div class="opt-title">Ask Theo to dig in — results tomorrow</div>
+            <div class="fx"><span class="up">▲ Theo trust</span><span>uses your 1:1 slot</span></div>
+          </button>
+          <button class="opt" data-for="signal" data-toast="Added to QBR notes. The board will ask about it either way.">
+            <div class="opt-title">Note it for the QBR</div>
+            <div class="fx"><span class="warn">risk: it keeps drifting</span></div>
+          </button>
+        </div>
+
+        <div class="sheet" id="sheet-district" role="dialog" aria-label="District detail">
+          <div class="sheet-grab"></div>
+          <h2 id="dd-title">Checkout</h2>
+          <p class="ctx" id="dd-body"></p>
+        </div>
+
+        <!-- cliffhanger -->
+        <div class="cliff" id="cliff">
+          <div class="pulse"></div>
+          <h2>Sprint 7 is running.</h2>
+          <p>Results at your next standup.</p>
+          <p class="fine">The outcome you get tomorrow is one you authored today. That’s the hook — a consequence, not a notification.</p>
+          <button id="cliff-close">Back to the concept</button>
+        </div>
+
+        <!-- tab bar -->
+        <div class="tabs">
+          <button class="tab on" data-scr="standup" id="tab-standup">
+            <span class="bdg" id="bdg">2</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 8l9 5 9-5"/></svg>
+            Standup
+          </button>
+          <button class="tab" data-scr="product">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="12" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="17" width="8" height="4" rx="2"/></svg>
+            Product
+          </button>
+          <button class="tab" data-scr="season">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l5-5 4 3 6-7 3 3"/><path d="M3 21h18"/></svg>
+            Season
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= ANNOTATION RAIL ================= -->
+    <div class="rail">
+      <div class="rail-label">What you’re looking at</div>
+
+      <div class="note-set on" id="notes-standup">
+        <div class="note"><h3>The turn arrives as people</h3><p>Same engine decisions as today’s sim — routed through named characters with trust, moods, and memory. Maya’s pushback is the backlog trade-off; Dana’s ask is the stakeholder event. People carry the drama; the engine stays deterministic.</p></div>
+        <div class="note"><h3>Telegraphed choices, real trade-offs</h3><p>Every option shows its expected effects up front (the engine’s existing telegraphed-event pattern). One option is locked behind a skill — mastering Experiment Design literally adds a move to your game.</p></div>
+        <div class="note"><h3>The rationale line is the Evidence Engine</h3><p>One optional sentence per decision compounds into the Career File — the “tell me about a time…” record a junior PM can hand a hiring manager. This is the answer to “no one hires me without experience.”</p></div>
+      </div>
+
+      <div class="note-set" id="notes-product">
+        <div class="note"><h3>The product is a place</h3><p>Districts sized by investment, health bars, and visible tech debt (the red hatching in Checkout is the Sprint 3 shortcut). All of it renders from state the engine already tracks — this screen is visualization, not new simulation.</p></div>
+        <div class="note"><h3>Fog of war: skills grant vision</h3><p>The cohort panel is locked until the learner masters Cohort Analysis. Curriculum becomes the tech tree — you study because you want to see. The single strongest education-and-game fusion mechanic in the design.</p></div>
+        <div class="note"><h3>Decisions annotated on charts</h3><p>The amber dot on Activation marks the Sprint 5 pricing change. Cause and effect stay attributable across lag — the thing real PM dashboards make hardest to learn.</p></div>
+      </div>
+
+      <div class="note-set" id="notes-season">
+        <div class="note"><h3>Board confidence is the fail state</h3><p>Today’s sim can’t be lost. Seasons add stakes: drop below 30 and you’re fired — into a job market with offers matched to your demonstrated record. Getting fired and rebuilding is a better story than never failing.</p></div>
+        <div class="note"><h3>The roster remembers</h3><p>Each person keeps trust, an agenda, and a memory of what you did. The weekly 1:1 slot is a deliberately scarce repair tool — spending it is itself a prioritization decision.</p></div>
+        <div class="note"><h3>The Career File is the product</h3><p>Decision log, graded artifacts, incident record, interview stories — compiled automatically from play, exported for recruiters. The sim doesn’t just teach experience. It documents it.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var decided = { maya: false, dana: false };
+  var veil = document.getElementById('veil');
+  var toast = document.getElementById('toast');
+  var toastTimer = null;
+  var openSheet = null;
+
+  function show(id) { document.getElementById(id).classList.add('on'); }
+  function hide(id) { document.getElementById(id).classList.remove('on'); }
+
+  function showToast(text) {
+    toast.textContent = text;
+    toast.classList.add('on');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('on'); }, 3400);
+  }
+
+  function open(id) {
+    if (openSheet) hide(openSheet);
+    openSheet = id;
+    veil.classList.add('on');
+    show(id);
+  }
+  function closeSheet() {
+    if (openSheet) hide(openSheet);
+    openSheet = null;
+    veil.classList.remove('on');
+  }
+  veil.addEventListener('click', closeSheet);
+
+  /* theme preview toggle */
+  var phone = document.getElementById('phone');
+  document.querySelectorAll('.tt').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.tt').forEach(function (x) { x.classList.toggle('on', x === b); });
+      if (b.getAttribute('data-mode') === 'light') {
+        phone.setAttribute('data-sim-theme', 'light');
+      } else {
+        phone.removeAttribute('data-sim-theme');
+      }
+    });
+  });
+
+  /* tabs */
+  var tabs = document.querySelectorAll('.tab');
+  function goTab(name) {
+    tabs.forEach(function (t) { t.classList.toggle('on', t.getAttribute('data-scr') === name); });
+    ['standup', 'product', 'season'].forEach(function (s) {
+      document.getElementById('scr-' + s).classList.toggle('on', s === name);
+      var n = document.getElementById('notes-' + s);
+      if (n) n.classList.toggle('on', s === name);
+    });
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () { closeSheet(); goTab(t.getAttribute('data-scr')); });
+  });
+
+  /* message -> sheet */
+  document.querySelectorAll('.msg[data-sheet]').forEach(function (m) {
+    m.addEventListener('click', function () { open(m.getAttribute('data-sheet')); });
+  });
+
+  /* decision options */
+  function refreshCommit() {
+    var remaining = (decided.maya ? 0 : 1) + (decided.dana ? 0 : 1);
+    var btn = document.getElementById('commit');
+    var sub = document.getElementById('commit-sub');
+    var bdg = document.getElementById('bdg');
+    if (remaining === 0) {
+      btn.classList.add('armed');
+      btn.disabled = false;
+      sub.textContent = 'Both calls made · your rationale is logged';
+      bdg.style.display = 'none';
+    } else {
+      sub.textContent = remaining + ' decision' + (remaining === 1 ? '' : 's') + ' remaining';
+      bdg.textContent = remaining;
+    }
+  }
+
+  document.querySelectorAll('.opt[data-for]').forEach(function (o) {
+    o.addEventListener('click', function () {
+      var who = o.getAttribute('data-for');
+      var goto_ = o.getAttribute('data-goto');
+      closeSheet();
+      if (who === 'maya' || who === 'dana') {
+        decided[who] = true;
+        var msg = document.getElementById('msg-' + who);
+        msg.classList.add('done');
+        var tag = document.getElementById('tag-' + who);
+        tag.textContent = 'Decided';
+        tag.classList.remove('tag-decision');
+        tag.classList.add('tag-done');
+        refreshCommit();
+      }
+      if (goto_) goTab(goto_);
+      showToast(o.getAttribute('data-toast') || 'Done.');
+    });
+  });
+
+  /* keep rationale inputs from triggering anything odd */
+  document.querySelectorAll('.why input').forEach(function (i) {
+    i.addEventListener('click', function (e) { e.stopPropagation(); });
+  });
+
+  /* commit -> cliffhanger */
+  document.getElementById('commit').addEventListener('click', function () {
+    if (!this.classList.contains('armed')) return;
+    show('cliff');
+  });
+  document.getElementById('cliff-close').addEventListener('click', function () {
+    hide('cliff');
+    goTab('season');
+  });
+
+  /* districts */
+  var districtCopy = {
+    'Onboarding': 'Your current bet. 1,120 new users a week enter here; 34% activate. The scope call you just made with Maya lands in this district.',
+    'Checkout': 'The Sprint 3 shortcut lives here — you skipped the refactor to hit a date. Debt has compounded for four sprints. Every red hatch is a future incident.',
+    'Core workflows': 'The healthy heart of Relay: 3,400 weekly users, 86% health. It got you to Series A. It also hasn’t been touched in two quarters — watch Integrations pull it down.',
+    'Admin & SSO': 'Barely exists. This is what Dana just asked you to promise Northgate. Committing it means building a district from the ground during a live quarter.',
+    'Integrations': 'Aging quietly. No one complains yet — the classic pre-churn silence. Amber hatching means the debt is accruing but not yet critical.',
+    'Reporting': 'Stable and boring, exactly as it should be. Low traffic, high trust. Leave it alone.'
+  };
+  document.querySelectorAll('.district').forEach(function (d) {
+    d.addEventListener('click', function () {
+      var name = d.getAttribute('data-d');
+      document.getElementById('dd-title').textContent = name;
+      document.getElementById('dd-body').textContent = districtCopy[name] || '';
+      open('sheet-district');
+    });
+  });
+
+  /* career file button */
+  document.querySelector('.cfile-btn').addEventListener('click', function () {
+    showToast('In the real build this opens the recruiter-facing Career File — decision log, graded artifacts, outcomes.');
+  });
+})();
+</script>

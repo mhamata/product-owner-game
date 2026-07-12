@@ -1,0 +1,652 @@
+<meta charset="utf-8">
+<title>Praxis Learn — Standup & Skill Tree Concept</title>
+<style>
+  :root {
+    --page-bg: #eef1f4; --page-ink: #1b2430; --page-dim: #5b6877;
+    --page-line: #d6dde3; --page-card: #ffffff; --accent: #2f8f81;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page-bg: #0c0f14; --page-ink: #e6ebf1; --page-dim: #8a97a6;
+      --page-line: #232c37; --page-card: #131922; --accent: #4fb3a3;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page-bg: #0c0f14; --page-ink: #e6ebf1; --page-dim: #8a97a6;
+    --page-line: #232c37; --page-card: #131922; --accent: #4fb3a3;
+  }
+  :root[data-theme="light"] {
+    --page-bg: #eef1f4; --page-ink: #1b2430; --page-dim: #5b6877;
+    --page-line: #d6dde3; --page-card: #ffffff; --accent: #2f8f81;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page-bg); color: var(--page-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 10px; }
+  h1 {
+    font-family: "Avenir Next", "Avenir", -apple-system, system-ui, sans-serif;
+    font-size: clamp(26px, 4vw, 38px); font-weight: 650; line-height: 1.1;
+    margin: 0 0 12px; text-wrap: balance; max-width: 24ch;
+  }
+  .lede { color: var(--page-dim); font-size: 16px; line-height: 1.55; max-width: 58ch; margin: 0 0 8px; }
+  .lede strong { color: var(--page-ink); font-weight: 600; }
+  .hint { font-size: 13px; color: var(--page-dim); margin-bottom: 24px; }
+
+  .theme-toggle { display: inline-flex; border: 1px solid var(--page-line); border-radius: 999px; padding: 3px; margin-bottom: 20px; background: var(--page-card); }
+  .tt { font: inherit; font-size: 12.5px; font-weight: 650; color: var(--page-dim); background: none; border: 0; border-radius: 999px; padding: 6px 16px; cursor: pointer; }
+  .tt.on { background: var(--accent); color: #fff; }
+  .tt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .toggle-row { display: flex; align-items: center; gap: 12px; }
+  .toggle-row span { font-size: 12px; color: var(--page-dim); }
+
+  .stage { display: grid; grid-template-columns: 400px minmax(260px, 340px); gap: 48px; justify-content: center; align-items: start; }
+  @media (max-width: 880px) { .stage { grid-template-columns: minmax(0, 400px); } }
+
+  .rail { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 14px; }
+  .rail-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--page-dim); font-weight: 600; }
+  .note { background: var(--page-card); border: 1px solid var(--page-line); border-radius: 10px; padding: 14px 16px; }
+  .note h3 { margin: 0 0 5px; font-size: 14px; font-weight: 650; }
+  .note p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--page-dim); }
+  .note-set { display: none; flex-direction: column; gap: 14px; }
+  .note-set.on { display: flex; }
+
+  /* ================= PHONE (same token system as the Sim 2.0 concept) ================= */
+  .phone {
+    --g-bg: #10151d; --g-card: #171e28; --g-card-hi: #1c2634; --g-chip: #1b2431;
+    --g-input: #10151d; --g-line: #26303d; --g-line2: #34404e;
+    --g-ink: #e8edf3; --g-body: #b8c2ce; --g-dim: #8a97a6; --g-dimmer: #5f6d7d;
+    --g-accent: #4fb3a3; --g-on-accent: #0c1116;
+    --g-good: #63b57f; --g-warn: #e1a23c; --g-crit: #d96c5f;
+    --g-btn-off: #1d2733; --g-veil: rgba(5, 8, 12, 0.6); --g-cliff: #0b0f15;
+    --g-tabbar: rgba(13, 18, 25, 0.96);
+    --g-recap1: #182230; --g-recap2: #141b25;
+    --g-frame: #2a3441;
+    --g-shadow: 0 24px 60px rgba(5, 10, 18, 0.45), 0 2px 8px rgba(5, 10, 18, 0.3);
+    --g-pop-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
+
+    width: 390px; max-width: 100%; height: 800px; margin: 0 auto;
+    background: var(--g-bg); border-radius: 44px; border: 1px solid var(--g-frame);
+    box-shadow: var(--g-shadow); overflow: hidden; position: relative;
+    color: var(--g-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  .phone[data-sim-theme="light"] {
+    --g-bg: #f1f4f7; --g-card: #ffffff; --g-card-hi: #ffffff; --g-chip: #eaeff3;
+    --g-input: #f6f8fa; --g-line: #dfe5eb; --g-line2: #c9d3dc;
+    --g-ink: #17202b; --g-body: #46545f; --g-dim: #64737f; --g-dimmer: #8b99a5;
+    --g-accent: #1f8577; --g-on-accent: #ffffff;
+    --g-good: #2b8f54; --g-warn: #a8720e; --g-crit: #bc4a3c;
+    --g-btn-off: #e4e9ee; --g-veil: rgba(23, 32, 43, 0.35); --g-cliff: #f4f7f9;
+    --g-tabbar: rgba(255, 255, 255, 0.96);
+    --g-recap1: #ffffff; --g-recap2: #f2f6f9;
+    --g-frame: #d4dce3;
+    --g-shadow: 0 24px 60px rgba(60, 80, 100, 0.18), 0 2px 8px rgba(60, 80, 100, 0.1);
+    --g-pop-shadow: 0 10px 32px rgba(50, 70, 90, 0.2);
+  }
+  .phone, .phone * { -webkit-tap-highlight-color: transparent; }
+  .notch { height: 28px; display: flex; justify-content: center; align-items: flex-end; }
+  .notch::after { content: ""; width: 120px; height: 22px; background: #05080c; border-radius: 0 0 14px 14px; }
+  .app { position: absolute; inset: 0; padding-top: 28px; display: flex; flex-direction: column; }
+
+  .app-head { padding: 10px 18px 8px; display: flex; align-items: center; justify-content: space-between; }
+  .co { display: flex; flex-direction: column; gap: 1px; }
+  .co-name { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
+  .co-sub { font-size: 11px; color: var(--g-dim); }
+  .head-chips { display: flex; gap: 6px; }
+  .chip {
+    display: flex; align-items: center; gap: 5px; background: var(--g-card); border: 1px solid var(--g-line);
+    border-radius: 999px; padding: 6px 11px; font-size: 12px; font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .screens { flex: 1; overflow: hidden; position: relative; }
+  .screen { position: absolute; inset: 0; overflow-y: auto; padding: 4px 16px 96px; display: none; scrollbar-width: none; }
+  .screen::-webkit-scrollbar { display: none; }
+  .screen.on { display: block; }
+  .s-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--g-dimmer); font-weight: 650; margin: 14px 4px 8px; }
+
+  /* ---------- mentor brief ---------- */
+  .recap { background: linear-gradient(135deg, var(--g-recap1), var(--g-recap2)); border: 1px solid var(--g-line); border-radius: 14px; padding: 12px 14px; margin: 6px 0 4px; }
+  .recap .k { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--g-accent); font-weight: 700; }
+  .recap p { margin: 5px 0 0; font-size: 13px; line-height: 1.45; color: var(--g-body); }
+
+  /* ---------- acts progress ---------- */
+  .acts { display: flex; gap: 5px; margin: 10px 2px 2px; }
+  .act-seg { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+  .act-bar { height: 4px; border-radius: 2px; background: var(--g-line); }
+  .act-seg.done .act-bar { background: var(--g-good); }
+  .act-seg.now .act-bar { background: var(--g-accent); }
+  .act-name { font-size: 10px; font-weight: 650; color: var(--g-dimmer); letter-spacing: 0.04em; }
+  .act-seg.now .act-name { color: var(--g-accent); }
+  .act-seg.done .act-name { color: var(--g-dim); }
+
+  /* ---------- judgment card ---------- */
+  .jcard { background: var(--g-card); border: 1px solid var(--g-line); border-radius: 14px; padding: 14px; margin-bottom: 10px; position: relative; overflow: hidden; }
+  .jcard .k { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--g-dimmer); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .jcard .q { margin: 7px 0 12px; font-size: 13.5px; line-height: 1.5; color: var(--g-ink); font-weight: 500; }
+  .jopt {
+    width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
+    background: var(--g-input); border: 1px solid var(--g-line); border-radius: 11px;
+    padding: 11px 12px; margin-bottom: 8px; font-size: 13px; font-weight: 550; transition: border-color 0.15s;
+  }
+  .jopt:hover { border-color: var(--g-accent); }
+  .jopt:disabled { cursor: default; opacity: 0.7; }
+  .jopt.picked-right { border-color: var(--g-good); }
+  .jopt.picked-wrong { border-color: var(--g-crit); }
+  .explain { display: none; font-size: 12px; line-height: 1.5; color: var(--g-body); border-top: 1px dashed var(--g-line); padding-top: 9px; margin-top: 2px; }
+  .explain.show { display: block; }
+  .explain b { color: var(--g-ink); }
+  .stamp {
+    position: absolute; top: 12px; right: 12px; z-index: 3;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 5px 10px; border-radius: 8px; border: 2px solid;
+    transform: rotate(6deg) scale(0.6); opacity: 0; transition: all 0.22s cubic-bezier(0.2, 1.4, 0.4, 1);
+  }
+  .stamp.show { transform: rotate(-6deg) scale(1); opacity: 1; }
+  .stamp.good { color: var(--g-good); border-color: var(--g-good); background: color-mix(in srgb, var(--g-good) 10%, transparent); }
+  .stamp.miss { color: var(--g-crit); border-color: var(--g-crit); background: color-mix(in srgb, var(--g-crit) 10%, transparent); }
+  .warmup-done { display: none; }
+  .warmup-done.show { display: block; }
+  .done-line { font-size: 12px; color: var(--g-dim); background: var(--g-card); border: 1px solid var(--g-line); border-radius: 12px; padding: 11px 13px; margin-bottom: 4px; }
+  .done-line b { color: var(--g-good); font-weight: 700; }
+
+  /* ---------- workload / cliff cards ---------- */
+  .block { background: var(--g-card); border: 1px solid var(--g-line); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+  .block.gated { opacity: 0.5; }
+  .block .k { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--g-accent); font-weight: 700; }
+  .block h4 { margin: 6px 0 4px; font-size: 15px; font-weight: 700; }
+  .block .meta { font-size: 11.5px; color: var(--g-dim); margin-bottom: 11px; font-variant-numeric: tabular-nums; }
+  .block .why-line { font-size: 11.5px; color: var(--g-body); border-left: 2px solid var(--g-accent); padding-left: 9px; margin-bottom: 12px; line-height: 1.45; }
+  .cta {
+    width: 100%; border: 0; border-radius: 12px; padding: 12px; font: inherit; font-weight: 700; font-size: 13.5px;
+    background: var(--g-accent); color: var(--g-on-accent); cursor: pointer;
+  }
+  .cta:disabled { background: var(--g-btn-off); color: var(--g-dimmer); cursor: not-allowed; }
+  .cta.ghost { background: transparent; border: 1px solid var(--g-line2); color: var(--g-accent); }
+  .gate-note { font-size: 10.5px; color: var(--g-dimmer); margin-top: 7px; text-align: center; }
+
+  /* ---------- skill tree ---------- */
+  .lvl-head { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 4px 8px; }
+  .lvl-name { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--g-dimmer); font-weight: 650; }
+  .lvl-meta { font-size: 10.5px; color: var(--g-dimmer); font-variant-numeric: tabular-nums; }
+  .tree { position: relative; padding-left: 20px; }
+  .tree::before { content: ""; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; background: var(--g-line); }
+  .node {
+    width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; position: relative;
+    background: var(--g-card); border: 1px solid var(--g-line); border-radius: 13px;
+    padding: 11px 13px; margin-bottom: 9px; transition: border-color 0.15s;
+  }
+  .node:hover { border-color: var(--g-line2); }
+  .node::before {
+    content: ""; position: absolute; left: -17px; top: 18px; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--g-dimmer); border: 2px solid var(--g-bg);
+  }
+  .node.done::before { background: var(--g-good); }
+  .node.rusty::before { background: var(--g-warn); }
+  .node.next { border-color: var(--g-accent); box-shadow: 0 0 0 1px var(--g-accent), 0 4px 18px color-mix(in srgb, var(--g-accent) 25%, transparent); }
+  .node.next::before { background: var(--g-accent); }
+  .node.locked { opacity: 0.55; }
+  .n-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .n-name { font-size: 13.5px; font-weight: 650; }
+  .n-str { font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--g-good); flex: none; }
+  .n-str.rusty { color: var(--g-warn); }
+  .n-str.na { color: var(--g-dimmer); font-weight: 600; }
+  .n-unlock { margin-top: 5px; font-size: 11px; line-height: 1.45; color: var(--g-dim); }
+  .n-unlock .u { color: var(--g-accent); font-weight: 650; }
+  .n-unlock .got { color: var(--g-good); font-weight: 650; }
+  .n-flag { margin-top: 5px; font-size: 10.5px; font-weight: 650; color: var(--g-warn); }
+
+  /* ---------- sheets / veil / toast (same system as Sim concept) ---------- */
+  .sheet-veil { position: absolute; inset: 0; background: var(--g-veil); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 20; }
+  .sheet-veil.on { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 21;
+    background: var(--g-card); border-top: 1px solid var(--g-line2); border-radius: 24px 24px 0 0;
+    box-shadow: var(--g-pop-shadow);
+    padding: 18px 18px 26px; transform: translateY(110%); visibility: hidden;
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.28s;
+    max-height: 86%; overflow-y: auto;
+  }
+  .sheet.on { transform: translateY(0); visibility: visible; transition-delay: 0s, 0s; }
+  .sheet-grab { width: 36px; height: 4px; border-radius: 2px; background: var(--g-line2); margin: 0 auto 14px; }
+  .sheet h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+  .sheet .ctx { margin: 0 0 12px; font-size: 13px; line-height: 1.5; color: var(--g-body); }
+  .str-bar { height: 6px; border-radius: 3px; background: var(--g-line); overflow: hidden; margin: 4px 0 14px; }
+  .str-bar i { display: block; height: 100%; border-radius: 3px; }
+  .sheet .ul { list-style: none; margin: 0 0 14px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .sheet .ul li { font-size: 12.5px; color: var(--g-body); line-height: 1.45; }
+  .sheet .ul li b { color: var(--g-accent); font-weight: 650; }
+  .sheet .cta { margin-bottom: 8px; }
+
+  .toast {
+    position: absolute; left: 16px; right: 16px; top: 40px; z-index: 30;
+    background: var(--g-card-hi); border: 1px solid var(--g-line2); border-left: 3px solid var(--g-accent);
+    border-radius: 12px; padding: 11px 14px; font-size: 12.5px; line-height: 1.4; color: var(--g-body);
+    box-shadow: var(--g-pop-shadow);
+    transform: translateY(-16px); opacity: 0; pointer-events: none; transition: all 0.25s;
+  }
+  .toast.on { transform: translateY(0); opacity: 1; }
+
+  /* ---------- session-end overlay ---------- */
+  .cliff { position: absolute; inset: 0; z-index: 40; background: var(--g-cliff); display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; }
+  .cliff.on { display: flex; }
+  .pulse { width: 14px; height: 14px; border-radius: 50%; background: var(--g-accent); margin-bottom: 28px; animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(79, 179, 163, 0.5); } 50% { box-shadow: 0 0 0 18px rgba(79, 179, 163, 0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .pulse { animation: none; }
+    .sheet, .toast, .stamp { transition: none; }
+  }
+  .cliff h2 { font-family: "Avenir Next", "Avenir", -apple-system, system-ui, sans-serif; font-size: 24px; font-weight: 650; margin: 0 0 8px; }
+  .cliff p { color: var(--g-dim); font-size: 14px; line-height: 1.55; margin: 0 0 6px; max-width: 30ch; }
+  .cliff .fine { font-size: 11.5px; color: var(--g-dimmer); }
+  .cliff button { margin-top: 30px; font: inherit; font-size: 13px; font-weight: 650; color: var(--g-accent); background: transparent; border: 1px solid var(--g-line2); border-radius: 10px; padding: 10px 20px; cursor: pointer; }
+
+  /* ---------- tab bar ---------- */
+  .tabs { position: absolute; left: 0; right: 0; bottom: 0; z-index: 15; display: flex; background: var(--g-tabbar); border-top: 1px solid var(--g-line); padding: 8px 8px calc(8px + 14px); }
+  .tab { flex: 1; background: none; border: 0; color: var(--g-dimmer); font: inherit; font-size: 10.5px; font-weight: 650; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer; border-radius: 10px; }
+  .tab svg { width: 21px; height: 21px; }
+  .tab.on { color: var(--g-accent); }
+  .msg-like-focus:focus-visible, .phone button:focus-visible { outline: 2px solid var(--g-accent); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">Praxis Learn · UI concept · for approval</div>
+  <h1>The daily loop and the tech tree</h1>
+  <p class="lede">The learning layer in the same design system as the Sim 2.0 concept. <strong>The Standup</strong> is the six-minute daily session (warm-up → one block → the cliffhanger). <strong>Skills</strong> is the curriculum re-cast as a tech tree — every skill names the in-sim power it unlocks.</p>
+  <p class="hint">Try it: answer both warm-up cards (one is designed to catch you), start the block, open your standup. Then browse the Skills tab and tap nodes — including the rusty one.</p>
+
+  <div class="toggle-row">
+    <div class="theme-toggle" role="group" aria-label="Product theme preview">
+      <button class="tt on" data-mode="dark">Dark</button>
+      <button class="tt" data-mode="light">Light</button>
+    </div>
+    <span>Same tokens as the Sim concept — one system, two palettes.</span>
+  </div>
+
+  <div class="stage">
+    <!-- ================= PHONE ================= -->
+    <div class="phone" id="phone">
+      <div class="notch"></div>
+      <div class="app">
+        <div class="app-head">
+          <div class="co">
+            <span class="co-name">Your Standup</span>
+            <span class="co-sub">Tuesday · Day 47 · PM II track</span>
+          </div>
+          <div class="head-chips">
+            <div class="chip" title="Streak">🔥 12</div>
+            <div class="chip" title="Cred"><span id="cred">1,240</span> ᴄ</div>
+          </div>
+        </div>
+
+        <div class="screens">
+          <!-- ============ SCREEN: STANDUP HOME ============ -->
+          <div class="screen on" id="scr-standup">
+            <div class="recap">
+              <span class="k">Your mentor</span>
+              <p>Two cards, one block, six minutes. Analytics is your weakest live competency — today’s block targets it. And Relay’s Sprint 7 results are in when you’re done.</p>
+            </div>
+
+            <div class="acts" id="acts">
+              <div class="act-seg now" id="act1"><div class="act-bar"></div><span class="act-name">1 · Warm-up</span></div>
+              <div class="act-seg" id="act2"><div class="act-bar"></div><span class="act-name">2 · Workload</span></div>
+              <div class="act-seg" id="act3"><div class="act-bar"></div><span class="act-name">3 · Standup</span></div>
+            </div>
+
+            <div class="s-label">Act 1 · Warm-up · ~45 seconds</div>
+
+            <div id="warmup">
+              <div class="jcard" id="jc1">
+                <div class="stamp" id="st1"></div>
+                <span class="k">Card 1 of 2 · judgment</span>
+                <p class="q">Your payment provider deprecates an API in 90 days. Eng says migration is ~3 weeks. Sales wants the whole quarter for features. What’s your first move?</p>
+                <button class="jopt" data-card="1" data-right="0">Schedule the full migration now — deadline risk beats feature risk</button>
+                <button class="jopt" data-card="1" data-right="1">Time-box a one-day risk spike this sprint, then decide with data</button>
+                <div class="explain" id="ex1"><b>Sharp call.</b> A 90-day runway buys you one cheap day of certainty before you spend three expensive weeks. Migrate-now is defensible — but it prices the risk before measuring it.</div>
+              </div>
+
+              <div class="jcard" id="jc2" style="display:none">
+                <div class="stamp" id="st2"></div>
+                <span class="k">Card 2 of 2 · judgment</span>
+                <p class="q">Your A/B test shows +4% signup lift, p = 0.20, after the planned two weeks. The team wants to ship. Do you?</p>
+                <button class="jopt" data-card="2" data-right="0">Ship it — 4% is 4%, and the test ran its course</button>
+                <button class="jopt" data-card="2" data-right="1">Keep running — the test is underpowered; that lift may be noise</button>
+                <div class="explain" id="ex2"><b>p = 0.20 means a 1-in-5 chance this lift is nothing.</b> Shipping on noise teaches the team that tests are theater. Extend, or re-power the test. (Missed it? It just joined your review deck.)</div>
+              </div>
+
+              <div class="warmup-done" id="warmup-done">
+                <div class="done-line"><b>Warm-up done</b> · +12 ᴄ · your misses were added to the review deck — they’ll come back in a different industry skin.</div>
+              </div>
+            </div>
+
+            <div class="s-label">Act 2 · Workload · ~3 minutes</div>
+            <div class="block gated" id="block2">
+              <span class="k">Chosen by your scheduler</span>
+              <h4>Dataread — the funnel that lies</h4>
+              <div class="meta">3 min · dataread · targets Cohort thinking</div>
+              <p class="why-line">Why this: Analytics strength slipped to 62% — and yesterday you told Theo to “dig into activation.” Time you could read it yourself.</p>
+              <button class="cta" id="start-block" disabled>Start block</button>
+              <div class="gate-note" id="gate2">Finish the warm-up to unlock</div>
+            </div>
+
+            <div class="s-label">Act 3 · Your standup</div>
+            <div class="block gated" id="block3">
+              <span class="k">Relay · your ongoing run</span>
+              <h4>Sprint 7 results are in</h4>
+              <div class="meta">The sprint you committed yesterday has resolved.</div>
+              <button class="cta" id="open-standup" disabled>Open your standup →</button>
+              <div class="gate-note" id="gate3">Finish today’s block first — the story is the reward</div>
+            </div>
+          </div>
+
+          <!-- ============ SCREEN: SKILL TREE ============ -->
+          <div class="screen" id="scr-skills">
+            <div class="lvl-head"><span class="lvl-name">Foundations</span><span class="lvl-meta">2 / 2 mastered</span></div>
+            <div class="tree">
+              <button class="node done" data-node="user-problems">
+                <span class="n-top"><span class="n-name">User problems</span><span class="n-str">92%</span></span>
+                <p class="n-unlock"><span class="got">✓ Unlocked:</span> discovery-interview moves in roleplay</p>
+              </button>
+              <button class="node done rusty" data-node="ship-hold">
+                <span class="n-top"><span class="n-name">Ship / hold judgment</span><span class="n-str rusty">54% · going stale</span></span>
+                <p class="n-unlock"><span class="got">✓ Unlocked:</span> release-call presets in the sim</p>
+                <p class="n-flag">⟳ 90-second refresh available — fintech skin</p>
+              </button>
+            </div>
+
+            <div class="lvl-head"><span class="lvl-name">Associate</span><span class="lvl-meta">1 / 3 mastered</span></div>
+            <div class="tree">
+              <button class="node done" data-node="backlog">
+                <span class="n-top"><span class="n-name">Backlog &amp; trade-offs</span><span class="n-str">88%</span></span>
+                <p class="n-unlock"><span class="got">✓ Unlocked:</span> sprint-goal presets · scope-cut moves</p>
+              </button>
+              <button class="node next" data-node="experiment">
+                <span class="n-top"><span class="n-name">Experiment design</span><span class="n-str na">up next · ~25 min</span></span>
+                <p class="n-unlock"><span class="u">🔓 Unlocks in-sim:</span> A/B test + painted-door moves — the option you saw locked in Maya’s decision</p>
+              </button>
+              <button class="node locked" data-node="cohort">
+                <span class="n-top"><span class="n-name">Cohort analysis</span><span class="n-str na">locked</span></span>
+                <p class="n-unlock"><span class="u">🔓 Unlocks:</span> cohort dashboards — the fog lifts on your product’s retention curves</p>
+              </button>
+            </div>
+
+            <div class="lvl-head"><span class="lvl-name">PM</span><span class="lvl-meta">0 / 2 · gated on Associate</span></div>
+            <div class="tree">
+              <button class="node locked" data-node="negotiation">
+                <span class="n-top"><span class="n-name">Stakeholder negotiation</span><span class="n-str na">locked</span></span>
+                <p class="n-unlock"><span class="u">🔓 Unlocks:</span> new dialogue moves with Sales and the board</p>
+              </button>
+              <button class="node locked" data-node="incident">
+                <span class="n-top"><span class="n-name">Incident command</span><span class="n-str na">locked</span></span>
+                <p class="n-unlock"><span class="u">🔓 Unlocks:</span> war-room actions when a sev-1 hits your run</p>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- toast -->
+        <div class="toast" id="toast"></div>
+
+        <!-- node detail sheet -->
+        <div class="sheet-veil" id="veil"></div>
+        <div class="sheet" id="sheet-node" role="dialog" aria-label="Skill detail">
+          <div class="sheet-grab"></div>
+          <h2 id="nd-title">Skill</h2>
+          <p class="ctx" id="nd-ctx"></p>
+          <div class="str-bar"><i id="nd-bar" style="width:50%; background: var(--g-good)"></i></div>
+          <ul class="ul" id="nd-list"></ul>
+          <button class="cta" id="nd-cta">Practice now</button>
+          <button class="cta ghost" id="nd-ghost" style="display:none">⟳ 90-second refresh — fintech skin</button>
+        </div>
+
+        <!-- session end -->
+        <div class="cliff" id="cliff">
+          <div class="pulse"></div>
+          <h2>Sprint 7 resolved.</h2>
+          <p>Capacity came in at 92%. Maya shipped the cut scope. Northgate went quiet.</p>
+          <p class="fine">Session complete in 5:40. This hands off to the Sim 2.0 concept — every session ends inside your story, and tomorrow opens with the next one.</p>
+          <button id="cliff-close">End session</button>
+        </div>
+
+        <!-- tab bar -->
+        <div class="tabs">
+          <button class="tab on" data-scr="standup">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7"/><path d="M5 9v11h14V9"/></svg>
+            Standup
+          </button>
+          <button class="tab" data-scr="skills">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="2.5"/><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M12 7.5V12m0 0l-4.5 5M12 12l4.5 5"/></svg>
+            Skills
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= ANNOTATION RAIL ================= -->
+    <div class="rail">
+      <div class="rail-label">What you’re looking at</div>
+
+      <div class="note-set on" id="notes-standup">
+        <div class="note"><h3>One session, three acts, under six minutes</h3><p>The master plan’s daily loop, designed: two due-queue judgment cards, ONE scheduler-picked block targeting your weakest live competency, and the sim cliffhanger as the finale. The session always ends inside your story — that’s the retention engine.</p></div>
+        <div class="note"><h3>The scheduler picks, the mentor narrates</h3><p>The block choice is deterministic (competency strength + due reviews); the mentor’s one-liner is a cheap templated AI call that explains <em>why</em>. The LLM never picks exercise IDs — same cost architecture the plan already rules.</p></div>
+        <div class="note"><h3>Wrongness is never punished — absence is</h3><p>A missed card gets a one-line explanation and quietly joins the review deck, to return later in a different industry skin. Streaks and Cred reward showing up; the rating (elsewhere) only ever measures performances under constraint.</p></div>
+      </div>
+
+      <div class="note-set" id="notes-skills">
+        <div class="note"><h3>The syllabus becomes a tech tree</h3><p>Every skill names the in-sim power it grants — Experiment Design is literally the locked option from Maya’s decision in the Sim concept. You stop studying because you should, and start because you want the move.</p></div>
+        <div class="note"><h3>Mastery decays; it never re-locks</h3><p>Ship/hold judgment has gone stale at 54% — amber, with a 90-second refresh in a different industry skin (spacing + variation). Re-locking mastered skills is motivationally toxic; rust you can polish in 90 seconds is a reason to come back.</p></div>
+        <div class="note"><h3>Locked ≠ hidden</h3><p>You can always read what a locked skill would give you. Visible-but-unreachable power is the oldest motivation loop in games — and here every unlock is also a real PM competency with a pass bar behind it.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var veil = document.getElementById('veil');
+  var toast = document.getElementById('toast');
+  var toastTimer = null;
+  var openSheet = null;
+  var cred = 1240;
+  var answered = 0;
+  var blockDone = false;
+
+  function show(id) { document.getElementById(id).classList.add('on'); }
+  function hide(id) { document.getElementById(id).classList.remove('on'); }
+  function showToast(text) {
+    toast.textContent = text;
+    toast.classList.add('on');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('on'); }, 3400);
+  }
+  function addCred(n) {
+    cred += n;
+    document.getElementById('cred').textContent = cred.toLocaleString('en-US');
+  }
+  function open(id) {
+    if (openSheet) hide(openSheet);
+    openSheet = id;
+    veil.classList.add('on');
+    show(id);
+  }
+  function closeSheet() {
+    if (openSheet) hide(openSheet);
+    openSheet = null;
+    veil.classList.remove('on');
+  }
+  veil.addEventListener('click', closeSheet);
+
+  /* theme preview toggle */
+  var phone = document.getElementById('phone');
+  document.querySelectorAll('.tt').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.tt').forEach(function (x) { x.classList.toggle('on', x === b); });
+      if (b.getAttribute('data-mode') === 'light') phone.setAttribute('data-sim-theme', 'light');
+      else phone.removeAttribute('data-sim-theme');
+    });
+  });
+
+  /* tabs */
+  var tabs = document.querySelectorAll('.tab');
+  function goTab(name) {
+    tabs.forEach(function (t) { t.classList.toggle('on', t.getAttribute('data-scr') === name); });
+    ['standup', 'skills'].forEach(function (s) {
+      document.getElementById('scr-' + s).classList.toggle('on', s === name);
+      document.getElementById('notes-' + s).classList.toggle('on', s === name);
+    });
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () { closeSheet(); goTab(t.getAttribute('data-scr')); });
+  });
+
+  /* ---------- warm-up cards ---------- */
+  function finishWarmup() {
+    document.getElementById('jc2').style.display = 'none';
+    document.getElementById('warmup-done').classList.add('show');
+    document.getElementById('act1').classList.remove('now');
+    document.getElementById('act1').classList.add('done');
+    document.getElementById('act2').classList.add('now');
+    var blk = document.getElementById('block2');
+    blk.classList.remove('gated');
+    document.getElementById('start-block').disabled = false;
+    document.getElementById('gate2').textContent = 'Unlocked — your weakest competency, on purpose';
+    addCred(12);
+  }
+
+  document.querySelectorAll('.jopt').forEach(function (o) {
+    o.addEventListener('click', function () {
+      var card = o.getAttribute('data-card');
+      var right = o.getAttribute('data-right') === '1';
+      var stamp = document.getElementById('st' + card);
+      var explain = document.getElementById('ex' + card);
+      /* lock this card's options */
+      document.querySelectorAll('.jopt[data-card="' + card + '"]').forEach(function (b) { b.disabled = true; });
+      o.classList.add(right ? 'picked-right' : 'picked-wrong');
+      stamp.textContent = right ? 'Sharp call' : 'Miss';
+      stamp.classList.add(right ? 'good' : 'miss', 'show');
+      explain.classList.add('show');
+      answered += 1;
+      if (card === '1') {
+        setTimeout(function () {
+          document.getElementById('jc1').style.display = 'none';
+          document.getElementById('jc2').style.display = 'block';
+        }, 2200);
+      } else {
+        setTimeout(finishWarmup, 2200);
+      }
+    });
+  });
+
+  /* ---------- workload block ---------- */
+  document.getElementById('start-block').addEventListener('click', function () {
+    if (blockDone) return;
+    blockDone = true;
+    showToast('The block player opens here — card-stack pacing, one interaction per screen, verdict stamps. Marking it done for the concept. +40 ᴄ');
+    addCred(40);
+    this.textContent = 'Block complete ✓';
+    this.disabled = true;
+    document.getElementById('act2').classList.remove('now');
+    document.getElementById('act2').classList.add('done');
+    document.getElementById('act3').classList.add('now');
+    var b3 = document.getElementById('block3');
+    b3.classList.remove('gated');
+    document.getElementById('open-standup').disabled = false;
+    document.getElementById('gate3').textContent = 'The cliffhanger you authored yesterday';
+  });
+
+  /* ---------- act 3 ---------- */
+  document.getElementById('open-standup').addEventListener('click', function () { show('cliff'); });
+  document.getElementById('cliff-close').addEventListener('click', function () {
+    hide('cliff');
+    document.getElementById('act3').classList.remove('now');
+    document.getElementById('act3').classList.add('done');
+    showToast('Day 47 complete · streak 🔥 13 tomorrow · tomorrow’s standup opens with Sprint 8 planning.');
+  });
+
+  /* ---------- skill nodes ---------- */
+  var NODES = {
+    'user-problems': {
+      title: 'User problems', str: 92, color: 'good',
+      ctx: 'Mastered 3 weeks ago. Framing problems before solutions — the skill every later node leans on.',
+      list: ['<b>Unlocked:</b> discovery-interview moves in roleplay', 'Feeds: Experiment design · Cohort analysis'],
+      cta: 'Practice again (keeps it warm)'
+    },
+    'ship-hold': {
+      title: 'Ship / hold judgment', str: 54, color: 'warn', ghost: true,
+      ctx: 'Going stale — strength has decayed from 91% to 54% over five weeks without a rep. It never re-locks; it just rusts.',
+      list: ['<b>Unlocked:</b> release-call presets in the sim', 'Refresh = 2 judgment cards in a fintech skin, ~90 seconds', 'Spacing + a new industry = retention + transfer'],
+      cta: 'Full practice set (~8 min)'
+    },
+    'backlog': {
+      title: 'Backlog & trade-offs', str: 88, color: 'good',
+      ctx: 'Mastered. The scope-cut option you used with Maya came from here.',
+      list: ['<b>Unlocked:</b> sprint-goal presets · scope-cut moves', 'Feeds: Stakeholder negotiation'],
+      cta: 'Practice again'
+    },
+    'experiment': {
+      title: 'Experiment design', str: 0, color: 'accent',
+      ctx: 'Up next — about 25 minutes across two sessions. This is the locked option you saw in Maya’s decision sheet.',
+      list: ['<b>🔓 Unlocks in-sim:</b> A/B test + painted-door moves', '<b>🔓 Unlocks:</b> the experiment-plan artifact (AI-graded)', 'Pass bar: design a test the grader can’t poke holes in'],
+      cta: 'Start now (~12 min part 1)'
+    },
+    'cohort': {
+      title: 'Cohort analysis', str: 0, color: 'accent',
+      ctx: 'Locked behind Experiment design. The single most requested pane in your product dashboard is waiting behind it.',
+      list: ['<b>🔓 Unlocks:</b> cohort retention curves on every run, permanently', '<b>🔓 Unlocks:</b> dataread drills against your own sim data', 'The fog-of-war lift you saw on the Product screen'],
+      cta: 'Locked — finish Experiment design'
+    },
+    'negotiation': {
+      title: 'Stakeholder negotiation', str: 0, color: 'accent',
+      ctx: 'PM-level. Dana’s Northgate ask had a fourth option you couldn’t see. This is where it lives.',
+      list: ['<b>🔓 Unlocks:</b> counter-proposal dialogue moves with Sales and the board', '<b>🔓 Unlocks:</b> multi-party meeting scenarios'],
+      cta: 'Locked — reach PM level'
+    },
+    'incident': {
+      title: 'Incident command', str: 0, color: 'accent',
+      ctx: 'PM-level. When a sev-1 hits your run — and one will — this is the difference between a war room and a panic.',
+      list: ['<b>🔓 Unlocks:</b> war-room actions during live incidents', '<b>🔓 Unlocks:</b> the incident record in your Career File'],
+      cta: 'Locked — reach PM level'
+    }
+  };
+  var COLOR = { good: 'var(--g-good)', warn: 'var(--g-warn)', accent: 'var(--g-accent)' };
+
+  document.querySelectorAll('.node').forEach(function (n) {
+    n.addEventListener('click', function () {
+      var d = NODES[n.getAttribute('data-node')];
+      if (!d) return;
+      document.getElementById('nd-title').textContent = d.title;
+      document.getElementById('nd-ctx').textContent = d.ctx;
+      var bar = document.getElementById('nd-bar');
+      bar.style.width = (d.str || 8) + '%';
+      bar.style.background = COLOR[d.color];
+      var list = document.getElementById('nd-list');
+      list.innerHTML = '';
+      d.list.forEach(function (li) {
+        var el = document.createElement('li');
+        el.innerHTML = li;
+        list.appendChild(el);
+      });
+      var cta = document.getElementById('nd-cta');
+      cta.textContent = d.cta;
+      cta.disabled = d.cta.indexOf('Locked') === 0;
+      document.getElementById('nd-ghost').style.display = d.ghost ? 'block' : 'none';
+      open('sheet-node');
+    });
+  });
+  document.getElementById('nd-cta').addEventListener('click', function () {
+    if (this.disabled) return;
+    closeSheet();
+    showToast('In the real build this launches the practice player for this skill.');
+  });
+  document.getElementById('nd-ghost').addEventListener('click', function () {
+    closeSheet();
+    showToast('90-second refresh: two ship/hold calls at a fintech company you’ve never seen. Rust → 82%.');
+  });
+})();
+</script>
