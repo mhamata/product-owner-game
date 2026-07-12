@@ -99,9 +99,12 @@ export async function upsertEntitlement(userId: string, row: EntitlementRow): Pr
  * we never reset someone's in-flight monthly usage by granting them again (a
  * renewal must not hand back this month's spent allowance).
  *
- * DELIBERATE FOLLOW-UP: the reverse — downgrading the cap/tier back when an
- * entitlement lapses — is NOT reconciled here. Expiry→downgrade reconciliation
- * is a documented Phase-1 follow-up (see docs/PHASE1.md, slice D next-actions).
+ * The reverse — downgrading the cap/tier back when an entitlement lapses — is
+ * NOT reconciled here (this function only ever raises). See
+ * `reconcileBudgetOnLapse` below for that: it is a separate, lazy,
+ * request-time check rather than something folded into this grant path,
+ * because a grant is a webhook event but a lapse is discovered by the
+ * absence of one (see docs/PHASE1.md, slice D decisions).
  */
 export async function bumpBudgetOnGrant(userId: string): Promise<void> {
   const { error } = await serviceClient()
@@ -111,4 +114,69 @@ export async function bumpBudgetOnGrant(userId: string): Promise<void> {
       { onConflict: 'user_id' },
     );
   if (error) throw new Error(`bumpBudgetOnGrant failed: ${error.message}`);
+}
+
+/**
+ * Pure: is this `entitlements` row live at `now`?
+ *
+ * `null`/`undefined` (no row at all — never purchased, or a lookup that found
+ * nothing) is NOT live. A `null` expires_at is the never-expiring-grant shape
+ * `EntitlementRow` documents (unused by any writer today, but a valid value in
+ * the type); we treat that as live. Otherwise the row is live only strictly
+ * AFTER `now` — the moment of expiry itself does not count, matching how
+ * `revokedEntitlement` sets `expires_at` to the exact cancellation instant.
+ */
+export function isEntitlementLive(
+  row: { expires_at: string | null } | null | undefined,
+  now: Date,
+): boolean {
+  if (!row) return false;
+  if (row.expires_at === null) return true;
+  return new Date(row.expires_at).getTime() > now.getTime();
+}
+
+/**
+ * Lazy expiry->downgrade reconciliation: the counterpart `bumpBudgetOnGrant`
+ * deliberately left undone (see its DELIBERATE FOLLOW-UP note above, and
+ * docs/PHASE1.md slice D). Called at request time from the AI routes rather
+ * than a scheduled job, so a lapsed subscriber is caught on their very next
+ * request instead of waiting on a cron.
+ *
+ * Design: the entitlement does not hard-wall the AI routes. It only decides
+ * which budget TIER the existing budget gate enforces against. Reading the
+ * live entitlement, then downgrading the budget row when it has lapsed, keeps
+ * that gate honest without adding a second enforcement path.
+ *
+ * The downgrade is an UPDATE, not an upsert: filtered to `tier = 'core'` so it
+ * is a no-op for users who are already on `free` (no spurious `updated_at`
+ * churn) and so a user with no `user_budgets` row yet is simply left alone —
+ * `reserve_budget` creates that row at the free default on first use anyway.
+ * `cents_used` / `period_start` are never touched here: a lapsed entitlement
+ * must not reset or extend a month's in-flight usage, only cap it going
+ * forward.
+ */
+export async function reconcileBudgetOnLapse(userId: string): Promise<{ entitled: boolean }> {
+  const now = new Date();
+  const { data, error } = await serviceClient()
+    .from('entitlements')
+    .select('expires_at')
+    .eq('user_id', userId)
+    .eq('entitlement_id', ENTITLEMENT_ID)
+    .maybeSingle();
+  if (error) throw new Error(`reconcileBudgetOnLapse read failed: ${error.message}`);
+
+  if (isEntitlementLive(data as { expires_at: string | null } | null, now)) {
+    return { entitled: true };
+  }
+
+  const { error: downgradeError } = await serviceClient()
+    .from('user_budgets')
+    .update({ tier: 'free', cents_cap: 15, updated_at: now.toISOString() })
+    .eq('user_id', userId)
+    .eq('tier', 'core');
+  if (downgradeError) {
+    throw new Error(`reconcileBudgetOnLapse downgrade failed: ${downgradeError.message}`);
+  }
+
+  return { entitled: false };
 }

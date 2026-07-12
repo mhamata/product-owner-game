@@ -22,6 +22,7 @@ import {
 } from '@/lib/artifactGraderV2';
 import { authMode, getUserFromRequest } from '@/lib/supabase/server';
 import { actualCallCents, estimateCallCents, logUsage, reserveBudget, settleBudget } from '@/lib/budget';
+import { reconcileBudgetOnLapse } from '@/lib/entitlements';
 
 /**
  * AI-graded artifact endpoint: the differentiator of the knowledge center.
@@ -121,6 +122,15 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Sign in to use AI grading.' }, { status: 401 });
     }
     userId = user.id;
+    // Lazy expiry->downgrade reconciliation (docs/PHASE1.md slice D): a lapsed
+    // entitlement drops the budget tier back to free before the gate below
+    // enforces spend. Best-effort — an unavailable reconciliation must not
+    // block grading; the stored tier still gates spend either way.
+    try {
+      await reconcileBudgetOnLapse(userId);
+    } catch (e) {
+      console.warn('reconcileBudgetOnLapse failed, continuing with existing budget tier:', e);
+    }
   }
 
   // 3) Graceful degradation: no key, no spend. Return a calm 200 the UI can show
