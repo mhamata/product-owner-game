@@ -29,7 +29,7 @@ Go/no-go gates encoded in `agreement.ts` (`DEFAULT_GATES`): adjacent ≥ 0.90, Q
 ## Not done yet (Phase 0 remainder — human tasks mostly)
 1. **Add `ANTHROPIC_API_KEY` to `app/.env.local`**, then run `npm run calibrate` — full dress rehearsal (~30 Haiku calls, ≈$0.03) against both synthetic raters. Wire into CI after first green run.
 2. **Recruit 3–5 senior-PM panelists** (posts in `docs/calibration/recruiting-post.md`, $150–250 each), send `calibration-output/panel/` pack.
-3. **Import panel CSVs** into the golden set (add `panel-*` raters, flip `provenance` to `panel`) — write the import script when the first CSV arrives.
+3. ~~**Import panel CSVs** into the golden set (add `panel-*` raters, flip `provenance` to `panel`) — write the import script when the first CSV arrives.~~ ✅ `npm run panel:import -- --csv <path> --rater panel-1` (`--dry` to validate without writing). See `app/src/calibration/panelImport.ts` for the import contract (validation, seed-rater replacement, provenance flip) and `docs/calibration/panel-guide.md` for what panelists return. Run once per panelist (`panel-1`, `panel-2`, ...); scores accumulate.
 4. **Run the real gate** and decide go/no-go per the thresholds. Publish the agreement rate either way.
 5. Supabase dashboard config (not schema): enable anonymous sign-ins, Apple/Google providers — needed in Phase 1/2, not for the calibration study.
 6. Commit the work (branch `claude/zen-davinci-6754c5`).

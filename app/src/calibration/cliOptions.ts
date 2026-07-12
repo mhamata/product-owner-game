@@ -57,3 +57,39 @@ export function parseArgs(argv: string[]): CliOptions {
   }
   return options;
 }
+
+/**
+ * Argument parsing for `scripts/panel-import.ts` (`npm run panel:import`).
+ * Same pull-it-out-of-the-script convention as `parseArgs` above: pure, no
+ * side effects, testable without invoking the real CLI.
+ */
+export interface PanelImportCliOptions {
+  /** Path to the panelist's scored `scores.csv`, relative to `app/` or absolute. */
+  csv: string;
+  /** Rater id to attach, e.g. 'panel-1'. Must carry the `panel-` prefix. */
+  rater: string;
+  /** Validate and print the summary, but write nothing. */
+  dry: boolean;
+}
+
+export function parsePanelImportArgs(argv: string[]): PanelImportCliOptions {
+  let csv: string | undefined;
+  let rater: string | undefined;
+  let dry = false;
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--csv') csv = argv[++i];
+    else if (arg === '--rater') rater = argv[++i];
+    else if (arg === '--dry') dry = true;
+    else throw new CliUsageError(`Unknown argument: ${arg}`);
+  }
+
+  if (!csv) throw new CliUsageError('Missing required --csv <path>.');
+  if (!rater) throw new CliUsageError('Missing required --rater <panel-id>.');
+  if (!rater.startsWith('panel-')) {
+    throw new CliUsageError(`--rater must start with "panel-" (got "${rater}").`);
+  }
+
+  return { csv, rater, dry };
+}
