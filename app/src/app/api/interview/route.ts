@@ -20,6 +20,7 @@ import {
 } from '@/curriculum/interview';
 import { authMode, getUserFromRequest } from '@/lib/supabase/server';
 import { actualCallCents, estimateCallCents, logUsage, reserveBudget, settleBudget } from '@/lib/budget';
+import { reconcileBudgetOnLapse } from '@/lib/entitlements';
 
 /**
  * AI mock-interview endpoint: the acquisition-wedge modality.
@@ -305,6 +306,15 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Sign in to run mock interviews.' }, { status: 401 });
     }
     userId = user.id;
+    // Lazy expiry->downgrade reconciliation (docs/PHASE1.md slice D): a lapsed
+    // entitlement drops the budget tier back to free before the gate below
+    // enforces spend. Best-effort — an unavailable reconciliation must not
+    // block the interview; the stored tier still gates spend either way.
+    try {
+      await reconcileBudgetOnLapse(userId);
+    } catch (e) {
+      console.warn('reconcileBudgetOnLapse failed, continuing with existing budget tier:', e);
+    }
   }
 
   // 5) Graceful degradation: no key, no spend, conversation preserved.
