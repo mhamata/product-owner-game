@@ -1,4 +1,5 @@
 import type { IndustryId } from '@/curriculum/industries';
+import type { ArtifactVerdictV2 } from '@/lib/artifactGraderV2';
 
 /**
  * CALIBRATION HARNESS: the Phase-0 go/no-go gate.
@@ -64,4 +65,11 @@ export interface GraderRun {
   criteria: Record<string, CriterionBand>;
   pass: boolean;
   overallScore: number;
+  /**
+   * Present only when this run was graded with `--grader v2`: the full
+   * annotations/topFix/delta verdict, kept for annotation-quality inspection.
+   * Never populated on the v1 path — v1's `GraderRun` shape (and therefore any
+   * serialization of it) is unchanged.
+   */
+  verdictV2?: ArtifactVerdictV2;
 }
