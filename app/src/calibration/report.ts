@@ -1,3 +1,4 @@
+import type { ArtifactVerdictV2 } from '@/lib/artifactGraderV2';
 import {
   evaluateGates,
   graderVsRaters,
@@ -10,6 +11,7 @@ import {
   type CalibrationGates,
   DEFAULT_GATES,
 } from './agreement';
+import type { GraderVersion } from './cliOptions';
 import type { GoldenArtifactType, GoldenItem, GraderRun } from './types';
 
 /**
@@ -28,6 +30,12 @@ export interface TypeSection {
 
 export interface CalibrationReport {
   generatedAt: string;
+  /**
+   * Which grading contract produced this report. `v1` is the FROZEN Phase-0
+   * calibration contract; `v2` targets `gradeArtifactV2`. Always present so a
+   * v2 report can never be mistaken for the frozen v1 baseline.
+   */
+  graderVersion: GraderVersion;
   provenance: 'synthetic-seed' | 'panel' | 'mixed';
   itemCount: number;
   runCount: number;
@@ -36,6 +44,13 @@ export interface CalibrationReport {
   overallGates: GateResult[];
   /** Per-item detail rows for the appendix table. */
   items: ItemRow[];
+  /**
+   * Full v2 verdicts (one per graded run: annotations, topFix, delta),
+   * present only when `graderVersion` is `v2`. The agreement math above only
+   * ever uses the 0-3 criterion bands from these verdicts; this array exists
+   * purely so annotation quality stays inspectable later.
+   */
+  v2Verdicts?: Array<{ itemId: string; verdict: ArtifactVerdictV2 }>;
 }
 
 export interface ItemRow {
@@ -52,6 +67,7 @@ export function buildReport(
   items: GoldenItem[],
   runs: GraderRun[],
   gates: CalibrationGates = DEFAULT_GATES,
+  graderVersion: GraderVersion = 'v1',
 ): CalibrationReport {
   const grader = scorerFromRuns(runs);
   const provenances = new Set(items.map((i) => i.provenance));
@@ -94,8 +110,16 @@ export function buildReport(
     };
   });
 
+  const v2Verdicts =
+    graderVersion === 'v2'
+      ? runs
+          .filter((r): r is GraderRun & { verdictV2: ArtifactVerdictV2 } => r.verdictV2 !== undefined)
+          .map((r) => ({ itemId: r.itemId, verdict: r.verdictV2 }))
+      : undefined;
+
   return {
     generatedAt: new Date().toISOString(),
+    graderVersion,
     provenance,
     itemCount: items.length,
     runCount: runs.length,
@@ -103,6 +127,7 @@ export function buildReport(
     perType,
     overallGates: evaluateGates(allGraderPairs, allRaterPairs, gates),
     items: itemRows,
+    ...(v2Verdicts ? { v2Verdicts } : {}),
   };
 }
 
@@ -113,6 +138,14 @@ export function buildReport(
 export function renderMarkdown(report: CalibrationReport): string {
   const lines: string[] = [];
   lines.push('# Grader calibration report');
+  lines.push('');
+  lines.push(
+    report.graderVersion === 'v2'
+      ? '**Grader: V2** — targets `gradeArtifactV2` (block-anchored annotations + revision delta). ' +
+          'Agreement math below uses only the 0-3 criterion bands; full per-item annotations/topFix/delta ' +
+          'are in `v2Verdicts` in the accompanying report.json.'
+      : '**Grader: V1** — the FROZEN Phase-0 calibration contract (`artifactGrader.ts`).',
+  );
   lines.push('');
   lines.push(`Generated: ${report.generatedAt}`);
   lines.push(`Items: ${report.itemCount} · Grader runs: ${report.runCount} · Raters: ${report.raterIds.join(', ')}`);
