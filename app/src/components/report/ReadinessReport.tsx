@@ -23,6 +23,8 @@ import {
 } from '@/lib/readinessReport';
 import { ReportInterviewCard } from './ReportInterviewCard';
 import { ReportArtifactCard } from './ReportArtifactCard';
+import { ReportSection } from './ReportSection';
+import { CareerFileSection } from './CareerFileSection';
 import {
   ArrowRightIcon,
   CapIcon,
@@ -134,41 +136,51 @@ export function ReadinessReport({ publicCases }: { publicCases: PublicReportCase
             <p className="mono mt-8 text-[12px] uppercase tracking-[0.1em] text-faint">
               Loading your record…
             </p>
-          ) : report.isEmpty ? (
-            <EmptyReport />
           ) : (
             <>
-              <SummaryStrip report={report} />
+              {report.isEmpty ? (
+                <EmptyReport />
+              ) : (
+                <>
+                  <SummaryStrip report={report} />
 
-              <ReportSection
-                title="Mock interviews"
-                icon={<UsersIcon size={13} />}
-                count={report.interviews.length}
-                emptyLabel="No scored interviews yet."
-                emptyHref="/interview"
-                emptyCta="Sit a mock interview"
-              >
-                {report.interviews.map((entry) => (
-                  <InterviewCardOrFallback
-                    key={entry.caseId}
-                    entry={entry}
-                    publicCase={caseById.get(entry.caseId)}
-                  />
-                ))}
-              </ReportSection>
+                  <ReportSection
+                    title="Mock interviews"
+                    icon={<UsersIcon size={13} />}
+                    count={report.interviews.length}
+                    emptyLabel="No scored interviews yet."
+                    emptyHref="/interview"
+                    emptyCta="Sit a mock interview"
+                  >
+                    {report.interviews.map((entry) => (
+                      <InterviewCardOrFallback
+                        key={entry.caseId}
+                        entry={entry}
+                        publicCase={caseById.get(entry.caseId)}
+                      />
+                    ))}
+                  </ReportSection>
 
-              <ReportSection
-                title="Graded artifacts"
-                icon={<FileIcon size={13} />}
-                count={report.artifacts.length}
-                emptyLabel="No graded artifacts yet."
-                emptyHref="/"
-                emptyCta="Practise an artifact"
-              >
-                {report.artifacts.map((entry) => (
-                  <ArtifactCardOrFallback key={entry.skillId} entry={entry} ctx={ctx} />
-                ))}
-              </ReportSection>
+                  <ReportSection
+                    title="Graded artifacts"
+                    icon={<FileIcon size={13} />}
+                    count={report.artifacts.length}
+                    emptyLabel="No graded artifacts yet."
+                    emptyHref="/"
+                    emptyCta="Practise an artifact"
+                  >
+                    {report.artifacts.map((entry) => (
+                      <ArtifactCardOrFallback key={entry.skillId} entry={entry} ctx={ctx} />
+                    ))}
+                  </ReportSection>
+                </>
+              )}
+
+              {/* Career File (design-sim-2.0.md §2.4): a SEPARATE data source
+                  (the client-only decision log, not the interview/artifact
+                  history above), so it renders — and has its own empty state —
+                  regardless of whether the sections above have anything. */}
+              <CareerFileSection />
             </>
           )}
         </div>
@@ -269,56 +281,6 @@ function SummaryStat({
         {value}
       </div>
     </div>
-  );
-}
-
-/* ------------------------------------------------------------------
-   SECTION SHELL: a titled section with a count chip, or a per-section empty.
-   ------------------------------------------------------------------ */
-function ReportSection({
-  title,
-  icon,
-  count,
-  emptyLabel,
-  emptyHref,
-  emptyCta,
-  children,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  count: number;
-  emptyLabel: string;
-  emptyHref: string;
-  emptyCta: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mt-11 break-inside-avoid print:mt-8">
-      <div className="flex flex-wrap items-center gap-3 border-b-2 border-line pb-3">
-        <span className="mono inline-flex items-center gap-1.5 whitespace-nowrap rounded-console-sm border border-line bg-panel-2 px-[10px] py-1 text-[11px] uppercase tracking-[0.14em] text-mute print:bg-transparent">
-          {icon}
-          {title}
-        </span>
-        <span className="mono ml-auto whitespace-nowrap text-[12px] text-faint tnum">
-          {padIndex(count)} attached
-        </span>
-      </div>
-
-      {count === 0 ? (
-        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-console-lg border border-dashed border-line bg-panel p-[14px_16px] print:bg-transparent">
-          <span className="text-[13px] text-slate">{emptyLabel}</span>
-          <Link
-            href={emptyHref}
-            className="mono ml-auto inline-flex items-center gap-1.5 rounded-console border border-line bg-paper px-3 py-1.5 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink print:hidden"
-          >
-            {emptyCta}
-            <ArrowRightIcon size={13} />
-          </Link>
-        </div>
-      ) : (
-        <div className="mt-4 grid gap-4">{children}</div>
-      )}
-    </section>
   );
 }
 
@@ -437,8 +399,6 @@ function PrintButton() {
 /* ------------------------------------------------------------------
    SHARED FORMATTING HELPERS.
    ------------------------------------------------------------------ */
-
-const padIndex = (n: number) => String(n).padStart(2, '0');
 
 /** Title-case a lowercase band label, e.g. "lean hire" -> "Lean hire". */
 function titleCase(text: string): string {
