@@ -1,6 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { GameScore } from '@/engine/score';
-import { deriveRunCompetencies, deriveArchetype, deriveReviewFocus } from '../competency';
+import type { EventCard } from '@/engine/types';
+import {
+  deriveRunCompetencies,
+  deriveArchetype,
+  deriveReviewFocus,
+  judgmentCardIdsForEventCategory,
+  EVENT_CATEGORY_JUDGMENT_COMPETENCY,
+} from '../competency';
+import { JUDGMENT_SCENARIOS } from '@/curriculum/judgment';
 import { useSimEvidenceStore } from '@/store/simEvidenceStore';
 import { useReviewStore, todayISO } from '@/store/reviewStore';
 
@@ -111,5 +119,36 @@ describe('reviewStore.resurface', () => {
     r.resurface(['card-a', 'card-unseen']);
     expect(useReviewStore.getState().getSchedule('card-a')?.due).toBe(todayISO());
     expect(useReviewStore.getState().getSchedule('card-unseen')).toBeUndefined();
+  });
+});
+
+describe('judgmentCardIdsForEventCategory', () => {
+  const allCategories: EventCard['category'][] = [
+    'stakeholder',
+    'team',
+    'customer',
+    'vendor',
+    'market',
+    'tech',
+    'strategic',
+    'regulatory',
+  ];
+
+  it('maps every known EventCard category to a judgment competency', () => {
+    for (const category of allCategories) {
+      expect(EVENT_CATEGORY_JUDGMENT_COMPETENCY[category]).toBeDefined();
+    }
+  });
+
+  it('returns judgment-deck card ids matching the mapped competency', () => {
+    const ids = judgmentCardIdsForEventCategory('vendor');
+    const expected = JUDGMENT_SCENARIOS.filter((s) => s.competency === 'build-buy').map((s) => s.id);
+    expect(ids).toEqual(expected);
+    expect(ids.length).toBeGreaterThan(0);
+  });
+
+  it('returns an empty, never-throwing list for an unknown/unmapped category', () => {
+    expect(judgmentCardIdsForEventCategory('not-a-real-category')).toEqual([]);
+    expect(judgmentCardIdsForEventCategory('')).toEqual([]);
   });
 });

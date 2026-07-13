@@ -1,4 +1,5 @@
 import type { GameScore } from '@/engine/score';
+import type { EventCard } from '@/engine/types';
 import type { Competency } from '@/curriculum/types';
 import { rungForScenario } from '@/scenarios/ladder';
 import {
@@ -129,4 +130,49 @@ export function deriveReviewFocus(score: GameScore): ReviewFocus | null {
   if (cardIds.length === 0) return null;
 
   return { competency, label: JUDGMENT_COMPETENCY_LABEL[competency], cardIds };
+}
+
+/**
+ * Map a fired event's category to the judgment-deck competency it is closest
+ * to, so an in-sim event can resurface matching Leitner cards the moment it
+ * lands — not just at end-of-run (see `deriveReviewFocus` above, which stays
+ * as the weakest-dimension resurface at the debrief).
+ *
+ * NOTE: no existing content links `EventCard.category` to `JudgmentCompetency`
+ * directly — the two vocabularies were built independently (one categorizes
+ * engine events, the other categorizes judgment-deck scenarios). This table is
+ * a new, deliberately conservative one-to-one mapping between the two EXISTING
+ * vocabularies; it does not introduce a third tag system. Each pairing:
+ *   stakeholder -> stakeholder-influence  (direct match)
+ *   vendor      -> build-buy              (direct match: vendor calls ARE build-vs-buy)
+ *   regulatory  -> ethics                 (compliance trade-offs read as ethics calls)
+ *   team        -> scope-quality          (protecting the team is a scope/quality trade)
+ *   customer    -> discovery-delivery     (customer signal shapes discovery vs shipping)
+ *   market      -> metrics                (reading external signals = metrics interpretation)
+ *   strategic   -> prioritization         (strategic trade-offs are prioritization calls)
+ *   tech        -> ship-polish            (tech risk events are ship-now-vs-harden calls)
+ */
+export const EVENT_CATEGORY_JUDGMENT_COMPETENCY: Record<EventCard['category'], JudgmentCompetency> = {
+  stakeholder: 'stakeholder-influence',
+  team: 'scope-quality',
+  customer: 'discovery-delivery',
+  vendor: 'build-buy',
+  market: 'metrics',
+  tech: 'ship-polish',
+  strategic: 'prioritization',
+  regulatory: 'ethics',
+};
+
+/**
+ * Judgment-deck card ids to resurface when an event of this category fires.
+ * Never throws: an unmapped/unknown category (future content this table has
+ * not been extended for) safely returns an empty list, and `resurface([])` is
+ * itself a no-op, so a missing mapping never blocks the sim.
+ */
+export function judgmentCardIdsForEventCategory(category: string): string[] {
+  const competency = (
+    EVENT_CATEGORY_JUDGMENT_COMPETENCY as Record<string, JudgmentCompetency | undefined>
+  )[category];
+  if (!competency) return [];
+  return JUDGMENT_SCENARIOS.filter((s) => s.competency === competency).map((s) => s.id);
 }

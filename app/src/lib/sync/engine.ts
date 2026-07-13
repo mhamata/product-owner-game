@@ -7,7 +7,7 @@ import { encodeEnvelope, decodeEnvelope, type SyncEnvelope } from './envelope';
 import { planSync } from './planner';
 import { registerSyncKeyHandler } from './notify';
 
-// The eight persisted Zustand stores, imported in ONE place. After we write
+// The nine persisted Zustand stores, imported in ONE place. After we write
 // server values back into localStorage, we call `.persist.rehydrate()` on the
 // affected store so the live UI re-reads the new value instead of the stale
 // in-memory copy. Mapping key -> store lives here so nothing else needs to know
@@ -20,6 +20,7 @@ import { useCoachStore } from '@/store/coachStore';
 import { useIndustryStore } from '@/store/industryStore';
 import { useSimEvidenceStore } from '@/store/simEvidenceStore';
 import { useSimDifficultyStore } from '@/store/simDifficultyStore';
+import { useDecisionLogStore } from '@/store/decisionLogStore';
 
 /**
  * The browser-only sync executor: applies the pure planner's decisions against
@@ -51,6 +52,7 @@ const STORE_BY_KEY: Record<
   'praxis-industry-v1': useIndustryStore,
   'praxis-sim-evidence-v1': useSimEvidenceStore,
   'praxis-sim-difficulty-v1': useSimDifficultyStore,
+  'praxis-decision-log-v1': useDecisionLogStore,
 };
 
 /* ------------------------------------------------------------------
@@ -249,7 +251,7 @@ async function flushPush(): Promise<void> {
 }
 
 /* ------------------------------------------------------------------
-   Push subscriptions: wire the eight stores + raw write-site notifier to
+   Push subscriptions: wire the nine stores + raw write-site notifier to
    schedulePush, and flush best-effort on unload.
    ------------------------------------------------------------------ */
 
@@ -272,7 +274,7 @@ const flushOnUnload = () => {
 
 /**
  * Subscribe to every allowlisted source so a change schedules a push:
- *  - the eight Zustand stores (state changes), mapped to their persist key;
+ *  - the nine Zustand stores (state changes), mapped to their persist key;
  *  - the raw write-site notifier (artifact/interview localStorage families).
  * Idempotent: re-calling tears down the previous subscriptions first.
  */

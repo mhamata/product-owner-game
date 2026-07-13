@@ -24,7 +24,18 @@ import { PredictionCard } from './PredictionCard';
  * player previews the trade-off. The commit happens when they press the dock's
  * "Ship it" (the runner dispatches commit-iteration then advances to Ship).
  */
-export function PreviewStep({ state, score }: { state: GameState; score: GameScore }) {
+export function PreviewStep({
+  state,
+  score,
+  rationale,
+  onRationaleChange,
+}: {
+  state: GameState;
+  score: GameScore;
+  /** The optional one-line "why", captured into the decision log at commit. */
+  rationale: string;
+  onRationaleChange: (value: string) => void;
+}) {
   const forecast = previewForecast(state);
   const projection = projectIteration(state);
   const pending = useCalibrationStore((s) => s.pending);
@@ -142,6 +153,25 @@ export function PreviewStep({ state, score }: { state: GameState; score: GameSco
             </>
           )}
         </span>
+      </div>
+
+      {/* optional one-line rationale, captured into the decision log at commit */}
+      <div className="mt-4 rounded-console-lg border border-line bg-paper p-4">
+        <label
+          htmlFor="sprint-rationale"
+          className="mono block text-[11px] uppercase tracking-[0.12em] text-mute"
+        >
+          Why? · one line — goes in your Career File
+        </label>
+        <input
+          id="sprint-rationale"
+          type="text"
+          value={rationale}
+          onChange={(e) => onRationaleChange(e.target.value)}
+          placeholder="Optional — the trade-off you're making and why"
+          maxLength={280}
+          className="mono mt-2 w-full rounded-console border border-line bg-panel px-3 py-2.5 text-[13px] text-ink placeholder:text-faint transition-[border-color,box-shadow] duration-150 focus:border-accent focus:outline-none focus:shadow-[0_0_0_3px_var(--color-accent-050)]"
+        />
       </div>
     </section>
   );
