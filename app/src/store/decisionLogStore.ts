@@ -265,8 +265,10 @@ export function clearQbrMeetingPure(
  * so the Career File entry reads consistent with the in-sim recap.
  */
 export function deriveOutcomeSummary(outcome: IterationOutcome): string {
+  // Both counts exclude the release card: "shipped"/"slipped" describe work
+  // items, and a release that didn't fit already shows up as missing revenue.
   const shipped = outcome.done.filter((p) => p.kind !== 'release-card').length;
-  const slipped = outcome.notDone.length;
+  const slipped = outcome.notDone.filter((p) => p.kind !== 'release-card').length;
 
   const parts: string[] = [shipped === 1 ? '1 item shipped' : `${shipped} items shipped`];
   if (slipped > 0) parts.push(slipped === 1 ? '1 slipped' : `${slipped} slipped`);

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import type { DecisionLogEntry, InterviewStoryRecord } from '@/store/decisionLogStore';
 import { useDecisionLogStore } from '@/store/decisionLogStore';
 import { getScenarioForIndustry } from '@/scenarios';
+import { SIM_LADDER } from '@/scenarios/ladder';
 import { INDUSTRIES, DEFAULT_INDUSTRY, isIndustryId } from '@/curriculum/industries';
 import { UnavailableOrError } from '@/components/console/lesson/verdictUi';
 import { useInterviewAmmo, type DraftedStory } from './useInterviewAmmo';
@@ -102,7 +103,9 @@ export function CareerFileSection() {
       icon={<LayersIcon size={13} />}
       count={runs.length}
       emptyLabel="No sim runs logged yet."
-      emptyHref="/play"
+      // There is no /play index route — link straight to the ladder's first
+      // rung, same entry point the Standup's Act 3 uses.
+      emptyHref={`/play/${SIM_LADDER[0].scenarioId}`}
       emptyCta="Run a sim"
     >
       {runs.map((run) => (
@@ -205,7 +208,9 @@ function CareerFileRunCard({
               tone="warn"
               title="Drafting unavailable"
               body={unavailable}
-              note="Your Career File is saved. You can try drafting again later."
+              // The route's calm message already says the Career File is
+              // saved — don't repeat it in the note line.
+              note="You can try drafting again later."
             />
           </div>
         )}
