@@ -2,7 +2,7 @@
  * The allowlist of localStorage keys that sync to `learner_state`.
  *
  * Two families:
- *  - EXACT keys: the eight Zustand persist keys (each store's `name`). The value
+ *  - EXACT keys: the nine Zustand persist keys (each store's `name`). The value
  *    versioning lives in the key name (…-v1 / …-v2), so a key rename is a clean
  *    break, never a silent migration.
  *  - PREFIX families: the raw (non-Zustand) localStorage namespaces written
@@ -14,7 +14,7 @@
  * for what we back up, so it is a plain data allowlist, not a heuristic.
  */
 
-/** The eight Zustand persist keys, verbatim from each store's `name`. */
+/** The nine Zustand persist keys, verbatim from each store's `name`. */
 export const EXACT_SYNC_KEYS = [
   'praxis-learn-v2',
   'praxis-review-v1',
@@ -24,6 +24,7 @@ export const EXACT_SYNC_KEYS = [
   'praxis-industry-v1',
   'praxis-sim-evidence-v1',
   'praxis-sim-difficulty-v1',
+  'praxis-decision-log-v1',
 ] as const;
 
 /** The raw-family prefixes. Every `${prefix}${id}` localStorage key syncs. */

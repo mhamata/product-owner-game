@@ -9,6 +9,7 @@ import { deriveOutcomeBeats, type OutcomeBeat } from './explain';
 import { useReducedMotion } from './useReducedMotion';
 import { useReveal } from './useReveal';
 import { useCalibrationStore } from '@/store/calibrationStore';
+import { useDecisionLogStore, runIdFor, deriveOutcomeSummary } from '@/store/decisionLogStore';
 
 /**
  * STEP 4 · OUTCOME: reveal cause → effect, one beat at a time.
@@ -52,6 +53,17 @@ export function OutcomeStep({
     }
   }, [pending, resolve, outcome.iteration, outcome.notDone.length]);
   const calAccuracy = calPredictions > 0 ? Math.round((calHits / calPredictions) * 100) : null;
+
+  // Attach a short, factual outcome summary (derived only from `outcome`, no
+  // invented numbers) to this sprint's decision-log entry, once the roll has
+  // resolved. Overwrite-safe (see attachOutcomePure), so a re-render is a
+  // no-op rather than a duplicate.
+  const attachOutcome = useDecisionLogStore((s) => s.attachOutcome);
+  useEffect(() => {
+    attachOutcome(runIdFor(postState.scenarioId, postState.seed), {
+      summary: deriveOutcomeSummary(outcome),
+    });
+  }, [attachOutcome, postState.scenarioId, postState.seed, outcome]);
 
   const revenueBefore = preState.economy.revenue;
   const revenueAfter = postState.economy.revenue;

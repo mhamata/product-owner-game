@@ -8,10 +8,15 @@ import { isSyncedKey, EXACT_SYNC_KEYS, SYNC_KEY_PREFIXES } from '../keys';
  */
 
 describe('isSyncedKey — exact store keys', () => {
-  it('matches each of the eight persisted Zustand keys', () => {
+  it('matches each of the nine persisted Zustand keys', () => {
     for (const key of EXACT_SYNC_KEYS) {
       expect(isSyncedKey(key)).toBe(true);
     }
+  });
+
+  it('includes the decision-log store key', () => {
+    expect(EXACT_SYNC_KEYS).toContain('praxis-decision-log-v1');
+    expect(isSyncedKey('praxis-decision-log-v1')).toBe(true);
   });
 });
 

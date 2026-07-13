@@ -19,6 +19,9 @@ import {
 import { StepHeader } from './StepHeader';
 import { deriveEventBeats, shortName } from './explain';
 import { EventBeatList } from './EventBeats';
+import { judgmentCardIdsForEventCategory } from './competency';
+import { useReviewStore } from '@/store/reviewStore';
+import { useDecisionLogStore, runIdFor } from '@/store/decisionLogStore';
 
 /**
  * STEP 5 · EVENT: telegraphed dilemmas, then explained outcomes.
@@ -64,9 +67,26 @@ export function EventStep({
     option: EventOptionData;
   } | null>(null);
 
+  const recordEventResponse = useDecisionLogStore((s) => s.recordEventResponse);
+  const resurface = useReviewStore((s) => s.resurface);
+
   function respond(chosenCard: EventCard, option: EventOptionData) {
     setJustChosen({ card: chosenCard, option });
     dispatch({ type: 'respond-to-event', eventId: chosenCard.id, optionId: option.id });
+
+    // Fold the response into this sprint's decision-log entry (Career File
+    // material), keyed by the same runId the commit-time entry was appended
+    // under. A no-op if the entry somehow doesn't exist yet — never blocks.
+    recordEventResponse(runIdFor(state.scenarioId, state.seed), {
+      event: chosenCard.narrative,
+      choice: option.label,
+    });
+
+    // Pull matching judgment-deck cards back into today's review queue when
+    // this event's category maps to a judgment competency. Category-less/
+    // unmapped events and cards with no matching content both resolve to an
+    // empty list, and resurface([]) is a no-op — this never blocks the sim.
+    resurface(judgmentCardIdsForEventCategory(chosenCard.category));
   }
 
   return (

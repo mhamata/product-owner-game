@@ -11,6 +11,7 @@ import { useCoachStore } from '@/store/coachStore';
 import { useIndustryStore } from '@/store/industryStore';
 import { useCalibrationStore } from '@/store/calibrationStore';
 import { useSimDifficultyStore } from '@/store/simDifficultyStore';
+import { useDecisionLogStore, runIdFor } from '@/store/decisionLogStore';
 import { DEFAULT_INDUSTRY } from '@/curriculum/industries';
 import { Topbar } from '../Topbar';
 import { CircleDotIcon, RestartIcon } from '../Icon';
@@ -60,6 +61,7 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
   const dispatch = useGameStore((s) => s.dispatch);
   const replayTutorial = useCoachStore((s) => s.replayTutorial);
   const pendingCall = useCalibrationStore((s) => s.pending);
+  const appendDecisionLogEntry = useDecisionLogStore((s) => s.appendEntry);
 
   // The player's home industry re-skins the capstone. Read it hydration-safely:
   // until the industry store rehydrates we use the default, matching SSR + the
@@ -108,6 +110,12 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
     score: GameScore;
   } | null>(null);
 
+  // The optional one-line "why" for this sprint's commit, captured into the
+  // decision log alongside the entry. Local UI state (not a store) because it
+  // is draft text until the player actually commits; reset whenever a fresh
+  // planning phase begins, same as the snapshot.
+  const [rationale, setRationale] = useState('');
+
   const phase = state?.phase;
   const iteration = state?.iterationNumber;
 
@@ -120,6 +128,7 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
     setLastPlanKey(planKey);
     setStep(STEP_INDEX.Plan);
     setSnapshot(null);
+    setRationale('');
   }
 
   const liveScore = useMemo(
@@ -229,10 +238,29 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
           state: game,
           score: calculateScore(game, sc),
         });
+        // Capture this sprint's commit-time decision into the decision log
+        // (Career File material) BEFORE dispatching commit-iteration, so we
+        // read the exact backlog/goal/release-card the player just chose.
+        appendDecisionLogEntry({
+          runId: runIdFor(game.scenarioId, game.seed),
+          scenarioId: game.scenarioId,
+          industry,
+          sprint: game.iterationNumber,
+          sprintGoal: game.sprintGoal,
+          backlogTitles: game.iterationBacklog
+            .filter((p) => p.kind !== 'release-card')
+            .map((p) => p.title),
+          releaseCard:
+            game.releaseCardPosition !== null
+              ? (game.iterationBacklog.find((p) => p.kind === 'release-card')?.title ?? 'Release')
+              : null,
+          rationale: rationale.trim() || null,
+        });
         dispatch({ type: 'commit-iteration' });
         // execute-iteration fires from the `committed` effect above; advancing the
         // cursor to Ship lets that step animate the resolved roll.
         setStep(STEP_INDEX.Ship);
+        setRationale('');
         break;
       }
       case STEP_INDEX.Ship:
@@ -319,6 +347,8 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
             firstSprint={firstSprint}
             outcome={outcome}
             snapshot={snapshot}
+            rationale={rationale}
+            onRationaleChange={setRationale}
           />
         </div>
       </main>
@@ -351,6 +381,8 @@ function StepBody({
   firstSprint,
   outcome,
   snapshot,
+  rationale,
+  onRationaleChange,
 }: {
   step: number;
   state: GameState;
@@ -360,6 +392,8 @@ function StepBody({
   firstSprint: boolean;
   outcome: IterationOutcome | null;
   snapshot: { iteration: number; state: GameState; score: GameScore } | null;
+  rationale: string;
+  onRationaleChange: (value: string) => void;
 }) {
   const baselineState = snapshot?.state ?? state;
   const baselineScore = snapshot?.score ?? score;
@@ -368,7 +402,14 @@ function StepBody({
     case STEP_INDEX.Plan:
       return <PlanStep state={state} dispatch={dispatch} firstSprint={firstSprint} />;
     case STEP_INDEX.Preview:
-      return <PreviewStep state={state} score={score} />;
+      return (
+        <PreviewStep
+          state={state}
+          score={score}
+          rationale={rationale}
+          onRationaleChange={onRationaleChange}
+        />
+      );
     case STEP_INDEX.Ship:
       return <ShipStep state={state} firstSprint={firstSprint} />;
     case STEP_INDEX.Outcome:
