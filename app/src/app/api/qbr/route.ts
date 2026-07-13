@@ -9,6 +9,7 @@ import {
 import { authMode, getUserFromRequest } from '@/lib/supabase/server';
 import { actualCallCents, estimateCallCents, logUsage, reserveBudget, settleBudget } from '@/lib/budget';
 import { reconcileBudgetOnLapse } from '@/lib/entitlements';
+import { isProviderAuthError } from '@/lib/providerAuthError';
 
 /**
  * Multi-party QBR endpoint: design-sim-2.0.md §2.1's "the multi-party meeting
@@ -524,6 +525,16 @@ export async function POST(request: Request) {
         // Best-effort on the failure path; the monthly rollover self-heals
         // any leaked reservation at the period boundary.
       }
+    }
+    // Rejected key -> calm unavailable, never raw provider JSON in the UI.
+    // See lib/providerAuthError.ts.
+    if (isProviderAuthError(e)) {
+      return Response.json({
+        unavailable: true,
+        reason: 'misconfigured',
+        message:
+          'The QBR meeting is unavailable right now (the AI key was rejected). Your season record is unaffected — please try again later.',
+      });
     }
     const msg = e instanceof Error ? e.message : 'Unknown error';
     return Response.json({ error: `QBR meeting failed: ${msg}` }, { status: 500 });

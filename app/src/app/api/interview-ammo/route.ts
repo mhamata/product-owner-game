@@ -9,6 +9,7 @@ import {
 import { authMode, getUserFromRequest } from '@/lib/supabase/server';
 import { actualCallCents, estimateCallCents, logUsage, reserveBudget, settleBudget } from '@/lib/budget';
 import { reconcileBudgetOnLapse } from '@/lib/entitlements';
+import { isProviderAuthError } from '@/lib/providerAuthError';
 // Type-only: erased at compile time, so this route never pulls the CLIENT
 // zustand store (with its `persist`/`localStorage` wiring) into a server
 // bundle. The route only needs the shape of what the client already holds.
@@ -403,6 +404,16 @@ export async function POST(request: Request) {
         // Best-effort on the failure path; the monthly rollover self-heals
         // any leaked reservation at the period boundary.
       }
+    }
+    // Rejected key -> calm unavailable, never raw provider JSON in the UI.
+    // See lib/providerAuthError.ts.
+    if (isProviderAuthError(e)) {
+      return Response.json({
+        unavailable: true,
+        reason: 'misconfigured',
+        message:
+          'Interview-story drafting is unavailable right now (the AI key was rejected). Your Career File is saved — please try again later.',
+      });
     }
     const msg = e instanceof Error ? e.message : 'Unknown error';
     return Response.json({ error: `Interview-story drafting failed: ${msg}` }, { status: 500 });
