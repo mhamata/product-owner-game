@@ -7,6 +7,9 @@ import { cn } from '@/lib/cn';
 import { InboxIcon, MapGridIcon, SeasonIcon } from '../Icon';
 import { InboxTurn } from './InboxTurn';
 import { ProductMapScreen } from './ProductMapScreen';
+import { SeasonScreen } from './SeasonScreen';
+import { FiredBeat } from './FiredBeat';
+import { SimEndPanel } from './SimEndPanel';
 import { runIdFor } from '@/store/decisionLogStore';
 import { deriveMetricSnapshot, useMetricsHistoryStore } from '@/store/metricsHistoryStore';
 
@@ -32,9 +35,8 @@ const TAB_BAR_HEIGHT = 64;
  * WRAPPER, not a fork: Standup renders the existing `InboxTurn` unmodified
  * apart from one additive prop (`commitBarBottomInset`, see InboxTurn.tsx) —
  * every decision-sheet/commit/event/cliffhanger behavior InboxTurn.test.tsx
- * already covers is untouched. Product is the new map screen (W3-E). Season
- * is a placeholder card that W3-F replaces wholesale — this slice does not
- * touch board/season presentation.
+ * already covers is untouched. Product is the map screen (W3-E). Season is
+ * `SeasonScreen` (W3-F, see below) — no longer a placeholder.
  *
  * All three tabs stay MOUNTED simultaneously (toggled with `hidden`, not
  * conditional `&&` rendering): InboxTurn owns real local UI state (which
@@ -44,6 +46,21 @@ const TAB_BAR_HEIGHT = 64;
  * instant a player checked the Product tab mid-sprint. `display: none` also
  * takes InboxTurn's `fixed` Commit bar and sheets out of layout entirely
  * while hidden, so there's no interaction leakage between tabs.
+ *
+ * Season is `SeasonScreen` (W3-F): sprint timeline, board confidence +
+ * expectations, roster, this-run Career File summary, and the job market
+ * (locked while live, open once `phase` is 'complete' or 'fired' — see
+ * season.ts's `deriveJobMarketVisibility`).
+ *
+ * FIRED is the one exception to "all three tabs stay mounted": the instant
+ * `state.phase === 'fired'`, this component renders `FiredBeat` FULL SCREEN
+ * instead of the tab shell — "the sim surface (whatever tab)" the W3-F
+ * instruction calls for, matching design-sim-2.0.md §2.3's ruling ("a story
+ * beat, not a punishment screen"). It's safe to drop the "stay mounted"
+ * guarantee here because 'fired' is terminal (step.ts no-ops on it, same as
+ * 'complete') — there is no more sprint in progress whose UI state could be
+ * lost. Dismissing the beat ("See your offers") reveals the normal tab shell
+ * with the Season tab already selected and its job market already open.
  */
 export function SimTabs({
   state,
@@ -58,7 +75,17 @@ export function SimTabs({
   dispatch: (a: Action) => void;
   industry: string | null;
 }) {
-  const [tab, setTab] = useState<TabId>('standup');
+  // Terminal states open on Season (QBR verdict / job market); live runs open
+  // on Standup. Initial-value-only by design: a run COMPLETING while mounted
+  // must not yank the player off their current tab — the Standup tab's content
+  // swap to SimEndPanel (below) is that moment's transition instead.
+  const [tab, setTab] = useState<TabId>(() =>
+    state.phase === 'complete' || state.phase === 'fired' ? 'season' : 'standup',
+  );
+  // Whether the player has dismissed the fired full-screen beat ("See your
+  // offers") this mount. Irrelevant once phase isn't 'fired' anymore (a
+  // brand new run starts back at 'planning'), so no reset effect is needed.
+  const [firedBeatSeen, setFiredBeatSeen] = useState(false);
   const recordSnapshot = useMetricsHistoryStore((s) => s.recordSnapshot);
 
   // Record one metrics snapshot per sprint as the run plays (see
@@ -83,48 +110,49 @@ export function SimTabs({
     boardConfidence,
   ]);
 
+  // FIRED: the full-screen story beat takes over the whole sim surface,
+  // ahead of any tab. See the file header comment above.
+  if (state.phase === 'fired' && !firedBeatSeen) {
+    return (
+      <FiredBeat
+        state={state}
+        scenario={scenario}
+        onSeeOffers={() => {
+          setFiredBeatSeen(true);
+          setTab('season');
+        }}
+      />
+    );
+  }
+
   return (
     <div style={{ paddingBottom: `calc(${TAB_BAR_HEIGHT}px + env(safe-area-inset-bottom))` }}>
       <div className={cn(tab !== 'standup' && 'hidden')}>
-        <InboxTurn
-          state={state}
-          scenario={scenario}
-          score={score}
-          dispatch={dispatch}
-          industry={industry}
-          commitBarBottomInset={TAB_BAR_HEIGHT}
-        />
+        {state.phase === 'complete' ? (
+          // Completed run: the Standup tab becomes the classic end-of-run
+          // debrief. Rendering it here (even hidden) keeps SimEndPanel's
+          // end-of-run resurface() effect firing exactly as it did when
+          // SimRunner returned it directly (W3-F seam; see SimRunner.tsx).
+          <SimEndPanel state={state} scenario={scenario} score={score} />
+        ) : (
+          <InboxTurn
+            state={state}
+            scenario={scenario}
+            score={score}
+            dispatch={dispatch}
+            industry={industry}
+            commitBarBottomInset={TAB_BAR_HEIGHT}
+          />
+        )}
       </div>
       <div className={cn(tab !== 'product' && 'hidden')}>
         <ProductMapScreen state={state} scenario={scenario} />
       </div>
       <div className={cn(tab !== 'season' && 'hidden')}>
-        <SeasonComingSoon sprint={state.iterationNumber} total={state.totalIterations} />
+        <SeasonScreen state={state} scenario={scenario} industry={industry} />
       </div>
 
       <TabBar active={tab} onChange={setTab} pendingCount={state.phase === 'review' ? state.pendingEvents.length : 0} />
-    </div>
-  );
-}
-
-function SeasonComingSoon({ sprint, total }: { sprint: number; total: number }) {
-  return (
-    <div className="mx-auto max-w-[480px] px-4 pt-4">
-      <p className="mono mb-2 mt-5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[var(--px-dimmer)]">
-        Sprint {sprint} of {total}
-      </p>
-      <div className="rounded-[18px] border border-[var(--px-line)] bg-[var(--px-card)] px-6 py-12 text-center">
-        <span className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--px-accent)]/12 text-[var(--px-accent)]">
-          <SeasonIcon size={20} />
-        </span>
-        <h2 className="text-[17px] font-bold tracking-[-0.01em] text-[var(--px-ink)]">
-          The Season view arrives with W3-F.
-        </h2>
-        <p className="mx-auto mt-2.5 max-w-[32ch] text-[13px] leading-[1.55] text-[var(--px-body)]">
-          Board confidence, the season timeline, your roster, and the Career File all land in the next slice.
-          This card is the one component it replaces.
-        </p>
-      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import type {
   Action,
   EventCard,
@@ -160,10 +161,13 @@ export function InboxTurn({
   }
 
   // ---------- terminal-ish states this component must not crash on ----------
-  // 'fired' (Sim 2.0 W2-C, landing concurrently) is a new terminal phase this
-  // slice does not own the UI for (that's W3-F's job market). Rather than
-  // silently rendering nothing, show a calm placeholder so a fired run never
-  // looks broken.
+  // 'fired' (Sim 2.0 W2-C) is a terminal phase InboxTurn does not own the UI
+  // for — that's SimTabs.tsx's `FiredBeat` (W3-F), which now intercepts
+  // 'fired' BEFORE InboxTurn ever mounts as the Standup tab (see SimTabs.tsx's
+  // file header). This branch is unreachable through that normal flow; it
+  // stays only as a defensive fallback for any caller that renders InboxTurn
+  // directly (e.g. a future test), so a fired run never looks broken even
+  // then — routed into the same two places the real beat offers.
   if (state.phase === 'fired') {
     return (
       <main className="flex-auto bg-[var(--px-ground)]">
@@ -175,9 +179,15 @@ export function InboxTurn({
             The board pulled the plug at Sprint {state.iterationNumber}
           </h1>
           <p className="mt-2.5 max-w-[42ch] text-[13.5px] leading-[1.6] text-[var(--px-body)]">
-            Board confidence hit the firing floor. The season/job-market story for this moment lands
-            in a later slice — for now, your run and its Career File entries are preserved.
+            Board confidence hit the firing floor. Your run and its Career File entries are preserved —
+            check the Season tab for your offers, matched to what this record proves.
           </p>
+          <Link
+            href="/report"
+            className="mono mt-4 rounded-[10px] border border-[var(--px-line-strong)] px-4 py-2.5 text-[12px] font-semibold uppercase tracking-[0.05em] text-[var(--px-accent)]"
+          >
+            View your Career File
+          </Link>
         </div>
       </main>
     );

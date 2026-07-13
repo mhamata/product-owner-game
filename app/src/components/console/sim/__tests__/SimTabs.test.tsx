@@ -6,6 +6,7 @@ import '@testing-library/jest-dom/vitest';
 import type { Action, GameState, PBI, Scenario } from '@/engine/types';
 import { createGame, step } from '@/engine';
 import { calculateScore } from '@/engine/score';
+import { deriveJobMarketOffers } from '@/engine/board';
 import { makeScenario } from '@/engine/__tests__/fixtures';
 import { SimTabs } from '../SimTabs';
 import { useDecisionLogStore } from '@/store/decisionLogStore';
@@ -94,11 +95,58 @@ describe('SimTabs', () => {
     expect(screen.getByText('Cohort retention curves')).toBeInTheDocument();
   });
 
-  it('switches to the Season tab and renders the W3-F placeholder', () => {
+  it('switches to the Season tab and renders the live-run Season screen (W3-F)', () => {
     render(<Harness scenario={testScenario()} />);
     fireEvent.click(screen.getByRole('tab', { name: /Season/i }));
     expect(screen.getByRole('tab', { name: /Season/i })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByText(/The Season view arrives with W3-F\./i)).toBeInTheDocument();
+    expect(screen.getByText('Board confidence')).toBeInTheDocument();
+    expect(screen.getByText('Your people')).toBeInTheDocument();
+    // The deterministic 5-role roster (people.ts) always includes an eng lead.
+    expect(screen.getByText('Engineering Lead')).toBeInTheDocument();
+    expect(screen.getByText('Your evidence, so far this run')).toBeInTheDocument();
+    // Mid-run: the job market is still locked.
+    expect(screen.getByText(/Offers open at season.s end/i)).toBeInTheDocument();
+  });
+
+  it('shows the fired full-screen beat first, then reveals the Season tab with offers open on "See your offers"', () => {
+    const scenario = testScenario();
+    const base = createGame(scenario, 'seed-1');
+    const state: GameState = {
+      ...base,
+      phase: 'fired',
+      iterationNumber: 2,
+      board: { ...base.board!, confidence: 20, firedAtSprint: 2 },
+    };
+    const score = calculateScore(state, scenario);
+    const expectedOffers = deriveJobMarketOffers(state, scenario, 'saas');
+
+    render(<SimTabs state={state} scenario={scenario} score={score} dispatch={() => {}} industry="saas" />);
+
+    // The beat, not the tab shell, is what renders first.
+    expect(screen.getByText('The board let you go.')).toBeInTheDocument();
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /See your offers/i }));
+
+    // Dismissing the beat reveals the tab shell, already on Season, offers open.
+    expect(screen.getByRole('tab', { name: /Season/i })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByText(/Offers open at season.s end/i)).not.toBeInTheDocument();
+    expect(screen.getByText(expectedOffers[0].company)).toBeInTheDocument();
+  });
+
+  it('leads the Season tab with the QBR summary + open job market once the run is "complete"', () => {
+    const scenario = testScenario();
+    const base = createGame(scenario, 'seed-1');
+    const state: GameState = { ...base, phase: 'complete', iterationNumber: scenario.totalIterations };
+    const score = calculateScore(state, scenario);
+    const expectedOffers = deriveJobMarketOffers(state, scenario, 'saas');
+
+    render(<SimTabs state={state} scenario={scenario} score={score} dispatch={() => {}} industry="saas" />);
+    fireEvent.click(screen.getByRole('tab', { name: /Season/i }));
+
+    expect(screen.getByText('Quarterly Business Review · Season complete')).toBeInTheDocument();
+    expect(screen.queryByText(/Offers open at season.s end/i)).not.toBeInTheDocument();
+    expect(screen.getByText(expectedOffers[0].company)).toBeInTheDocument();
   });
 
   it('switching back to Standup still shows the live InboxTurn planning flow', () => {

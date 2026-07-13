@@ -13,7 +13,6 @@ import { DEFAULT_INDUSTRY } from '@/curriculum/industries';
 import { Topbar } from '../Topbar';
 import { RestartIcon } from '../Icon';
 import { SimTabs } from './SimTabs';
-import { SimEndPanel } from './SimEndPanel';
 import { useHydrated } from './useHydrated';
 
 /**
@@ -29,8 +28,9 @@ import { useHydrated } from './useHydrated';
  *   • auto-resolves a committed sprint (execute-iteration) the instant the
  *     engine reaches `committed`, so the outcome is ready the moment the
  *     inbox needs it,
- *   • renders the terminal `complete` phase as SimEndPanel (unchanged),
- *   • otherwise renders <SimTabs>, which owns everything about how
+ *   • renders <SimTabs> for every phase incl. the terminals ('complete'
+ *     lands on Season with SimEndPanel as the Standup tab; 'fired' opens on
+ *     the FiredBeat) — SimTabs owns everything about how
  *     planning + events + commit + the product map + the season shell are
  *     experienced.
  */
@@ -103,10 +103,10 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
     );
   }
 
-  // ---------- terminal: game complete ----------
-  if (state.phase === 'complete') {
-    return <SimEndPanel state={state} scenario={scenario} score={liveScore} />;
-  }
+  // Terminal 'complete' deliberately falls through to the tab shell (W3-F
+  // seam): SimTabs lands the player on the Season tab (QBR verdict + open job
+  // market) and renders SimEndPanel as the Standup tab's content, so the
+  // debrief — and its end-of-run resurface() side-effect — stay reachable.
 
   // Non-null aliases for use inside the closures below: the guards above have
   // already returned when these are null, but TS can't prove that narrowing
