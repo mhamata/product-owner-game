@@ -37,3 +37,4 @@ Career File naming · board-confidence tuning · firing UX severity · rationale
 
 ## Session log
 - 2026-07-12: engagement started. Branch `claude/sim2-wave1` from `acd6f24`. W1-A + W1-B launched.
+- 2026-07-12 (later): W1-A/B, W2-C/D, W3-E/F all landed on this branch — the Sim 2.0 core (people, board, inbox, map, season) + theme layer + /standup. 803/803 tests. W4-G/H/I + W5-J/K remain.
