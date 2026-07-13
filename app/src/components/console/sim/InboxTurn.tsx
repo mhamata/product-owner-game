@@ -66,12 +66,20 @@ export function InboxTurn({
   score,
   dispatch,
   industry,
+  // Sim 2.0 W3-E: how far above the viewport bottom the fixed Commit bar
+  // should sit, in pixels. Default 0 preserves the exact pre-W3-E behavior
+  // (flush to the viewport bottom) for any caller that doesn't pass it — the
+  // only caller that does is SimTabs.tsx, which reserves this much room for
+  // its tab bar underneath. Nothing else about InboxTurn changes: this is an
+  // additive prop, not a fork (see SimTabs.tsx's file header).
+  commitBarBottomInset = 0,
 }: {
   state: GameState;
   scenario: Scenario;
   score: GameScore;
   dispatch: (a: Action) => void;
   industry: string | null;
+  commitBarBottomInset?: number;
 }) {
   const appendDecisionLogEntry = useDecisionLogStore((s) => s.appendEntry);
   const recordEventResponse = useDecisionLogStore((s) => s.recordEventResponse);
@@ -251,6 +259,7 @@ export function InboxTurn({
           sprint={state.iterationNumber}
           armed={planResolved}
           onOpen={() => setOpenSheet({ kind: 'commit' })}
+          bottomInset={commitBarBottomInset}
         />
       )}
 
@@ -624,13 +633,18 @@ function CommitBar({
   sprint,
   armed,
   onOpen,
+  bottomInset = 0,
 }: {
   sprint: number;
   armed: boolean;
   onOpen: () => void;
+  bottomInset?: number;
 }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 bg-gradient-to-t from-[var(--px-ground)] from-[45%] to-transparent px-4 pb-5 pt-8">
+    <div
+      className="fixed inset-x-0 z-30 bg-gradient-to-t from-[var(--px-ground)] from-[45%] to-transparent px-4 pb-5 pt-8"
+      style={{ bottom: bottomInset }}
+    >
       <div className="mx-auto max-w-[480px]">
         <button
           type="button"

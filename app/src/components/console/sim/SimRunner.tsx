@@ -12,13 +12,15 @@ import { useSimDifficultyStore } from '@/store/simDifficultyStore';
 import { DEFAULT_INDUSTRY } from '@/curriculum/industries';
 import { Topbar } from '../Topbar';
 import { RestartIcon } from '../Icon';
-import { InboxTurn } from './InboxTurn';
+import { SimTabs } from './SimTabs';
 import { SimEndPanel } from './SimEndPanel';
 import { useHydrated } from './useHydrated';
 
 /**
  * SimRunner: bootstraps the game (industry/difficulty-aware) and hands the
- * live turn experience to InboxTurn (Sim 2.0 W2-D's inbox presentation).
+ * live turn experience to SimTabs (Sim 2.0 W3-E's Standup/Product/Season tab
+ * shell, which renders InboxTurn — W2-D's inbox presentation — as its
+ * Standup tab).
  *
  * The engine is the single source of truth; this component itself never
  * dispatches turn-content actions — it only:
@@ -28,8 +30,9 @@ import { useHydrated } from './useHydrated';
  *     engine reaches `committed`, so the outcome is ready the moment the
  *     inbox needs it,
  *   • renders the terminal `complete` phase as SimEndPanel (unchanged),
- *   • otherwise renders <InboxTurn>, which owns everything about how
- *     planning + events + commit are experienced.
+ *   • otherwise renders <SimTabs>, which owns everything about how
+ *     planning + events + commit + the product map + the season shell are
+ *     experienced.
  */
 export function SimRunner({ scenarioId }: { scenarioId: string }) {
   const state = useGameStore((s) => s.state);
@@ -138,7 +141,7 @@ export function SimRunner({ scenarioId }: { scenarioId: string }) {
         }
       />
 
-      <InboxTurn state={game} scenario={sc} score={liveScore} dispatch={dispatch} industry={industry} />
+      <SimTabs state={game} scenario={sc} score={liveScore} dispatch={dispatch} industry={industry} />
     </>
   );
 }
