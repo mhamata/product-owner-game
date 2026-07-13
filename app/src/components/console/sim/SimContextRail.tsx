@@ -7,6 +7,11 @@ import { TargetIcon } from '../Icon';
 import { SimScoreboard, type DimensionDeltas } from './SimScoreboard';
 
 /**
+ * SUPERSEDED by InboxTurn (W2-D), kept for reference this wave. The inbox's
+ * Standup screen has no persistent top rail (matching the mockup — mission +
+ * live scoreboard move to the Season screen, W3-F); InboxTurn renders its own
+ * lightweight "app head" (scenario name + sprint counter) instead.
+ *
  * The persistent context rail, always visible across every step. It surfaces
  * the three things the old sim never showed during play:
  *   1. the MISSION: scenario.summary + the revenue target,

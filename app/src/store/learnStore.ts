@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { masterableSkills } from '@/curriculum/data';
+import { strengthOf, isRusty, type DecayRecord } from '@/lib/masteryDecay';
 
 /**
  * Per-skill mastery record.
@@ -11,11 +12,22 @@ import { masterableSkills } from '@/curriculum/data';
  * lesson/attempt tally. `mastery` is a 0-1 score; a skill counts as mastered
  * once it crosses MASTERY_THRESHOLD. We keep `attempts` only for internal
  * pacing; it is never surfaced as "progress".
+ *
+ * `lastPracticedAt` (W4-H, additive): epoch ms of the most recent rep —
+ * lesson/drill/artifact/roleplay attempt OR a maintenance-refresh rep (see
+ * `recordMaintenanceRep`). Feeds the pure decay model in `@/lib/masteryDecay`
+ * for tech-tree strength display and scheduler weighting; it never gates
+ * anything mastery itself gates (see masteryDecay.ts's ruling comment).
+ * Skills mastered before this field existed simply lack it — `masteryDecay`
+ * falls back to `masteredAt` for those, so old persisted state (this store's
+ * `partialize` only persists plain data, no migration function needed for an
+ * additive optional field) keeps loading and rendering sanely.
  */
 export interface SkillProgress {
   mastery: number; // 0..1 demonstrated competence
   attempts: number;
   masteredAt?: number; // epoch ms, set the first time mastery is reached
+  lastPracticedAt?: number; // epoch ms, set on every rep (see masteryDecay.ts)
 }
 
 /** A skill is "mastered" at or above this competence score. */
@@ -59,6 +71,21 @@ interface LearnActions {
   masteredIds: () => Set<string>;
   /** Count of mastered skills (the headline "competence" number). */
   masteredCount: () => number;
+  /**
+   * Record a completed 90-second maintenance rep (see `@/lib/skillRefresh`):
+   * stamps `lastPracticedAt` to now, which resets the skill's decay clock to
+   * full strength (see `@/lib/masteryDecay`'s recovery-rule doc comment).
+   * Deliberately does NOT touch `mastery`, `attempts`, or the streak — a
+   * refresh is upkeep on an already-demonstrated skill, not a new
+   * demonstration of it. A no-op for a skill that was never mastered (there
+   * is nothing to refresh yet); guards against a stray call reviving a
+   * progress record that shouldn't exist.
+   */
+  recordMaintenanceRep: (skillId: string) => void;
+  /** A skill's current decay-adjusted strength, 0-100 (0 if never mastered). See `@/lib/masteryDecay`. */
+  strengthOf: (skillId: string, now?: number) => number;
+  /** True if a mastered skill has decayed below the rusty threshold. See `@/lib/masteryDecay`. */
+  isRusty: (skillId: string, now?: number) => boolean;
   /** Reset all learning progress (dev/testing aid). */
   resetProgress: () => void;
   _setHydrated: () => void;
@@ -112,6 +139,10 @@ export const useLearnStore = create<LearnStore>()(
             mastery: nextMastery,
             attempts: prev.attempts + 1,
             masteredAt: prev.masteredAt ?? (nowMastered ? Date.now() : undefined),
+            // Every recorded result is a rep, whether or not it moves mastery
+            // (redoing an already-mastered skill still counts as practice for
+            // the decay clock — see masteryDecay.ts).
+            lastPracticedAt: Date.now(),
           };
 
           // Extend the consistency streak only on a *newly* mastered skill,
@@ -156,6 +187,7 @@ export const useLearnStore = create<LearnStore>()(
               mastery: MASTERY_THRESHOLD,
               attempts: prev.attempts + 1,
               masteredAt: prev.masteredAt ?? Date.now(),
+              lastPracticedAt: Date.now(),
             };
           }
 
@@ -190,6 +222,36 @@ export const useLearnStore = create<LearnStore>()(
       },
 
       masteredCount: () => get().masteredIds().size,
+
+      recordMaintenanceRep: (skillId) => {
+        set((s) => {
+          const prev = s.progress[skillId];
+          // No-op if the skill was never mastered: nothing to refresh yet.
+          if (!prev || prev.mastery < MASTERY_THRESHOLD) return s;
+          return {
+            progress: {
+              ...s.progress,
+              [skillId]: { ...prev, lastPracticedAt: Date.now() },
+            },
+          };
+        });
+      },
+
+      strengthOf: (skillId, now) => {
+        const p = get().progress[skillId];
+        const record: DecayRecord | undefined = p
+          ? { mastery: p.mastery, lastPracticedAt: p.lastPracticedAt, masteredAt: p.masteredAt }
+          : undefined;
+        return strengthOf(record, now);
+      },
+
+      isRusty: (skillId, now) => {
+        const p = get().progress[skillId];
+        const record: DecayRecord | undefined = p
+          ? { mastery: p.mastery, lastPracticedAt: p.lastPracticedAt, masteredAt: p.masteredAt }
+          : undefined;
+        return isRusty(record, now);
+      },
 
       resetProgress: () =>
         set({ progress: {}, streak: 0, lastActiveDay: null }),

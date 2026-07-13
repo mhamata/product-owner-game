@@ -415,3 +415,40 @@ export function FileIcon({ size = 13, ...props }: IconProps) {
     </svg>
   );
 }
+
+/* ------------------------------------------------------------
+   Sim 2.0 tab-bar icons (W3-E), traced 1:1 from
+   praxis-sim2-mockup.html's `.tabs` inline SVGs.
+   ------------------------------------------------------------ */
+
+/** Inbox tray: the Standup tab. */
+export function InboxIcon({ size = 21, ...props }: IconProps) {
+  return (
+    <svg {...base(size, props)} {...strokeProps} strokeWidth={1.8}>
+      <rect x="3" y="5" width="18" height="14" rx="3" />
+      <path d="M3 8l9 5 9-5" />
+    </svg>
+  );
+}
+
+/** Asymmetric 4-tile grid: the Product tab (the map). */
+export function MapGridIcon({ size = 21, ...props }: IconProps) {
+  return (
+    <svg {...base(size, props)} {...strokeProps} strokeWidth={1.8}>
+      <rect x="3" y="3" width="8" height="8" rx="2" />
+      <rect x="13" y="3" width="8" height="12" rx="2" />
+      <rect x="3" y="13" width="8" height="8" rx="2" />
+      <rect x="13" y="17" width="8" height="4" rx="2" />
+    </svg>
+  );
+}
+
+/** Skyline/trend line: the Season tab. */
+export function SeasonIcon({ size = 21, ...props }: IconProps) {
+  return (
+    <svg {...base(size, props)} {...strokeProps} strokeWidth={1.8}>
+      <path d="M3 17l5-5 4 3 6-7 3 3" />
+      <path d="M3 21h18" />
+    </svg>
+  );
+}

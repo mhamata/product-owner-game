@@ -69,6 +69,17 @@ export interface DecisionLogEntry {
   rationale: string | null;
   /** Filled after the review phase resolves; null until then. */
   outcome: DecisionLogOutcome | null;
+  /**
+   * Sim 2.0 W5-J: the optional in-sim "write the launch PRD" moment's graded
+   * `overallScore` (0-100), when the player wrote and graded a PRD for this
+   * sprint's release via the existing `/api/grade-artifact` v2 route. Additive
+   * and optional — absent on every entry logged before this field existed,
+   * and on any sprint that never released or where the player skipped the
+   * moment. Purely a Career File record; the *engine* effect of this score
+   * (engine/releasePrep.ts's `set-release-prep` action) is applied
+   * separately, at commit time, and does not read this field back.
+   */
+  artifactGrade?: number;
 }
 
 /** The fields the caller supplies at commit; the rest are derived/defaulted. */
@@ -82,6 +93,7 @@ export type NewDecisionLogEntry = Pick<
   | 'backlogTitles'
   | 'releaseCard'
   | 'rationale'
+  | 'artifactGrade'
 >;
 
 /** Stable per-run id: pairs a scenario with the seed that made the run unique. */
@@ -204,6 +216,49 @@ export function clearInterviewStoriesPure(
 }
 
 /**
+ * One drafted multi-party QBR meeting (design-sim-2.0.md §2.1/§2.4's
+ * "quarterly boss battle"), as returned by `/api/qbr` and persisted here so a
+ * player does not lose the meeting — or re-spend a model call — on
+ * navigation. Exactly one per run (a plain overwrite on redraft), mirroring
+ * `interviewStories`'s per-run persistence but singular: a season has one
+ * QBR, not an accumulating list. `speakerId`s are the run's own roster person
+ * ids (`state.people`); the UI resolves display name/role from the roster at
+ * render time, the same way `InterviewStoryRecord.sprints` are just numbers
+ * the UI cross-references, not denormalized copies.
+ */
+export interface QBRMeetingTurn {
+  speakerId: string;
+  text: string;
+}
+
+export interface QBRMeetingRecord {
+  turns: QBRMeetingTurn[];
+  closingLine: string;
+  /** ISO timestamp, set when the meeting was saved. */
+  draftedAt: string;
+}
+
+/** PURE: replace the drafted QBR meeting for one run (redraft overwrites). */
+export function setQbrMeetingPure(
+  meetings: Record<string, QBRMeetingRecord>,
+  runId: string,
+  next: QBRMeetingRecord,
+): Record<string, QBRMeetingRecord> {
+  return { ...meetings, [runId]: next };
+}
+
+/** PURE: drop the drafted QBR meeting for a run, e.g. alongside its decision-log entries. */
+export function clearQbrMeetingPure(
+  meetings: Record<string, QBRMeetingRecord>,
+  runId: string,
+): Record<string, QBRMeetingRecord> {
+  if (!(runId in meetings)) return meetings;
+  const next = { ...meetings };
+  delete next[runId];
+  return next;
+}
+
+/**
  * PURE: a short, factual one-line outcome summary built only from data the
  * engine already computed on `IterationOutcome` — no invented numbers. Mirrors
  * the shipped/slipped/revenue language `OutcomeStep` already shows the player,
@@ -230,6 +285,8 @@ interface DecisionLogState {
   entries: DecisionLogEntry[];
   /** Drafted interview-ammo STAR stories, keyed by runId. */
   interviewStories: Record<string, InterviewStoryRecord[]>;
+  /** Drafted multi-party QBR meetings, keyed by runId (one per run). */
+  qbrMeetings: Record<string, QBRMeetingRecord>;
   hasHydrated: boolean;
 }
 
@@ -246,6 +303,10 @@ interface DecisionLogActions {
   setInterviewStories: (runId: string, stories: InterviewStoryRecord[]) => void;
   /** The drafted interview stories for a run, or an empty array if none yet. */
   interviewStoriesForRun: (runId: string) => InterviewStoryRecord[];
+  /** Replace the drafted QBR meeting for a run (a fresh convene overwrites). */
+  setQbrMeeting: (runId: string, meeting: QBRMeetingRecord) => void;
+  /** The drafted QBR meeting for a run, or null if none yet. */
+  qbrMeetingForRun: (runId: string) => QBRMeetingRecord | null;
   /** Drop every entry belonging to a run (e.g. restarting a scenario). */
   clearRun: (runId: string) => void;
   reset: () => void;
@@ -259,6 +320,7 @@ export const useDecisionLogStore = create<DecisionLogStore>()(
     (set, get) => ({
       entries: [],
       interviewStories: {},
+      qbrMeetings: {},
       hasHydrated: false,
 
       appendEntry: (input) => set((s) => ({ entries: appendEntryPure(s.entries, input) })),
@@ -276,22 +338,28 @@ export const useDecisionLogStore = create<DecisionLogStore>()(
 
       interviewStoriesForRun: (runId) => get().interviewStories[runId] ?? [],
 
-      // Clears both the run's decisions AND any drafted stories built from
-      // them, so a restarted scenario does not leave orphaned interview ammo
-      // pointing at sprints that no longer exist in the log.
+      setQbrMeeting: (runId, meeting) =>
+        set((s) => ({ qbrMeetings: setQbrMeetingPure(s.qbrMeetings, runId, meeting) })),
+
+      qbrMeetingForRun: (runId) => get().qbrMeetings[runId] ?? null,
+
+      // Clears the run's decisions AND any drafted stories/meeting built from
+      // them, so a restarted scenario does not leave orphaned AI-drafted
+      // content pointing at sprints that no longer exist in the log.
       clearRun: (runId) =>
         set((s) => ({
           entries: clearRunPure(s.entries, runId),
           interviewStories: clearInterviewStoriesPure(s.interviewStories, runId),
+          qbrMeetings: clearQbrMeetingPure(s.qbrMeetings, runId),
         })),
 
-      reset: () => set({ entries: [], interviewStories: {} }),
+      reset: () => set({ entries: [], interviewStories: {}, qbrMeetings: {} }),
       _setHydrated: () => set({ hasHydrated: true }),
     }),
     {
       name: 'praxis-decision-log-v1',
       storage: createJSONStorage(() => localStorage),
-      partialize: (s) => ({ entries: s.entries, interviewStories: s.interviewStories }),
+      partialize: (s) => ({ entries: s.entries, interviewStories: s.interviewStories, qbrMeetings: s.qbrMeetings }),
       onRehydrateStorage: () => (state) => {
         state?._setHydrated();
       },

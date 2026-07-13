@@ -20,6 +20,10 @@ const phaseLabel: Record<GameState['phase'], string> = {
   executing: 'Executing',
   review: 'Review',
   complete: 'Complete',
+  // Sim 2.0 W2-C added a 'fired' terminal phase to GameState — see
+  // engine/types.ts. This legacy/superseded header (see docblock above) just
+  // needs the Record to stay exhaustive; no other change.
+  fired: 'Fired',
 };
 
 export function GameHeader({

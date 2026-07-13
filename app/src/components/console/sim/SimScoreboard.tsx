@@ -8,6 +8,14 @@ import { DIMENSIONS, type DimensionKey } from './dimensions';
 export type DimensionDeltas = Partial<Record<DimensionKey, number>>;
 
 /**
+ * SUPERSEDED by InboxTurn (W2-D) as a rendered component, kept for reference
+ * this wave — its only caller, SimContextRail, is also superseded (the new
+ * inbox has no persistent top rail; the mockup's Standup screen doesn't have
+ * one either, deferring that surface to the Season screen, W3-F). The
+ * `DimensionDeltas` TYPE below is still imported by projection.ts/SimRunner,
+ * so this file stays; only the rendered `SimScoreboard` component itself is
+ * unused for now.
+ *
  * The compact live 5-dimension scoreboard shown in the persistent context rail.
  * `score` is always passed in fresh from `calculateScore(state, scenario)`; the
  * engine read function is the single source of truth; this component only paints.

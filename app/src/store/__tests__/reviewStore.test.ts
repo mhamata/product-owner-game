@@ -5,6 +5,8 @@ import {
   dueIdsFrom,
   nextDueDayFrom,
   addDays,
+  boxShelf,
+  describeBoxMove,
   BOX_INTERVALS_DAYS,
   MAX_BOX,
   type CardSchedule,
@@ -135,6 +137,59 @@ describe('nextDueDay', () => {
       c: { box: 2, due: addDays(DAY, 3), lastResult: 'correct', lastReviewedDay: DAY },
     };
     expect(nextDueDayFrom(schedules, allIds)).toBe(addDays(DAY, 1));
+  });
+});
+
+describe('boxShelf', () => {
+  const allIds = ['a', 'b', 'c', 'd'];
+
+  it('counts every id as unseen when nothing has been scheduled', () => {
+    const shelf = boxShelf({}, allIds, DAY);
+    expect(shelf.unseen).toBe(4);
+    expect(shelf.rows).toHaveLength(BOX_INTERVALS_DAYS.length);
+    expect(shelf.rows.every((r) => r.total === 0 && r.due === 0)).toBe(true);
+  });
+
+  it('buckets scheduled cards into their real box, with a row per box even at zero', () => {
+    const schedules: Record<string, CardSchedule> = {
+      a: { box: 0, due: DAY, lastResult: 'wrong', lastReviewedDay: DAY }, // due
+      b: { box: 2, due: addDays(DAY, 3), lastResult: 'correct', lastReviewedDay: DAY }, // not due
+      c: { box: 2, due: addDays(DAY, -1), lastResult: 'correct', lastReviewedDay: DAY }, // overdue -> due
+    };
+    const shelf = boxShelf(schedules, allIds, DAY);
+    expect(shelf.unseen).toBe(1); // d
+    expect(shelf.rows[0]).toMatchObject({ box: 0, intervalDays: 0, total: 1, due: 1 });
+    expect(shelf.rows[2]).toMatchObject({ box: 2, total: 2, due: 1 });
+    expect(shelf.rows[2].intervalDays).toBe(BOX_INTERVALS_DAYS[2]);
+    // untouched boxes stay honestly at zero, not fabricated
+    expect(shelf.rows[1]).toMatchObject({ total: 0, due: 0 });
+  });
+});
+
+describe('describeBoxMove', () => {
+  it('labels a brand-new card as "New card" moving into Box 1', () => {
+    const next = scheduleNext(undefined, 'correct', DAY);
+    const move = describeBoxMove(null, next);
+    expect(move.fromBox).toBeNull();
+    expect(move.toBox).toBe(1);
+    expect(move.message).toBe(`New card → Box 2 · next seen in ${BOX_INTERVALS_DAYS[1]} day`);
+  });
+
+  it('describes a promotion in 1-indexed box language', () => {
+    const before: CardSchedule = { box: 2, due: DAY, lastResult: 'correct', lastReviewedDay: DAY };
+    const next = scheduleNext(before, 'correct', DAY);
+    const move = describeBoxMove(before.box, next);
+    expect(move.message).toBe(
+      `Box 3 → Box 4 · next seen in ${BOX_INTERVALS_DAYS[3]} days`,
+    );
+  });
+
+  it('says "next seen today" for a box-0 (0-day interval) landing', () => {
+    const before: CardSchedule = { box: 3, due: DAY, lastResult: 'correct', lastReviewedDay: DAY };
+    const next = scheduleNext(before, 'wrong', DAY);
+    const move = describeBoxMove(before.box, next);
+    expect(move.toBox).toBe(0);
+    expect(move.message).toBe('Box 4 → Box 1 · next seen today');
   });
 });
 

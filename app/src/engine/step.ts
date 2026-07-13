@@ -2,8 +2,15 @@ import type { Action, GameState, PBI, Scenario } from './types';
 import { resolveIteration } from './execution';
 import { applyEventEffects, findOption } from './events';
 import { runDiscovery } from './discovery';
+import { deriveSenderIdForEvent, generatePeopleRoster } from './people';
+import { ensureBoard, FIRING_FLOOR } from './board';
+import { applyReleasePrep } from './releasePrep';
 
-export function createGame(scenario: Scenario, seed: string): GameState {
+// `industry` is an optional plain string (not the UI's `IndustryId`) so the
+// engine stays dependency-free of `@/curriculum` — see people.ts. Existing
+// 2-arg call sites (e.g. store/gameStore.ts) keep compiling unchanged and get
+// the industry-neutral roster.
+export function createGame(scenario: Scenario, seed: string, industry?: string): GameState {
   const customers: Record<string, GameState['customers'][string]> = {};
   for (const c of scenario.customers) customers[c.id] = { ...c };
   const stakeholders: Record<string, GameState['stakeholders'][string]> = {};
@@ -25,6 +32,8 @@ export function createGame(scenario: Scenario, seed: string): GameState {
     sprintGoal: null,
     customers,
     stakeholders,
+    people: generatePeopleRoster(scenario.id, seed, industry),
+    board: ensureBoard(undefined, scenario),
     team: { ...scenario.team },
     tech: { ...scenario.tech, investmentsDone: [...scenario.tech.investmentsDone] },
     economy: { ...scenario.economy },
@@ -53,6 +62,23 @@ function collectPriorDoneIds(state: GameState): Set<string> {
 }
 
 export function step(state: GameState, action: Action, scenario: Scenario): GameState {
+  // Backward-compat lazy backfill: a persisted GameState from before W1-A
+  // won't have `people`. Rather than requiring a migration step, every
+  // action self-heals it here before doing anything else, so every case
+  // below (and resolveIteration/applyEventEffects, which receive this same
+  // `state`) always sees a populated roster. Deterministic: re-derives the
+  // exact roster createGame would have produced for this scenario+seed.
+  if (!state.people) {
+    state = { ...state, people: generatePeopleRoster(scenario.id, state.seed) };
+  }
+  // Same lazy-backfill contract as `people` above, for a pre-W2-C snapshot
+  // that has no `board` yet. See types.ts's GameState.board comment.
+  if (!state.board) {
+    state = { ...state, board: ensureBoard(undefined, scenario) };
+  }
+  // 'fired' is terminal, same as 'complete': every action is a no-op once a
+  // run has been fired. See types.ts's Phase comment.
+  if (state.phase === 'fired') return state;
   switch (action.type) {
     case 'add-to-iteration': {
       if (state.phase !== 'planning') return state;
@@ -128,6 +154,18 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
     }
     case 'advance-iteration': {
       if (state.phase !== 'review') return state;
+      // Fail state (design-sim-2.0.md §2.3): a review that lands below the
+      // firing floor ends the run right here, even on the season's final
+      // sprint (fired takes priority over 'complete'). This is the ONLY
+      // place `phase` becomes 'fired' — reachable exclusively from 'review'.
+      // A story beat, not a punishment: the engine just records the fact.
+      if (state.board && state.board.confidence < FIRING_FLOOR) {
+        return {
+          ...state,
+          phase: 'fired',
+          board: { ...state.board, firedAtSprint: state.iterationNumber },
+        };
+      }
       const next = state.iterationNumber + 1;
       if (next > state.totalIterations) {
         return { ...state, phase: 'complete' };
@@ -154,6 +192,7 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
       const option = findOption(card, action.optionId);
       if (!option) return state;
       const afterEffects = applyEventEffects(state, option.effects);
+      const senderId = deriveSenderIdForEvent(card, afterEffects.people);
       const log = [
         ...afterEffects.eventLog,
         {
@@ -162,6 +201,7 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
           optionId: option.id,
           narrative: card.narrative,
           summary: option.visibleConsequence,
+          ...(senderId ? { personId: senderId } : {}),
         },
       ];
       const pending = afterEffects.pendingEvents.filter((id) => id !== card.id);
@@ -186,6 +226,13 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
         newlyDiscoveredIds: [...state.newlyDiscoveredIds, ...addedIds],
         methodTags,
       };
+    }
+    case 'set-release-prep': {
+      // Only meaningful before commit — the whole point is to modulate THIS
+      // sprint's capacity roll (capacity.ts reads `tech` at execute-iteration
+      // time). See engine/releasePrep.ts for the bounded effect table.
+      if (state.phase !== 'planning') return state;
+      return { ...state, tech: applyReleasePrep(state.tech, action.quality) };
     }
   }
   return state;

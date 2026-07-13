@@ -12,7 +12,14 @@ import { useCalibrationStore } from '@/store/calibrationStore';
 import { useDecisionLogStore, runIdFor, deriveOutcomeSummary } from '@/store/decisionLogStore';
 
 /**
- * STEP 4 · OUTCOME: reveal cause → effect, one beat at a time.
+ * OUTCOME: reveal cause → effect, one beat at a time.
+ *
+ * Sim 2.0 (W2-D): reused, lightly restyled, as the "peek now" / next-visit
+ * results view inside InboxTurn's post-cliffhanger review — no longer a
+ * numbered step in a 6-step flow (see `hideStepBadge` on its StepHeader
+ * below). Internals are otherwise unchanged: this file is in the pre-existing
+ * lint baseline (the calibration setState-in-effect below), so edits here are
+ * kept minimal to avoid growing that count.
  *
  * Every change the engine recorded in `outcome` gets a plain-language "BECAUSE"
  * derived (in explain.ts) from the SAME rule conditions the engine applied. The
@@ -78,6 +85,7 @@ export function OutcomeStep({
         eyebrow="Cause → effect"
         title={<span id="outcome-title">Here&apos;s why the numbers moved.</span>}
         sub="Every change has a reason. Read each beat. This is the judgment the sim is teaching."
+        hideStepBadge
       />
 
       {/* shipped / didn't-fit summary */}

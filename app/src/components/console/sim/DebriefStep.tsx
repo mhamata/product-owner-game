@@ -12,10 +12,14 @@ import { useReducedMotion } from './useReducedMotion';
 import { useReveal } from './useReveal';
 
 /**
- * STEP 6 · DEBRIEF: the full scoreboard with this sprint's deltas, plus a
- * one-line takeaway. Deltas are the difference between the post-sprint score and
- * the pre-sprint score (both from calculateScore, the engine read function).
+ * DEBRIEF: the full scoreboard with this sprint's deltas, plus a one-line
+ * takeaway. Deltas are the difference between the post-sprint score and the
+ * pre-sprint score (both from calculateScore, the engine read function).
  * "Start Sprint N+1" / "Finish" lives in the dock and dispatches advance-iteration.
+ *
+ * Sim 2.0 (W2-D): reused, lightly restyled, as the second half of InboxTurn's
+ * post-cliffhanger review (after Outcome) — no longer a numbered step in a
+ * 6-step flow (see `hideStepBadge` on its StepHeader below).
  */
 export function DebriefStep({
   preScore,
@@ -51,6 +55,7 @@ export function DebriefStep({
         eyebrow={`Sprint ${sprint} complete`}
         title={<span id="debrief-title">Where you stand after Sprint {sprint}.</span>}
         sub="Five dimensions, this sprint's movement called out. Then carry it forward."
+        hideStepBadge
       />
 
       <div

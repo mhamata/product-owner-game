@@ -17,6 +17,15 @@ import { useCalibrationStore } from '@/store/calibrationStore';
 import { PredictionCard } from './PredictionCard';
 
 /**
+ * SUPERSEDED by InboxTurn (W2-D), kept for reference this wave. The new
+ * inbox flow drops the separate "Preview" step: the Plan sheet's commit
+ * gating is just "at least one backlog item committed," and the one-line
+ * rationale input moved to the Commit sheet (still captured into
+ * `decisionLogStore` at the exact same moment — see InboxTurn.tsx). The
+ * projected-consequences/character-reaction preview and the calibration
+ * prompt (`PredictionCard`, also superseded) are not part of the new turn's
+ * critical path this slice.
+ *
  * STEP 2 · PREVIEW: projected consequences BEFORE committing.
  *
  * This step is read-only: it dispatches nothing. It shows a non-mutating

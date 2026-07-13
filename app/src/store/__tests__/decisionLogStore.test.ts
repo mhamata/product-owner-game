@@ -11,10 +11,13 @@ import {
   deriveOutcomeSummary,
   setInterviewStoriesPure,
   clearInterviewStoriesPure,
+  setQbrMeetingPure,
+  clearQbrMeetingPure,
   MAX_ENTRIES,
   type DecisionLogEntry,
   type NewDecisionLogEntry,
   type InterviewStoryRecord,
+  type QBRMeetingRecord,
 } from '../decisionLogStore';
 
 /**
@@ -95,6 +98,16 @@ describe('appendEntryPure', () => {
   it('preserves the optional rationale when provided', () => {
     const next = appendEntryPure([], newEntry({ rationale: 'Betting on retention over growth' }));
     expect(next[0].rationale).toBe('Betting on retention over growth');
+  });
+
+  it('preserves the optional artifactGrade when provided (the release-prep moment)', () => {
+    const next = appendEntryPure([], newEntry({ artifactGrade: 82 }));
+    expect(next[0].artifactGrade).toBe(82);
+  });
+
+  it('leaves artifactGrade undefined when not provided (no release-prep moment this sprint)', () => {
+    const next = appendEntryPure([], newEntry());
+    expect(next[0].artifactGrade).toBeUndefined();
   });
 
   it('caps total entries at MAX_ENTRIES, evicting the oldest first (FIFO)', () => {
@@ -315,5 +328,82 @@ describe('useDecisionLogStore interviewStories (wiring)', () => {
 
     expect(useDecisionLogStore.getState().interviewStoriesForRun(runA)).toEqual([]);
     expect(useDecisionLogStore.getState().interviewStoriesForRun(runB)).toEqual([story()]);
+  });
+});
+
+/**
+ * `qbrMeetings`: the persisted multi-party QBR meeting from `/api/qbr`
+ * (design-sim-2.0.md §2.1/§2.4). Pure-helper coverage mirrors the
+ * `interviewStories` pattern above, except a run holds exactly ONE meeting
+ * (a plain overwrite, not a list).
+ */
+function meeting(overrides: Partial<QBRMeetingRecord> = {}): QBRMeetingRecord {
+  return {
+    turns: [
+      { speakerId: 'person-exec', text: 'Confidence held, but barely.' },
+      { speakerId: 'person-eng-lead', text: 'We paid down debt instead of chasing the sales ask.' },
+    ],
+    closingLine: 'The committee reads this as a season that held the line.',
+    draftedAt: '2026-07-12T00:00:00.000Z',
+    ...overrides,
+  };
+}
+
+describe('setQbrMeetingPure', () => {
+  it('sets the meeting for a run with no prior meeting', () => {
+    const next = setQbrMeetingPure({}, 'run-a', meeting());
+    expect(next).toEqual({ 'run-a': meeting() });
+  });
+
+  it('overwrites (does not merge) an existing run entry on reconvene', () => {
+    const first = setQbrMeetingPure({}, 'run-a', meeting({ closingLine: 'Old verdict' }));
+    const second = setQbrMeetingPure(first, 'run-a', meeting({ closingLine: 'Fresh verdict' }));
+    expect(second['run-a'].closingLine).toBe('Fresh verdict');
+  });
+
+  it('leaves other runs untouched', () => {
+    const state = setQbrMeetingPure({ 'run-b': meeting() }, 'run-a', meeting());
+    expect(state['run-b']).toEqual(meeting());
+    expect(state['run-a']).toEqual(meeting());
+  });
+});
+
+describe('clearQbrMeetingPure', () => {
+  it('drops only the targeted run', () => {
+    const state = clearQbrMeetingPure({ 'run-a': meeting(), 'run-b': meeting() }, 'run-a');
+    expect(state).toEqual({ 'run-b': meeting() });
+  });
+
+  it('is a no-op (returns the same reference) when the run has no meeting', () => {
+    const input = { 'run-b': meeting() };
+    expect(clearQbrMeetingPure(input, 'run-a')).toBe(input);
+  });
+});
+
+describe('useDecisionLogStore qbrMeetings (wiring)', () => {
+  beforeEach(() => useDecisionLogStore.getState().reset());
+
+  it('setQbrMeeting persists and qbrMeetingForRun reads it back', () => {
+    const runId = runIdFor('scenario01', 'seed-1');
+    const store = useDecisionLogStore.getState();
+    expect(store.qbrMeetingForRun(runId)).toBeNull();
+
+    store.setQbrMeeting(runId, meeting());
+    expect(useDecisionLogStore.getState().qbrMeetingForRun(runId)).toEqual(meeting());
+  });
+
+  it('clearRun also drops that run’s drafted QBR meeting, leaving other runs intact', () => {
+    const runA = runIdFor('scenario01', 'seed-a');
+    const runB = runIdFor('scenario01', 'seed-b');
+    const store = useDecisionLogStore.getState();
+    store.appendEntry(newEntry({ runId: runA }));
+    store.appendEntry(newEntry({ runId: runB }));
+    store.setQbrMeeting(runA, meeting());
+    store.setQbrMeeting(runB, meeting());
+
+    store.clearRun(runA);
+
+    expect(useDecisionLogStore.getState().qbrMeetingForRun(runA)).toBeNull();
+    expect(useDecisionLogStore.getState().qbrMeetingForRun(runB)).toEqual(meeting());
   });
 });

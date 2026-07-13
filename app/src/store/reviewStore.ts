@@ -55,6 +55,19 @@ export interface CardSchedule {
   due: string; // yyyy-mm-dd, local day
   lastResult: ReviewResult;
   lastReviewedDay: string; // yyyy-mm-dd, local day
+  /**
+   * True when this card's due date was most recently pulled forward by
+   * `resurface()` (a sim event/run surfaced it) rather than reached through
+   * normal Leitner scheduling. Additive + optional (W4-I): old persisted
+   * schedules simply lack the field and read as `undefined`/falsy, so no
+   * migration is needed. `scheduleNext()` always builds a brand-new schedule
+   * object from scratch and never copies this field forward, so reviewing a
+   * resurfaced card (right or wrong) naturally clears the flag on its next
+   * review — a one-shot "why is this due right now" signal, not a permanent
+   * tag. The Review deck reads it to show the "⟲ From your run" provenance
+   * chip and to pick a varied industry skin (see `@/lib/reviewProvenance`).
+   */
+  resurfaced?: boolean;
 }
 
 /** Local day marker (yyyy-mm-dd), identical to learnStore's `today()`. */
@@ -154,6 +167,96 @@ export function nextDueDayFrom(
   return soonest;
 }
 
+/** One row of the Leitner shelf: a box, its interval, and real counts. */
+export interface ShelfRow {
+  /** 0-based internal box index (matches `CardSchedule.box`). */
+  box: number;
+  /** The box's review interval, in days (mirrors `BOX_INTERVALS_DAYS[box]`). */
+  intervalDays: number;
+  /** How many deck cards currently sit in this box. */
+  total: number;
+  /** Of those, how many are due today. */
+  due: number;
+}
+
+/** The whole shelf: one row per box, plus never-reviewed cards (always due). */
+export interface ReviewShelf {
+  rows: ShelfRow[];
+  /** Cards with no schedule yet — due immediately, not yet assigned a box. */
+  unseen: number;
+}
+
+/**
+ * PURE: the Leitner shelf view — real per-box counts + due counts, straight
+ * from the schedule map. No fabricated buckets: a box with zero cards in it
+ * still gets a row (so the shelf always shows the full 6-box ladder), but its
+ * counts are honestly zero.
+ */
+export function boxShelf(
+  schedules: Record<string, CardSchedule>,
+  allIds: readonly string[],
+  day: string = todayISO(),
+): ReviewShelf {
+  const rows: ShelfRow[] = BOX_INTERVALS_DAYS.map((intervalDays, box) => ({
+    box,
+    intervalDays,
+    total: 0,
+    due: 0,
+  }));
+  let unseen = 0;
+  for (const id of allIds) {
+    const s = schedules[id];
+    if (!s) {
+      unseen += 1;
+      continue;
+    }
+    const row = rows[s.box];
+    row.total += 1;
+    if (isDue(s, day)) row.due += 1;
+  }
+  return { rows, unseen };
+}
+
+/** The result of one review, in terms a learner reads as "what just happened". */
+export interface BoxMove {
+  /** The box the card was in before this review, or `null` for a brand-new card. */
+  fromBox: number | null;
+  /** The box the card landed in after this review. */
+  toBox: number;
+  /** The new box's interval, in days. */
+  intervalDays: number;
+  /** A ready-to-render line, e.g. "Box 3 → Box 4 · next seen in 7 days". */
+  message: string;
+}
+
+/**
+ * PURE: describe a box move in the same 1-indexed language a learner reads
+ * ("Box 1" through "Box 6"), from the card's box BEFORE this review (or
+ * `null` if it had never been scheduled) and its freshly-computed schedule
+ * AFTER (typically the output of `scheduleNext`). No store access — callers
+ * pass in real before/after values so this stays trivially testable.
+ */
+export function describeBoxMove(
+  prevBox: number | null,
+  next: CardSchedule,
+): BoxMove {
+  const intervalDays = BOX_INTERVALS_DAYS[next.box];
+  const fromLabel = prevBox === null ? 'New card' : `Box ${prevBox + 1}`;
+  const toLabel = `Box ${next.box + 1}`;
+  const whenLabel =
+    intervalDays === 0
+      ? 'today'
+      : intervalDays === 1
+        ? 'in 1 day'
+        : `in ${intervalDays} days`;
+  return {
+    fromBox: prevBox,
+    toBox: next.box,
+    intervalDays,
+    message: `${fromLabel} → ${toLabel} · next seen ${whenLabel}`,
+  };
+}
+
 interface ReviewState {
   /** scenarioId -> schedule. Absent = never reviewed (due now). */
   schedules: Record<string, CardSchedule>;
@@ -205,7 +308,9 @@ export const useReviewStore = create<ReviewStore>()(
           for (const id of ids) {
             const cur = next[id];
             // Only pull a card that was scheduled out; an unseen card is due now.
-            if (cur && dayDiff(day, cur.due) > 0) next[id] = { ...cur, due: day };
+            if (cur && dayDiff(day, cur.due) > 0) {
+              next[id] = { ...cur, due: day, resurfaced: true };
+            }
           }
           return { schedules: next };
         });

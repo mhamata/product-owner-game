@@ -7,13 +7,14 @@ import {
   type ClassificationDrill,
 } from '@/curriculum/drills';
 import { LessonFrame, type DrillResult, type LessonPhase } from './LessonFrame';
-import { CheckIcon, XIcon } from '../Icon';
+import { DrillCardStack, type DrillStackItem } from './DrillCardStack';
 
 /**
- * Console lesson body for classification drills (MoSCoW, Kano): the learner
- * assigns every item to a bucket, then CHECK grades all at once. Correctness is
- * revealed per item with an icon + text label (never colour alone), and the
- * feedback bar explains every miss.
+ * Console lesson body for classification drills (MoSCoW, Kano): a W4-I
+ * card-stack — one item per screen, picking a bucket reveals THAT item's own
+ * verdict stamp + one-line "why" immediately (see `DrillCardStack`). Once
+ * every item has an answer, CHECK grades the whole set (unchanged
+ * `gradeClassification` call) and the block-summary card takes over.
  */
 export function ClassificationLesson<K extends string>({
   skill,
@@ -44,13 +45,14 @@ export function ClassificationLesson<K extends string>({
     return {
       correct: allCorrect,
       score,
+      tally: { correct, total },
       headline: allCorrect ? 'All correct!' : `${correct} / ${total} correct`,
       explanation: allCorrect ? (
         <>{drill.insight}</>
       ) : (
         <>
           You placed{' '}
-          <b className="font-semibold text-ink">
+          <b className="font-semibold text-[var(--px-ink)]">
             {correct} of {total}
           </b>{' '}
           correctly. {drill.insight}
@@ -63,8 +65,8 @@ export function ClassificationLesson<K extends string>({
               const label = drill.buckets.find((b) => b.key === it.correct)?.label;
               return (
                 <li key={it.id}>
-                  <b className="font-semibold text-ink">{it.name}</b> →{' '}
-                  <span className="text-good">{label}</span>. {it.why}
+                  <b className="font-semibold text-[var(--px-ink)]">{it.name}</b> →{' '}
+                  <span className="text-[var(--px-good)]">{label}</span>. {it.why}
                 </li>
               );
             })}
@@ -72,6 +74,14 @@ export function ClassificationLesson<K extends string>({
         ) : undefined,
     };
   }
+
+  const stackItems: DrillStackItem<K>[] = drill.items.map((it) => ({
+    id: it.id,
+    title: it.name,
+    choices: drill.buckets.map((b) => ({ key: b.key, label: b.label })),
+    correct: it.correct,
+    why: it.why,
+  }));
 
   return (
     <LessonFrame
@@ -90,91 +100,51 @@ export function ClassificationLesson<K extends string>({
               {drill.buckets.map((b) => (
                 <div
                   key={b.key}
-                  className="rounded-console border border-line bg-panel px-3 py-2.5"
+                  className="rounded-[12px] border border-[var(--px-line)] bg-[var(--px-raised)] px-3 py-2.5"
                 >
-                  <div className="text-[12.5px] font-semibold text-ink">
+                  <div className="text-[12.5px] font-semibold text-[var(--px-ink)]">
                     {b.label}
                   </div>
-                  <div className="mono mt-0.5 text-[10.5px] uppercase tracking-[0.06em] text-mute">
+                  <div className="mono mt-0.5 text-[10.5px] uppercase tracking-[0.06em] text-[var(--px-dimmer)]">
                     {b.description}
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* items */}
-            <div className="mt-[22px] grid gap-2.5">
-              {drill.items.map((it) => {
-                const ans = assignments[it.id];
-                const itemCorrect = locked && ans === it.correct;
-                const itemWrong = locked && ans != null && ans !== it.correct;
-
-                return (
-                  <div
-                    key={it.id}
-                    className={[
-                      'rounded-console border bg-paper p-[13px_15px] transition-[border-color,box-shadow] duration-150',
-                      itemCorrect
-                        ? 'border-good shadow-[0_0_0_1px_var(--color-good)_inset]'
-                        : itemWrong
-                          ? 'border-bad shadow-[0_0_0_1px_var(--color-bad)_inset]'
-                          : 'border-line',
-                    ].join(' ')}
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <span className="flex items-center gap-2 text-[14.5px] font-medium text-ink">
-                        {locked &&
-                          (itemCorrect ? (
-                            <CheckIcon
-                              size={15}
-                              className="flex-none text-good"
-                            />
-                          ) : (
-                            <XIcon size={15} className="flex-none text-bad" />
-                          ))}
-                        {it.name}
-                      </span>
-
-                      <div
-                        role="group"
-                        aria-label={`Classify: ${it.name}`}
-                        className="flex flex-wrap gap-1.5"
-                      >
-                        {drill.buckets.map((b) => {
-                          const pressed = ans === b.key;
-                          const revealCorrectBucket =
-                            locked && b.key === it.correct;
-                          return (
-                            <button
-                              key={b.key}
-                              type="button"
-                              aria-pressed={pressed}
-                              aria-label={b.label}
-                              disabled={locked}
-                              onClick={() => assign(it.id, b.key)}
-                              className={[
-                                'mono rounded-console-sm border px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.04em] transition-[border-color,background,color] duration-150 disabled:cursor-default',
-                                revealCorrectBucket
-                                  ? 'border-good bg-good text-white'
-                                  : pressed
-                                    ? itemWrong
-                                      ? 'border-bad bg-bad text-white'
-                                      : 'border-accent bg-accent text-white'
-                                    : locked
-                                      ? 'border-line bg-panel text-faint opacity-60'
-                                      : 'border-line bg-panel text-slate hover:border-faint hover:text-ink',
-                              ].join(' ')}
-                            >
-                              {b.label}
-                            </button>
-                          );
-                        })}
-                      </div>
+            {locked ? (
+              // checked/complete: the stack has already served its purpose
+              // (every item was answered + individually revealed); show the
+              // final assignment grid so the "Explain my answer" detail above
+              // still has visible rows to point at.
+              <div className="mt-[22px] grid gap-2.5">
+                {drill.items.map((it) => {
+                  const ans = assignments[it.id];
+                  const itemCorrect = ans === it.correct;
+                  return (
+                    <div
+                      key={it.id}
+                      className={[
+                        'rounded-[12px] border p-[12px_14px] text-[13.5px]',
+                        itemCorrect
+                          ? 'border-[var(--px-good)] text-[var(--px-ink)]'
+                          : 'border-[var(--px-crit)] text-[var(--px-ink)]',
+                      ].join(' ')}
+                    >
+                      {it.name} →{' '}
+                      <b>{drill.buckets.find((b) => b.key === ans)?.label ?? '—'}</b>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <DrillCardStack
+                items={stackItems}
+                values={assignments}
+                onAnswer={assign}
+                ariaLabel="Classify each item, one at a time"
+              />
+            )}
           </>
         );
       }}

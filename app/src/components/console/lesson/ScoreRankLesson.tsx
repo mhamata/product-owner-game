@@ -61,6 +61,7 @@ export function ScoreRankLesson({
     return {
       correct: allCorrect,
       score,
+      tally: { correct, total },
       headline: allCorrect ? 'Perfect ranking!' : `${correct} / ${total} in place`,
       explanation: allCorrect ? (
         <>{drill.insight}</>
@@ -71,19 +72,19 @@ export function ScoreRankLesson({
       ),
       detail: (
         <div className="grid gap-2">
-          <div className="mono text-[11px] uppercase tracking-[0.06em] text-mute">
+          <div className="mono text-[11px] uppercase tracking-[0.06em] text-[var(--px-dimmer)]">
             Correct ranking · {drill.formula}
           </div>
           <ol className="grid gap-1.5">
             {canonical.map((r, i) => (
               <li key={r.id}>
-                <b className="font-semibold text-ink">
+                <b className="font-semibold text-[var(--px-ink)]">
                   {padIndex(i + 1)}. {r.name}
                 </b>{' '}
-                <span className="mono text-accent">
+                <span className="mono text-[var(--px-accent)]">
                   = {drill.score(r).toFixed(1)}
                 </span>
-                <span className="block text-slate">{r.reasoning}</span>
+                <span className="block text-[var(--px-dim)]">{r.reasoning}</span>
               </li>
             ))}
           </ol>
@@ -108,7 +109,7 @@ export function ScoreRankLesson({
 
         return (
           <>
-            <p className="mono mt-3 text-[12px] text-mute">
+            <p className="mono mt-3 text-[12px] text-[var(--px-dimmer)]">
               Formula · {drill.formula}
             </p>
 
@@ -129,18 +130,18 @@ export function ScoreRankLesson({
                     key={id}
                     role="listitem"
                     className={[
-                      'rounded-console-lg border bg-paper p-[14px_15px] transition-[border-color,box-shadow] duration-150',
+                      'rounded-[14px] border bg-[var(--px-card)] p-[14px_15px] transition-[border-color,box-shadow] duration-150',
                       inPlace
-                        ? 'border-good shadow-[0_0_0_1px_var(--color-good)_inset]'
+                        ? 'border-[var(--px-good)] shadow-[0_0_0_1px_var(--px-good)_inset]'
                         : outOfPlace
-                          ? 'border-bad shadow-[0_0_0_1px_var(--color-bad)_inset]'
-                          : 'border-line',
+                          ? 'border-[var(--px-crit)] shadow-[0_0_0_1px_var(--px-crit)_inset]'
+                          : 'border-[var(--px-line)]',
                     ].join(' ')}
                   >
                     <div className="flex items-start gap-3">
                       {/* rank index + reorder controls */}
                       <div className="flex flex-none flex-col items-center gap-1">
-                        <span className="mono tnum text-[15px] font-semibold text-ink">
+                        <span className="mono tnum text-[15px] font-semibold text-[var(--px-ink)]">
                           {padIndex(i + 1)}
                         </span>
                         {!locked && (
@@ -150,7 +151,7 @@ export function ScoreRankLesson({
                               aria-label={`Move ${row.name} up`}
                               disabled={i === 0}
                               onClick={() => move(i, -1)}
-                              className="inline-flex h-6 w-6 items-center justify-center rounded-console-sm border border-line bg-panel text-slate transition-colors hover:border-faint hover:text-ink disabled:cursor-not-allowed disabled:opacity-35"
+                              className="inline-flex h-6 w-6 items-center justify-center rounded-[8px] border border-[var(--px-line)] bg-[var(--px-raised)] text-[var(--px-dim)] transition-colors hover:border-[var(--px-line-strong)] hover:text-[var(--px-ink)] disabled:cursor-not-allowed disabled:opacity-35"
                             >
                               <TriangleUpIcon size={13} />
                             </button>
@@ -159,7 +160,7 @@ export function ScoreRankLesson({
                               aria-label={`Move ${row.name} down`}
                               disabled={i === order.length - 1}
                               onClick={() => move(i, 1)}
-                              className="inline-flex h-6 w-6 items-center justify-center rounded-console-sm border border-line bg-panel text-slate transition-colors hover:border-faint hover:text-ink disabled:cursor-not-allowed disabled:opacity-35"
+                              className="inline-flex h-6 w-6 items-center justify-center rounded-[8px] border border-[var(--px-line)] bg-[var(--px-raised)] text-[var(--px-dim)] transition-colors hover:border-[var(--px-line-strong)] hover:text-[var(--px-ink)] disabled:cursor-not-allowed disabled:opacity-35"
                             >
                               <TriangleDownIcon size={13} />
                             </button>
@@ -167,33 +168,43 @@ export function ScoreRankLesson({
                         )}
                         {locked &&
                           (inPlace ? (
-                            <CheckIcon size={15} className="text-good" />
+                            <span
+                              role="status"
+                              className="motion-safe:animate-[stampIn_180ms_cubic-bezier(0.2,1.4,0.4,1)_forwards] inline-flex h-5 w-5 items-center justify-center rounded-full border border-[var(--px-good)] text-[var(--px-good)]"
+                            >
+                              <CheckIcon size={12} />
+                            </span>
                           ) : (
-                            <XIcon size={15} className="text-bad" />
+                            <span
+                              role="status"
+                              className="motion-safe:animate-[stampIn_180ms_cubic-bezier(0.2,1.4,0.4,1)_forwards] inline-flex h-5 w-5 items-center justify-center rounded-full border border-[var(--px-crit)] text-[var(--px-crit)]"
+                            >
+                              <XIcon size={12} />
+                            </span>
                           ))}
                       </div>
 
                       <div className="min-w-0 flex-auto">
                         <div className="flex flex-wrap items-baseline justify-between gap-2">
-                          <h3 className="text-[14.5px] font-semibold text-ink">
+                          <h3 className="text-[14.5px] font-semibold text-[var(--px-ink)]">
                             {row.name}
                           </h3>
                           {locked && (
-                            <span className="mono text-[12px] text-accent">
+                            <span className="mono text-[12px] text-[var(--px-accent)]">
                               {drill.score(row).toFixed(1)}
                             </span>
                           )}
                         </div>
-                        <p className="mt-0.5 text-[12.5px] leading-[1.5] text-slate">
+                        <p className="mt-0.5 text-[12.5px] leading-[1.5] text-[var(--px-dim)]">
                           {row.context}
                         </p>
 
                         {/* factor readout */}
-                        <div className="mono mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-mute">
+                        <div className="mono mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-[var(--px-dimmer)]">
                           {drill.factors.map((f) => (
                             <span key={f.key}>
                               {f.label}:{' '}
-                              <b className="font-semibold text-ink-2">
+                              <b className="font-semibold text-[var(--px-body)]">
                                 {formatFactor(row.factors[f.key], f.format)}
                               </b>
                             </span>

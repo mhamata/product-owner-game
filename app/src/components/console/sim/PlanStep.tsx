@@ -22,7 +22,13 @@ import { projectIteration } from './projection';
 const effortOf = (p: PBI) => p.effortRevealed ?? p.effort;
 
 /**
- * STEP 1 · PLAN: choose the sprint backlog.
+ * PLAN: choose the sprint backlog.
+ *
+ * Sim 2.0 (W2-D): this is no longer a standalone step in a linear flow — it is
+ * reused WHOLESALE as the body of InboxTurn's Plan decision sheet ("what will
+ * you build this sprint?"). Full backlog-UX redesign is a later slice; this
+ * component is intentionally unchanged apart from hiding the old "Step 1 of
+ * 6" badge (see `hideStepBadge` below).
  *
  * Wiring to the engine (no game logic lives here):
  *   - toggling a normal item dispatches add-to-iteration / remove-from-iteration
@@ -88,6 +94,7 @@ export function PlanStep({
         eyebrow="Commit your sprint"
         title={<span id="plan-title">What will the team build this sprint?</span>}
         sub="Pick the work to commit. Watch capacity and the live forecast as you go. You can't build everything."
+        hideStepBadge
       />
 
       <Coachmark id="capacity" tag="Capacity" active={firstSprint}>
