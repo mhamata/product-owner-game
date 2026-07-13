@@ -37,6 +37,7 @@ import {
 import { Scorecard } from './Scorecard';
 import { useInterview, type InterviewScorecard } from './useInterview';
 import { notifySyncKeyChanged } from '@/lib/sync/notify';
+import { emitExerciseEvent } from '@/lib/telemetry/exerciseEvents';
 
 const padIndex = (n: number) => String(n).padStart(2, '0');
 
@@ -353,6 +354,13 @@ export function InterviewSession({ interviewCase }: { interviewCase: PublicInter
       setScorecard(result.scorecard);
       setUnavailable(null);
       setPhase('scored');
+      // Shared learner model v0: fire-and-forget, silent no-op when signed out.
+      // Score + recommendation only — never the transcript.
+      emitExerciseEvent({
+        kind: 'interview',
+        score: result.scorecard.overallScore / 100,
+        payload: { caseId: interviewCase.id, recommendation: result.scorecard.recommendation },
+      });
       // Persist the scorecard + when it was graded alongside the transcript, so
       // the readiness report can aggregate this scored interview. This is still
       // the single `persist` write path (and so it syncs for free).

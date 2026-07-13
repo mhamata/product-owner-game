@@ -7,6 +7,7 @@ import { getNextSkill, TOTAL_SKILLS } from '@/curriculum/data';
 import { DEFAULT_INDUSTRY, type IndustryId } from '@/curriculum/industries';
 import { resolveValueVsEffortDrill } from '@/curriculum/drills';
 import { useLearnStore } from '@/store/learnStore';
+import { emitExerciseEvent } from '@/lib/telemetry/exerciseEvents';
 import { Topbar } from '../Topbar';
 import { CompletionOverlay } from './CompletionOverlay';
 import {
@@ -101,6 +102,14 @@ export function ValueVsEffortLesson({
     // mastery this phase, so completing it awards full competence regardless of
     // the first pick. (A later phase can scale this by first-try correctness.)
     recordResult(skill.id, 1);
+    // Shared learner model v0: fire-and-forget, silent no-op when signed out.
+    emitExerciseEvent({
+      kind: 'drill',
+      skillId: skill.id,
+      competency: skill.competency,
+      score: 1,
+      payload: { skillId: skill.id, correct: isCorrect },
+    });
     setPhase('complete');
   }
 

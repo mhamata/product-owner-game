@@ -6,6 +6,7 @@ import type { Skill } from '@/curriculum/types';
 import type { FreeTextDrill, FreeTextValues } from '@/curriculum/drills';
 import { getNextSkill, getUnitForSkill, TOTAL_SKILLS } from '@/curriculum/data';
 import { useLearnStore } from '@/store/learnStore';
+import { emitExerciseEvent } from '@/lib/telemetry/exerciseEvents';
 import { useLLMGrade } from '@/components/methods/drills/LLMGrade';
 import { Topbar } from '../Topbar';
 import { ProgressRing } from '../ProgressRing';
@@ -128,6 +129,15 @@ export function FreeTextGradeLesson({
   function handleContinue() {
     // Match the deterministic loop: completing the loop awards full competence.
     recordResult(skill.id, 1);
+    // Shared learner model v0: fire-and-forget, silent no-op when signed out.
+    // The rubric score (0-10) is a small number, never the graded text itself.
+    emitExerciseEvent({
+      kind: 'drill',
+      skillId: skill.id,
+      competency: skill.competency,
+      score: 1,
+      payload: { skillId: skill.id, graded: !errored, aiScore: score },
+    });
     setPhase('complete');
   }
 

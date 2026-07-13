@@ -23,6 +23,7 @@ import {
   type ReviewResult,
 } from '@/store/reviewStore';
 import { deriveProvenance } from '@/lib/reviewProvenance';
+import { emitExerciseEvent } from '@/lib/telemetry/exerciseEvents';
 import { Topbar } from '../Topbar';
 import { JudgmentCard } from './JudgmentCard';
 import { LeitnerShelf } from './LeitnerShelf';
@@ -231,6 +232,17 @@ export function ReviewView() {
       const next = scheduleNext(prior, result);
       setBoxMove(describeBoxMove(prior ? prior.box : null, next));
       review(scenario.id, result);
+      // Shared learner model v0: fire-and-forget, silent no-op when signed out.
+      emitExerciseEvent({
+        kind: 'judgment_card',
+        competency: scenario.competency,
+        score: result === 'correct' ? 1 : 0,
+        payload: {
+          scenarioId: scenario.id,
+          box: next.box,
+          resurfaced: !!resurfacedMeta[scenario.id],
+        },
+      });
       if (result === 'correct') setCorrectCount((n) => n + 1);
       setPhase('revealed');
       return;

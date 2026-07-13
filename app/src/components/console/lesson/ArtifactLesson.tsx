@@ -25,6 +25,7 @@ import {
   type VersionHistory,
 } from '@/lib/artifactVersionsV2';
 import { useLearnStore } from '@/store/learnStore';
+import { emitExerciseEvent } from '@/lib/telemetry/exerciseEvents';
 import { Topbar } from '../Topbar';
 import { CompletionOverlay } from './CompletionOverlay';
 import { useArtifactGradeV2 } from './useArtifactGradeV2';
@@ -162,6 +163,19 @@ export function ArtifactLesson({
 
     const graded = await grade(resolved, briefText, composed, revision);
     setPhase('graded');
+
+    // Shared learner model v0: fire-and-forget, silent no-op when signed out.
+    // Only fires when a real verdict came back (never on unavailable/error) —
+    // the score and pass flag only, NEVER the submission text or brief.
+    if (graded) {
+      emitExerciseEvent({
+        kind: 'artifact',
+        skillId: skill.id,
+        competency: skill.competency,
+        score: graded.overallScore / 100,
+        payload: { skillId: skill.id, version: nextVersion, passed: graded.passed },
+      });
+    }
 
     // Persist this version (verdict may be null on an unparseable grade; we still
     // record the submission so the trajectory and revise-cap stay honest).

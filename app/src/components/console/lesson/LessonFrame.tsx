@@ -6,6 +6,7 @@ import type { Skill } from '@/curriculum/types';
 import { getNextSkill, getUnitForSkill } from '@/curriculum/data';
 import { useLearnStore, type SkillProgress } from '@/store/learnStore';
 import { deriveBlockSummary, type BlockTally } from '@/lib/blockSummary';
+import { emitExerciseEvent } from '@/lib/telemetry/exerciseEvents';
 import { Topbar } from '../Topbar';
 import { BlockSummaryCard } from './BlockSummaryCard';
 import { CheckIcon, ChevronRightIcon, InfoIcon, XIcon } from '../Icon';
@@ -128,7 +129,17 @@ export function LessonFrame({
     setBeforeProgress(before);
     // Mirror the exemplar: the answer is revealed either way, so completing the
     // loop awards competence up to this attempt's real score.
-    recordResult(skill.id, result.score ?? (result.correct ? 1 : result.tally.correct / Math.max(1, result.tally.total)));
+    const normalizedScore =
+      result.score ?? (result.correct ? 1 : result.tally.correct / Math.max(1, result.tally.total));
+    recordResult(skill.id, normalizedScore);
+    // Shared learner model v0: fire-and-forget, silent no-op when signed out.
+    emitExerciseEvent({
+      kind: 'drill',
+      skillId: skill.id,
+      competency: skill.competency,
+      score: normalizedScore,
+      payload: { skillId: skill.id, correct: result.correct, tally: result.tally },
+    });
     setPhase('complete');
   }
 
