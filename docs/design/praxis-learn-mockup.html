@@ -247,6 +247,51 @@
   .cliff .fine { font-size: 11.5px; color: var(--g-dimmer); }
   .cliff button { margin-top: 30px; font: inherit; font-size: 13px; font-weight: 650; color: var(--g-accent); background: transparent; border: 1px solid var(--g-line2); border-radius: 10px; padding: 10px 20px; cursor: pointer; }
 
+  /* ---------- drill player ---------- */
+  .drill-head { display: flex; justify-content: space-between; align-items: baseline; margin: 8px 4px 10px; }
+  .drill-title { font-size: 13px; font-weight: 700; }
+  .drill-prog { font-size: 11px; color: var(--g-dimmer); font-variant-numeric: tabular-nums; }
+  .stack { position: relative; margin-bottom: 14px; }
+  .stack::before, .stack::after {
+    content: ""; position: absolute; left: 8px; right: 8px; height: 14px; border-radius: 14px 14px 0 0;
+    background: var(--g-card); border: 1px solid var(--g-line); border-bottom: 0;
+  }
+  .stack::before { top: -6px; opacity: 0.55; }
+  .stack::after { top: -11px; left: 16px; right: 16px; opacity: 0.3; }
+  .stack .jcard { position: relative; z-index: 2; margin-bottom: 0; }
+  .mini-chart { background: var(--g-input); border: 1px solid var(--g-line); border-radius: 10px; padding: 10px 12px 6px; margin: 4px 0 12px; }
+  .mini-chart .cap { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--g-dimmer); font-weight: 700; margin-bottom: 4px; }
+  .legend { display: flex; gap: 12px; margin-top: 4px; padding-bottom: 4px; }
+  .legend span { font-size: 10px; color: var(--g-dim); display: flex; align-items: center; gap: 5px; }
+  .legend i { width: 10px; height: 2.5px; border-radius: 2px; display: inline-block; }
+  .summary-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; color: var(--g-body); margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+  .summary-row b { color: var(--g-ink); }
+  .delta { font-size: 11px; font-weight: 700; color: var(--g-good); }
+
+  /* ---------- review deck ---------- */
+  .shelf { display: flex; gap: 6px; margin: 6px 0 4px; }
+  .bx {
+    flex: 1; background: var(--g-card); border: 1px solid var(--g-line); border-radius: 10px;
+    padding: 8px 4px 7px; text-align: center;
+  }
+  .bx .cnt { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 650; }
+  .bx .ivl { font-size: 9px; color: var(--g-dimmer); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+  .bx.due { border-color: var(--g-accent); box-shadow: 0 0 0 1px var(--g-accent); }
+  .bx.due .cnt { color: var(--g-accent); }
+  .prov {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--g-accent);
+    border: 1px solid color-mix(in srgb, var(--g-accent) 45%, transparent); border-radius: 999px;
+    padding: 3px 9px; margin-bottom: 8px;
+  }
+  .prov.skin { color: var(--g-warn); border-color: color-mix(in srgb, var(--g-warn) 45%, transparent); }
+  .move-line { display: none; font-size: 11.5px; font-weight: 650; color: var(--g-good); margin-top: 9px; }
+  .move-line.show { display: block; }
+  .deck-clear { display: none; text-align: center; padding: 26px 18px; }
+  .deck-clear.show { display: block; }
+  .deck-clear .big { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .deck-clear p { font-size: 12.5px; color: var(--g-dim); line-height: 1.5; margin: 0; }
+
   /* ---------- tab bar ---------- */
   .tabs { position: absolute; left: 0; right: 0; bottom: 0; z-index: 15; display: flex; background: var(--g-tabbar); border-top: 1px solid var(--g-line); padding: 8px 8px calc(8px + 14px); }
   .tab { flex: 1; background: none; border: 0; color: var(--g-dimmer); font: inherit; font-size: 10.5px; font-weight: 650; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer; border-radius: 10px; }
@@ -258,8 +303,8 @@
 <div class="wrap">
   <div class="eyebrow">Praxis Learn · UI concept · for approval</div>
   <h1>The daily loop and the tech tree</h1>
-  <p class="lede">The learning layer in the same design system as the Sim 2.0 concept. <strong>The Standup</strong> is the six-minute daily session (warm-up → one block → the cliffhanger). <strong>Skills</strong> is the curriculum re-cast as a tech tree — every skill names the in-sim power it unlocks.</p>
-  <p class="hint">Try it: answer both warm-up cards (one is designed to catch you), start the block, open your standup. Then browse the Skills tab and tap nodes — including the rusty one.</p>
+  <p class="lede">The learning layer in the same design system as the Sim 2.0 concept — all four surfaces. <strong>The Standup</strong> is the six-minute daily session. <strong>Skills</strong> is the curriculum as a tech tree. <strong>Drills</strong> is the card-stack block player. <strong>Review</strong> is the Leitner deck, fed by your own sim runs.</p>
+  <p class="hint">Try it: run the Standup (answer both cards, start the block, open your standup), tap skill nodes, play the two drill cards through to the block summary, then clear the review deck — note where its cards come from.</p>
 
   <div class="toggle-row">
     <div class="theme-toggle" role="group" aria-label="Product theme preview">
@@ -388,6 +433,103 @@
               </button>
             </div>
           </div>
+          <!-- ============ SCREEN: DRILL PLAYER ============ -->
+          <div class="screen" id="scr-drills">
+            <div class="drill-head">
+              <span class="drill-title">Dataread — the funnel that lies</span>
+              <span class="drill-prog" id="drill-prog">Card 1 of 2</span>
+            </div>
+
+            <div class="stack" id="dstack">
+              <div class="jcard" id="dc1">
+                <div class="stamp" id="dst1"></div>
+                <span class="k">Read the chart</span>
+                <div class="mini-chart">
+                  <div class="cap">Activation by signup source · sprints 4–7</div>
+                  <svg viewBox="0 0 300 84" style="width:100%; height:auto; display:block">
+                    <line x1="0" y1="70" x2="300" y2="70" stroke="var(--g-line)" stroke-width="1"/>
+                    <line x1="0" y1="40" x2="300" y2="40" stroke="var(--g-line)" stroke-width="0.5"/>
+                    <polyline points="10,26 105,30 200,44 290,58" fill="none" stroke="var(--g-warn)" stroke-width="2"/>
+                    <polyline points="10,32 105,31 200,33 290,32" fill="none" stroke="var(--g-accent)" stroke-width="2"/>
+                    <circle cx="290" cy="58" r="3" fill="var(--g-warn)"/>
+                  </svg>
+                  <div class="legend">
+                    <span><i style="background:var(--g-warn)"></i> Self-serve signups</span>
+                    <span><i style="background:var(--g-accent)"></i> Invited teammates</span>
+                  </div>
+                </div>
+                <p class="q">Overall activation fell 7 points. What does the split actually tell you?</p>
+                <button class="jopt dopt" data-card="1" data-right="0">New users are struggling equally across the board</button>
+                <button class="jopt dopt" data-card="1" data-right="1">The drop is concentrated in self-serve signups — invited teammates are flat</button>
+                <button class="jopt dopt" data-card="1" data-right="0">Invited teammates are churning and dragging the average</button>
+                <div class="explain" id="dex1"><b>Read the split before acting.</b> The aggregate hid a concentrated problem: self-serve fell off a cliff while invites held. Whatever broke, it lives in the self-serve path — that’s where Sprint 8 should look.</div>
+              </div>
+
+              <div class="jcard" id="dc2" style="display:none">
+                <div class="stamp" id="dst2"></div>
+                <span class="k">Spot the flaw</span>
+                <p class="q">Theo’s draft conclusion: “Activation fell because we changed pricing in Sprint 5 — the two lines moved together, so pricing caused it.” What’s wrong with that?</p>
+                <button class="jopt dopt" data-card="2" data-right="1">Two things landed in Sprint 5 — pricing AND the onboarding rework. Co-movement can’t pick between them</button>
+                <button class="jopt dopt" data-card="2" data-right="0">The data window is too short to say anything</button>
+                <button class="jopt dopt" data-card="2" data-right="0">Activation is a vanity metric; this doesn’t matter</button>
+                <div class="explain" id="dex2"><b>Confounded, not caused.</b> Sprint 5 shipped two changes at once, so the timeline alone can’t assign blame. Split by which flow users actually hit — or run the painted-door test you haven’t unlocked yet.</div>
+              </div>
+
+              <div class="jcard" id="dsummary" style="display:none">
+                <span class="k">Block complete · 2:40</span>
+                <p class="q" style="margin-bottom:10px">Sharp reading. The aggregate lied; you didn’t let it.</p>
+                <div class="summary-row"><span>Cards</span><b id="dsum-cards">2 sharp · 0 misses</b></div>
+                <div class="summary-row"><span>Cred</span><b>+18 ᴄ</b></div>
+                <div class="summary-row"><span>Analytics strength</span><span><b>62% → 64%</b> <span class="delta">▲</span></span></div>
+                <div class="str-bar" style="margin:2px 0 14px"><i style="width:64%; background:var(--g-accent)"></i></div>
+                <div class="summary-row" style="margin-bottom:14px"><span>Cohort Analysis unlock</span><b>1 block closer</b></div>
+                <button class="cta" id="drill-back">Back to your Standup →</button>
+              </div>
+            </div>
+
+            <div class="gate-note" style="text-align:left; margin:0 4px;">Deterministic drill — no AI in the loop, never metered, works offline. Misses join the review deck; nothing else happens to you.</div>
+          </div>
+
+          <!-- ============ SCREEN: REVIEW DECK ============ -->
+          <div class="screen" id="scr-review">
+            <div class="s-label">Leitner boxes · 7 due today</div>
+            <div class="shelf">
+              <div class="bx due"><div class="cnt">7</div><div class="ivl">due</div></div>
+              <div class="bx"><div class="cnt">3</div><div class="ivl">1 d</div></div>
+              <div class="bx"><div class="cnt">5</div><div class="ivl">3 d</div></div>
+              <div class="bx"><div class="cnt">4</div><div class="ivl">7 d</div></div>
+              <div class="bx"><div class="cnt">9</div><div class="ivl">16 d</div></div>
+              <div class="bx"><div class="cnt">12</div><div class="ivl">35 d</div></div>
+            </div>
+            <div class="gate-note" style="text-align:left; margin:2px 4px 10px;">Right answers climb boxes (longer gaps). Misses drop to the front. The schedule is visible, never magic.</div>
+
+            <div class="s-label">The deck</div>
+
+            <div class="jcard" id="rc1">
+              <div class="stamp" id="rst1"></div>
+              <span class="prov">⟲ From your run · Relay, Sprint 3</span>
+              <p class="q">You skipped the checkout refactor to hit a date — four sprints later, incidents doubled. Same setup, new company: a fintech has 90 days before an API deprecation, migration is ~3 weeks, sales wants the quarter for features. First move?</p>
+              <button class="jopt ropt" data-card="1" data-right="1" data-move="Box 3 → Box 4 · next seen in 16 days">Time-box a one-day risk spike, then decide with data</button>
+              <button class="jopt ropt" data-card="1" data-right="0" data-move="Box 3 → Box 1 · back tomorrow">Schedule the full migration now — you’ve been burned before</button>
+              <div class="explain" id="rex1"><b>The scar is the lesson, not the rule.</b> Relay taught you debt bites — it didn’t teach you to pre-pay every risk at full price. Ninety days is room to buy one day of certainty first.</div>
+              <div class="move-line" id="rmv1"></div>
+            </div>
+
+            <div class="jcard" id="rc2" style="display:none">
+              <div class="stamp" id="rst2"></div>
+              <span class="prov skin">Same skill · healthcare skin</span>
+              <p class="q">A clinic-scheduling pilot shows +4% completed bookings, p = 0.20, after its planned two weeks. The rollout team wants to go org-wide. Do you?</p>
+              <button class="jopt ropt" data-card="2" data-right="1" data-move="Box 2 → Box 3 · next seen in 7 days">Keep running — underpowered; that lift may be noise</button>
+              <button class="jopt ropt" data-card="2" data-right="0" data-move="Box 2 → Box 1 · back tomorrow">Ship it — 4% of bookings is real patients</button>
+              <div class="explain" id="rex2"><b>You saw this in a SaaS skin this morning.</b> Same skill, different world — that’s the variation that makes it transfer. p = 0.20 is still a 1-in-5 chance of nothing.</div>
+              <div class="move-line" id="rmv2"></div>
+            </div>
+
+            <div class="deck-clear" id="deck-clear">
+              <div class="big">Deck clear for today ✓</div>
+              <p>7 cards reviewed · streak safe · next cards due tomorrow.<br>New misses from today’s drills are already scheduled.</p>
+            </div>
+          </div>
         </div>
 
         <!-- toast -->
@@ -424,6 +566,14 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="2.5"/><circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M12 7.5V12m0 0l-4.5 5M12 12l4.5 5"/></svg>
             Skills
           </button>
+          <button class="tab" data-scr="drills">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="8" width="14" height="12" rx="2.5"/><path d="M7 5.5h10M9 3h6"/></svg>
+            Drills
+          </button>
+          <button class="tab" data-scr="review">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 6v5h-5"/></svg>
+            Review
+          </button>
         </div>
       </div>
     </div>
@@ -442,6 +592,18 @@
         <div class="note"><h3>The syllabus becomes a tech tree</h3><p>Every skill names the in-sim power it grants — Experiment Design is literally the locked option from Maya’s decision in the Sim concept. You stop studying because you should, and start because you want the move.</p></div>
         <div class="note"><h3>Mastery decays; it never re-locks</h3><p>Ship/hold judgment has gone stale at 54% — amber, with a 90-second refresh in a different industry skin (spacing + variation). Re-locking mastered skills is motivationally toxic; rust you can polish in 90 seconds is a reason to come back.</p></div>
         <div class="note"><h3>Locked ≠ hidden</h3><p>You can always read what a locked skill would give you. Visible-but-unreachable power is the oldest motivation loop in games — and here every unlock is also a real PM competency with a pass bar behind it.</p></div>
+      </div>
+
+      <div class="note-set" id="notes-drills">
+        <div class="note"><h3>One interaction per screen</h3><p>Card-stack pacing with verdict stamps — the Duolingo-grade polish applied to the existing deterministic drills. No hearts, no timers, no punishment for wrongness; a miss earns one honest explanation and a review-deck slot.</p></div>
+        <div class="note"><h3>The deterministic core is free, forever</h3><p>No AI in this loop, so drills never meter and work offline — the master plan’s rule that the learning loop never turns off. AI spend stays on the garnish (grading, stories, voices), not the reps.</p></div>
+        <div class="note"><h3>Blocks move a visible number</h3><p>The summary shows the competency strength delta and how much closer the block got you to a named unlock (Cohort Analysis — the fog-of-war pane). Every rep visibly pushes the tech tree.</p></div>
+      </div>
+
+      <div class="note-set" id="notes-review">
+        <div class="note"><h3>Leitner boxes, visible</h3><p>Six boxes, real intervals (1/3/7/16/35 days), counts on the shelf. Right answers climb to longer gaps; misses drop to the front. The schedule is legible, never magic — trust through transparency.</p></div>
+        <div class="note"><h3>The sim feeds the deck</h3><p>The first card resurfaced from the player’s own Relay run — that provenance chip is the resurface() wiring that shipped in PR #10, made visible. Your scars become your spaced repetition.</p></div>
+        <div class="note"><h3>Variation drives transfer</h3><p>The p = 0.20 card from this morning’s warm-up returns in a healthcare skin. Same skill, new world — spacing plus variation is the retention-and-transfer engine the curriculum doc rules.</p></div>
       </div>
     </div>
   </div>
@@ -496,7 +658,7 @@
   var tabs = document.querySelectorAll('.tab');
   function goTab(name) {
     tabs.forEach(function (t) { t.classList.toggle('on', t.getAttribute('data-scr') === name); });
-    ['standup', 'skills'].forEach(function (s) {
+    ['standup', 'skills', 'drills', 'review'].forEach(function (s) {
       document.getElementById('scr-' + s).classList.toggle('on', s === name);
       document.getElementById('notes-' + s).classList.toggle('on', s === name);
     });
@@ -519,14 +681,14 @@
     addCred(12);
   }
 
-  document.querySelectorAll('.jopt').forEach(function (o) {
+  document.querySelectorAll('#warmup .jopt').forEach(function (o) {
     o.addEventListener('click', function () {
       var card = o.getAttribute('data-card');
       var right = o.getAttribute('data-right') === '1';
       var stamp = document.getElementById('st' + card);
       var explain = document.getElementById('ex' + card);
       /* lock this card's options */
-      document.querySelectorAll('.jopt[data-card="' + card + '"]').forEach(function (b) { b.disabled = true; });
+      document.querySelectorAll('#warmup .jopt[data-card="' + card + '"]').forEach(function (b) { b.disabled = true; });
       o.classList.add(right ? 'picked-right' : 'picked-wrong');
       stamp.textContent = right ? 'Sharp call' : 'Miss';
       stamp.classList.add(right ? 'good' : 'miss', 'show');
@@ -647,6 +809,67 @@
   document.getElementById('nd-ghost').addEventListener('click', function () {
     closeSheet();
     showToast('90-second refresh: two ship/hold calls at a fintech company you’ve never seen. Rust → 82%.');
+  });
+
+  /* ---------- drill player ---------- */
+  var drillRight = 0;
+  document.querySelectorAll('.dopt').forEach(function (o) {
+    o.addEventListener('click', function () {
+      var card = o.getAttribute('data-card');
+      var right = o.getAttribute('data-right') === '1';
+      document.querySelectorAll('#scr-drills .dopt[data-card="' + card + '"]').forEach(function (b) { b.disabled = true; });
+      o.classList.add(right ? 'picked-right' : 'picked-wrong');
+      var stamp = document.getElementById('dst' + card);
+      stamp.textContent = right ? 'Sharp read' : 'Miss';
+      stamp.classList.add(right ? 'good' : 'miss', 'show');
+      document.getElementById('dex' + card).classList.add('show');
+      if (right) drillRight += 1;
+      setTimeout(function () {
+        if (card === '1') {
+          document.getElementById('dc1').style.display = 'none';
+          document.getElementById('dc2').style.display = 'block';
+          document.getElementById('drill-prog').textContent = 'Card 2 of 2';
+        } else {
+          document.getElementById('dc2').style.display = 'none';
+          document.getElementById('dsummary').style.display = 'block';
+          document.getElementById('drill-prog').textContent = 'Summary';
+          document.getElementById('dsum-cards').textContent =
+            drillRight + ' sharp · ' + (2 - drillRight) + (2 - drillRight === 1 ? ' miss' : ' misses');
+          addCred(18);
+        }
+      }, 2400);
+    });
+  });
+  document.getElementById('drill-back').addEventListener('click', function () {
+    goTab('standup');
+    showToast('Block logged. In the real build this returns you to Act 3 — your standup is waiting.');
+  });
+
+  /* ---------- review deck ---------- */
+  document.querySelectorAll('.ropt').forEach(function (o) {
+    o.addEventListener('click', function () {
+      var card = o.getAttribute('data-card');
+      var right = o.getAttribute('data-right') === '1';
+      document.querySelectorAll('#scr-review .ropt[data-card="' + card + '"]').forEach(function (b) { b.disabled = true; });
+      o.classList.add(right ? 'picked-right' : 'picked-wrong');
+      var stamp = document.getElementById('rst' + card);
+      stamp.textContent = right ? 'Sharp call' : 'Miss';
+      stamp.classList.add(right ? 'good' : 'miss', 'show');
+      document.getElementById('rex' + card).classList.add('show');
+      var move = document.getElementById('rmv' + card);
+      move.textContent = o.getAttribute('data-move');
+      move.classList.add('show');
+      if (!right) move.style.color = 'var(--g-warn)';
+      setTimeout(function () {
+        if (card === '1') {
+          document.getElementById('rc1').style.display = 'none';
+          document.getElementById('rc2').style.display = 'block';
+        } else {
+          document.getElementById('rc2').style.display = 'none';
+          document.getElementById('deck-clear').classList.add('show');
+        }
+      }, 2600);
+    });
   });
 })();
 </script>
