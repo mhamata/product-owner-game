@@ -5,24 +5,26 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   levels,
   tracks,
-  getUnitsForLevel,
   getLevel,
+  getSkill,
+  getUnitsForLevel,
   TOTAL_SKILLS,
   TOTAL_LADDER_SKILLS,
-  deriveSkillState,
   isLevelCertified,
   isLevelCurrent,
   isLevelUnlocked,
 } from '@/curriculum/data';
 import { canTestOut } from '@/curriculum/placement';
 import type { Level } from '@/curriculum/types';
-import { useLearnStore } from '@/store/learnStore';
+import { useLearnStore, type SkillProgress } from '@/store/learnStore';
 import { useIndustryStore } from '@/store/industryStore';
 import { INDUSTRIES, DEFAULT_INDUSTRY, isIndustryId } from '@/curriculum/industries';
+import { skillNodesForLevel, deriveSkillNode, levelMasteredCount } from '@/lib/skillTree';
 import { Topbar } from './Topbar';
-import { SkillCard } from './SkillCard';
 import { ProgressRing } from './ProgressRing';
 import { ModalityIcons } from './skillMeta';
+import { SkillTree } from './skills/SkillTree';
+import { SkillNodeSheet } from './skills/SkillNodeSheet';
 import { SIM_LADDER, isRungUnlocked, gateLevelLabel } from '@/scenarios/ladder';
 import {
   ArrowRightIcon,
@@ -66,13 +68,25 @@ function LevelSection({
   masteredIds,
   progress,
   isNextCore,
+  onSelectSkill,
 }: {
   level: Level;
   masteredIds: ReadonlySet<string>;
-  progress: Record<string, { mastery: number }>;
+  progress: Record<string, SkillProgress>;
   isNextCore: boolean;
+  onSelectSkill: (skillId: string) => void;
 }) {
   const units = getUnitsForLevel(level.id);
+  // W4-H: the tech-tree node list for this level — flattened across units in
+  // curriculum order, per the mockup's level-grouped (not unit-grouped) tree
+  // (praxis-learn-mockup.html's #scr-skills renders one flat <div class="tree">
+  // per level). `decayFor` reads straight from the progress prop so this
+  // derivation stays a thin call into the pure `@/lib/skillTree` module.
+  const nodes = useMemo(
+    () => skillNodesForLevel(level.id, masteredIds, (skillId) => progress[skillId]),
+    [level.id, masteredIds, progress],
+  );
+  const masteredNodeCount = levelMasteredCount(nodes);
   const unlocked = isLevelUnlocked(level.id, masteredIds);
   const certified = isLevelCertified(level.id, masteredIds);
   const current = isLevelCurrent(level.id, masteredIds);
@@ -180,32 +194,20 @@ function LevelSection({
           )}
         </div>
       ) : (
-        <div className="mt-5 flex flex-col gap-7">
-          {units.map((unit) => (
-            <div key={unit.id}>
-              {/* unit sub-header */}
-              <div className="flex items-baseline gap-2.5">
-                <span className="mono whitespace-nowrap text-[10.5px] uppercase tracking-[0.14em] text-faint">
-                  Unit {padIndex(unit.number)}
-                </span>
-                <span className="text-[14.5px] font-bold tracking-[-0.01em] text-ink">
-                  {unit.title}
-                </span>
-              </div>
-              <p className="mono mt-1 text-[11.5px] text-faint">{unit.blurb}</p>
-
-              <div className="mt-3.5 grid grid-cols-[repeat(auto-fill,minmax(236px,1fr))] gap-3.5 max-[560px]:grid-cols-1">
-                {unit.skills.map((skill) => (
-                  <SkillCard
-                    key={skill.id}
-                    skill={skill}
-                    state={deriveSkillState(skill.id, masteredIds)}
-                    mastery={progress[skill.id]?.mastery ?? 0}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
+        <div className="mt-5">
+          {/* W4-H: the tech tree — level-grouped node cards with a connector
+              rail, per praxis-learn-mockup.html's Skills tab. Replaces the
+              old per-unit skill-card grid; unit context is folded into each
+              node's competency eyebrow in the detail sheet instead. */}
+          <div className="mb-3 flex items-baseline justify-between gap-2">
+            <span className="mono text-[10.5px] uppercase tracking-[0.14em] text-faint">
+              Tech tree
+            </span>
+            <span className="mono text-[11px] text-faint">
+              {masteredNodeCount} / {nodes.length} mastered
+            </span>
+          </div>
+          <SkillTree nodes={nodes} onSelectSkill={onSelectSkill} />
         </div>
       )}
     </section>
@@ -334,6 +336,18 @@ export function PracticeMap() {
     return lockedCore[0]?.id ?? null;
   }, [masteredIds]);
 
+  // W4-H: the tech-tree node detail sheet. Tracks only the tapped skill id;
+  // the node view-model is re-derived on each render straight from live
+  // store state, so the sheet's strength bar / rusty flag never goes stale
+  // while it's open (e.g. right after completing a 90-second refresh).
+  const [openSkillId, setOpenSkillId] = useState<string | null>(null);
+  const openNode = useMemo(() => {
+    if (!openSkillId) return null;
+    const skill = getSkill(openSkillId);
+    if (!skill) return null;
+    return deriveSkillNode(skill, masteredIds, progress[openSkillId]);
+  }, [openSkillId, masteredIds, progress]);
+
   return (
     <>
       <Topbar />
@@ -459,9 +473,12 @@ export function PracticeMap() {
                 masteredIds={masteredIds}
                 progress={progress}
                 isNextCore={level.id === nextCoreLevelId}
+                onSelectSkill={setOpenSkillId}
               />
             ))}
           </div>
+
+          <SkillNodeSheet node={openNode} onClose={() => setOpenSkillId(null)} />
 
           {/* Simulations: the gated scenario ladder. First Sprint is the
               always-open tutorial; each higher rung opens when its gate level is

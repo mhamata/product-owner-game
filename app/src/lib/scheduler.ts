@@ -20,6 +20,16 @@ export interface CompetencyCandidate {
   coverage: CoverageStat;
   /** Best-seen sim-evidence score 0-100, or undefined if the sim has never touched it. */
   simScore?: number;
+  /**
+   * W4-H, additive: average mastery-decay strength (0..1) across this
+   * competency's MASTERED ready skills — see
+   * `@/lib/masteryDecay`'s `averageCompetencyDecay`. Defaults to 1 (no
+   * discount) when omitted, so every existing caller/test is unaffected.
+   * A competency whose mastered skills have gone rusty ranks WEAKER here
+   * without ever touching `coverage` itself (mastery/gating stay untouched —
+   * decay never re-locks, it only reweights scheduling).
+   */
+  decayFactor?: number;
 }
 
 /** A competency ranked by strength, with the facts that produced the rank. */
@@ -29,6 +39,8 @@ export interface RankedCompetency {
   strength: number;
   coverageFraction: number;
   simScore: number | null;
+  /** The decay discount actually applied (1 = none). See `CompetencyCandidate.decayFactor`. */
+  decayFactor: number;
 }
 
 /**
@@ -39,11 +51,22 @@ export interface RankedCompetency {
  * simply hasn't arrived. Once sim evidence exists, the two signals are
  * weighted equally: studied-and-passed and demonstrated-under-simulation are
  * both real evidence, and neither should drown out the other.
+ *
+ * `decayFactor` (0..1, default 1) discounts the COVERAGE term only, before
+ * blending with sim evidence: a competency whose mastered skills have gone
+ * rusty reads as less "covered" than a pure boolean count would say, so it
+ * naturally re-surfaces as a weakest-competency pick. Default of 1 means "no
+ * rust anywhere" and reproduces the pre-decay behavior exactly.
  */
-export function competencyStrength(coverage: CoverageStat, simScore?: number): number {
-  if (simScore === undefined) return coverage.fraction;
+export function competencyStrength(
+  coverage: CoverageStat,
+  simScore?: number,
+  decayFactor = 1,
+): number {
+  const discountedCoverage = coverage.fraction * decayFactor;
+  if (simScore === undefined) return discountedCoverage;
   const simFraction = Math.max(0, Math.min(1, simScore / 100));
-  return (coverage.fraction + simFraction) / 2;
+  return (discountedCoverage + simFraction) / 2;
 }
 
 /**
@@ -61,12 +84,16 @@ export function rankCompetencies(
 ): RankedCompetency[] {
   return candidates
     .filter((c) => c.coverage.total > 0)
-    .map((c) => ({
-      competency: c.competency,
-      strength: competencyStrength(c.coverage, c.simScore),
-      coverageFraction: c.coverage.fraction,
-      simScore: c.simScore ?? null,
-    }))
+    .map((c) => {
+      const decayFactor = c.decayFactor ?? 1;
+      return {
+        competency: c.competency,
+        strength: competencyStrength(c.coverage, c.simScore, decayFactor),
+        coverageFraction: c.coverage.fraction,
+        simScore: c.simScore ?? null,
+        decayFactor,
+      };
+    })
     .sort((a, b) => {
       if (a.strength !== b.strength) return a.strength - b.strength;
       return a.competency.localeCompare(b.competency);

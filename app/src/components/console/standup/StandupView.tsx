@@ -21,6 +21,7 @@ import {
   buildMentorLine,
   type WorkloadBlock,
 } from '@/lib/scheduler';
+import { averageCompetencyDecay } from '@/lib/masteryDecay';
 import { SIM_LADDER } from '@/scenarios/ladder';
 import { Topbar } from '../Topbar';
 import { JudgmentCard } from '../review/JudgmentCard';
@@ -45,6 +46,7 @@ export function StandupView() {
   const streak = useLearnStore((s) => s.streak);
   const masteredIds = useLearnStore((s) => s.masteredIds());
   const isMastered = useLearnStore((s) => s.isMastered);
+  const progress = useLearnStore((s) => s.progress);
 
   const reviewHydrated = useReviewStore((s) => s.hasHydrated);
   const dueToday = useReviewStore((s) => s.dueToday);
@@ -122,11 +124,23 @@ export function StandupView() {
   if (hasHydrated && !didSnapshotBlock) {
     setDidSnapshotBlock(true);
     const coverageByCompetency = allCompetencyCoverage(masteredIds);
-    const candidates = (Object.keys(COMPETENCIES) as Competency[]).map((c) => ({
-      competency: c,
-      coverage: coverageByCompetency[c],
-      simScore: simScores[c],
-    }));
+    const candidates = (Object.keys(COMPETENCIES) as Competency[]).map((c) => {
+      // W4-H: fold decay into the scheduler's weakest-competency pick — a
+      // competency whose mastered skills have gone rusty should resurface
+      // even though its boolean coverage still reads "fully mastered".
+      // Averaged across this competency's mastered ready skills only (see
+      // masteryDecay.ts's averageCompetencyDecay); 1 (no discount) if none
+      // are mastered yet, so the coverage term alone still carries the gap.
+      const decayRecords = masterableSkills
+        .filter((s) => s.competency === c)
+        .map((s) => progress[s.id] ?? { mastery: 0, attempts: 0 });
+      return {
+        competency: c,
+        coverage: coverageByCompetency[c],
+        simScore: simScores[c],
+        decayFactor: averageCompetencyDecay(decayRecords),
+      };
+    });
     setBlock(
       chooseWorkloadBlock({
         candidates,
