@@ -511,6 +511,19 @@ function eventBeat(
         }.`,
       };
     }
+    case 'board-confidence': {
+      const up = eff.delta >= 0;
+      return {
+        id: key,
+        glyph: up ? '📈' : '📉',
+        tone: up ? 'good' : 'bad',
+        effect: `Board confidence ${up ? 'rises' : 'falls'}`,
+        delta: `${fmtSigned(eff.delta)} confidence`,
+        because: `you chose to ${choice}, and the board ${
+          up ? 'read that as a win' : 'noticed'
+        }.`,
+      };
+    }
   }
 }
 
@@ -529,6 +542,91 @@ function personLabel(personId: string): string {
 
 function decapitalize(s: string): string {
   return s.length > 0 ? s[0].toLowerCase() + s.slice(1) : s;
+}
+
+/* ============================================================
+   EVENT OPTION EFFECT CHIPS: compact, directional, plain-language
+   hints for an UNCHOSEN option (before the player picks), so a
+   decision sheet can telegraph "▲ team morale / ▼ Aisha trust"
+   next to each choice. Moved here from the old EventStep.tsx
+   (originally a local, unexported `summarizeEffects`) for the
+   Sim 2.0 inbox rebuild (W2-D): the new decision sheets need the
+   exact same chip logic, and this file is the designated home for
+   every "explain what the engine already models" helper, so the
+   chip math lives in ONE place instead of being duplicated between
+   the (superseded) EventStep and the new inbox sheet. No new effect
+   math: every case here mirrors an EventEffect kind 1:1.
+   ============================================================ */
+
+export interface EventEffectHint {
+  dir: 'up' | 'down' | 'flat';
+  label: string;
+}
+
+/**
+ * Turn an option's structured effects into compact, directional,
+ * plain-language hints. Reads names from the live state so "trust + Aisha"
+ * reads naturally. Used for the PRE-choice effect chips (contrast
+ * `deriveEventBeats`, which narrates the effects of the option the player
+ * already chose).
+ */
+export function summarizeEventEffects(effects: EventEffect[], state: GameState): EventEffectHint[] {
+  const hints: EventEffectHint[] = [];
+  for (const eff of effects) {
+    switch (eff.kind) {
+      case 'morale':
+        hints.push({ dir: eff.delta >= 0 ? 'up' : 'down', label: 'team morale' });
+        break;
+      case 'tech-debt':
+        // tech debt going UP is bad, so the "good" direction is a decrease.
+        hints.push({ dir: eff.delta > 0 ? 'down' : 'up', label: 'tech debt' });
+        break;
+      case 'trust': {
+        const name = shortName(state.stakeholders[eff.stakeholderId]?.name ?? 'stakeholder');
+        hints.push({ dir: eff.delta >= 0 ? 'up' : 'down', label: `${name} trust` });
+        break;
+      }
+      case 'happiness': {
+        const name = shortName(state.customers[eff.customerId]?.name ?? 'customer');
+        hints.push({ dir: eff.delta >= 0 ? 'up' : 'down', label: `${name} happiness` });
+        break;
+      }
+      case 'revenue':
+        hints.push({ dir: eff.delta >= 0 ? 'up' : 'down', label: 'revenue' });
+        break;
+      case 'capacity-baseline':
+        hints.push({ dir: eff.delta >= 0 ? 'up' : 'down', label: 'capacity' });
+        break;
+      case 'headcount':
+        hints.push({ dir: eff.delta >= 0 ? 'up' : 'down', label: 'headcount' });
+        break;
+      case 'add-pbi':
+        hints.push({ dir: 'flat', label: 'new backlog item' });
+        break;
+      case 'add-pattern':
+        // A pattern tag is a learning signal, not a scoreboard move. Give it a
+        // neutral hint so an option whose ONLY effect is add-pattern still shows
+        // a meaningful row instead of an empty one.
+        hints.push({ dir: 'flat', label: 'notes a pattern' });
+        break;
+      case 'person-trust': {
+        const role = eff.personId.replace(/^person-/, '');
+        const label = (PERSON_ROLES as string[]).includes(role)
+          ? roleLabel(role as PersonRole)
+          : 'teammate';
+        hints.push({ dir: eff.delta >= 0 ? 'up' : 'down', label: `${label} trust` });
+        break;
+      }
+      // 'board-confidence' (Sim 2.0 W2-C, landing concurrently): the same
+      // simple up/down chip as revenue/capacity, so an event that moves the
+      // board meter still shows a telegraphed effect rather than silently
+      // dropping it from the chip list. W3-F owns the full board-meter UI.
+      case 'board-confidence':
+        hints.push({ dir: eff.delta >= 0 ? 'up' : 'down', label: 'board confidence' });
+        break;
+    }
+  }
+  return hints;
 }
 
 /* ============================================================

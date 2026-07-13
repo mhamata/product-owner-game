@@ -14,6 +14,7 @@ export function StepHeader({
   eyebrow,
   title,
   sub,
+  hideStepBadge,
 }: {
   stepIndex: number;
   totalSteps: number;
@@ -21,13 +22,23 @@ export function StepHeader({
   eyebrow: string;
   title: ReactNode;
   sub: ReactNode;
+  /**
+   * The Sim 2.0 inbox rebuild (W2-D) reuses this header inside components that
+   * no longer sit in a linear "Step N of 6" flow (the Plan sheet, the
+   * post-cliffhanger Outcome/Debrief mini-flow). Set true to drop the "Step N
+   * of Total" pill while keeping the eyebrow/title/sub, which still read fine
+   * standalone. Defaults to false so every pre-existing call site is unchanged.
+   */
+  hideStepBadge?: boolean;
 }) {
   return (
     <header>
       <div className="flex flex-wrap items-center gap-[9px]">
-        <span className="mono rounded-console-sm border border-accent-100 bg-accent-050 px-2 py-[3px] text-[10.5px] uppercase tracking-[0.12em] text-accent">
-          Step {stepIndex + 1} of {totalSteps} · {name}
-        </span>
+        {!hideStepBadge && (
+          <span className="mono rounded-console-sm border border-accent-100 bg-accent-050 px-2 py-[3px] text-[10.5px] uppercase tracking-[0.12em] text-accent">
+            Step {stepIndex + 1} of {totalSteps} · {name}
+          </span>
+        )}
         <span className="eyebrow">{eyebrow}</span>
       </div>
       {/* tabIndex={-1} makes the heading programmatically focusable so the

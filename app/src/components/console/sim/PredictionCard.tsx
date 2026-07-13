@@ -5,6 +5,14 @@ import { cn } from '@/lib/cn';
 import { TargetIcon } from '../Icon';
 
 /**
+ * SUPERSEDED by InboxTurn (W2-D), kept for reference this wave. This card was
+ * only ever rendered from PreviewStep (also superseded); the new inbox flow's
+ * commit gating is simply "at least one backlog item is committed" (matching
+ * the mockup), so the calibration predict-then-see-the-gap loop is not part
+ * of the new turn's critical path this slice. `calibrationStore` itself is
+ * untouched (its pure predict/resolve logic still has its own tests); it is
+ * just not exercised by the live UI until/unless a future slice re-wires it.
+ *
  * STEP 2 add-on: the calibration prompt.
  *
  * Before the capacity roll is revealed on Ship, the player calls whether

@@ -9,6 +9,12 @@ import { StepHeader } from './StepHeader';
 import { useReducedMotion } from './useReducedMotion';
 
 /**
+ * SUPERSEDED by InboxTurn (W2-D), kept for reference this wave. The new
+ * inbox flow no longer animates a discrete "roll reveal" step: the cliffhanger
+ * overlay replaces it (the roll still happens instantly/deterministically in
+ * the engine; withholding the reveal until the player's next visit, or an
+ * explicit "peek now", is the new presentation choice — see InboxTurn.tsx).
+ *
  * STEP 3 · SHIP: animate the capacity "roll".
  *
  * The engine has ALREADY rolled capacity (the runner dispatched execute-iteration

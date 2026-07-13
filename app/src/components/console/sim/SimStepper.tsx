@@ -5,6 +5,11 @@ import { CheckIcon } from '../Icon';
 import { SIM_STEPS } from './steps';
 
 /**
+ * SUPERSEDED by InboxTurn (W2-D), kept for reference this wave. The new inbox
+ * presentation has no linear step rail — progress is expressed by which
+ * inbox messages are still marked "Decision" vs "Done" and by the cliffhanger
+ * overlay, not a 6-dot stepper.
+ *
  * The sticky stepper progress bar. A step is "done" once we're past it,
  * "current" when active. Steps are clickable only when `canNavigateTo` allows
  * it; back-navigation is permitted inside the planning window (Plan ⇄ Preview)
