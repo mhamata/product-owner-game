@@ -157,3 +157,96 @@ select:focus-visible,
     scroll-behavior: auto;
   }
 }
+
+/* ============================================================
+   SIM 2.0 THEME TOKENS (design-sim-2.0.md §3)
+
+   Prefixed `--px-*` so these never collide with the existing Console
+   `--color-*` scale above. Light is the default palette (`:root`); dark
+   applies both from the OS (`prefers-color-scheme: dark`) and from an
+   explicit `data-theme="dark"` on <html> (ThemeToggle). An explicit
+   `data-theme` always wins over the OS preference in EITHER direction,
+   because `:root[data-theme="…"]` carries an attribute selector and is
+   therefore MORE SPECIFIC than the bare `:root` inside the media query,
+   regardless of source order.
+
+   SCOPE DECISION: this slice (W1-B) intentionally does NOT restyle any
+   existing page. Every current screen is built on the `--color-*` tokens
+   above, which stay hard-coded to their existing (light) values — the
+   ThemeToggle flips `data-theme` app-wide, but nothing today *reads*
+   `--px-*`, so existing surfaces are visually inert to it. `--px-*` is an
+   opt-in system: only new Sim 2.0 surfaces (starting with /standup) style
+   themselves off it, and doing so is what "opts a surface into dark mode".
+   A later slice may bridge `--color-*` to `--px-*` for a real app-wide
+   retheme; that is explicitly out of scope here.
+   ============================================================ */
+:root {
+  /* light palette (default) */
+  --px-ground: #f1f4f7;
+  --px-card: #ffffff;
+  --px-raised: #ffffff;
+  --px-line: #dfe5eb;
+  --px-line-strong: #c9d3dc;
+  --px-ink: #17202b;
+  --px-body: #46545f;
+  --px-dim: #64737f;
+  --px-dimmer: #8b99a5;
+  --px-accent: #1f8577;
+  --px-on-accent: #ffffff;
+  --px-good: #2b8f54;
+  --px-warn: #a8720e;
+  --px-crit: #bc4a3c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --px-ground: #10151d;
+    --px-card: #171e28;
+    --px-raised: #1c2634;
+    --px-line: #26303d;
+    --px-line-strong: #34404e;
+    --px-ink: #e8edf3;
+    --px-body: #b8c2ce;
+    --px-dim: #8a97a6;
+    --px-dimmer: #5f6d7d;
+    --px-accent: #4fb3a3;
+    --px-on-accent: #0c1116;
+    --px-good: #63b57f;
+    --px-warn: #e1a23c;
+    --px-crit: #d96c5f;
+  }
+}
+
+:root[data-theme='dark'] {
+  --px-ground: #10151d;
+  --px-card: #171e28;
+  --px-raised: #1c2634;
+  --px-line: #26303d;
+  --px-line-strong: #34404e;
+  --px-ink: #e8edf3;
+  --px-body: #b8c2ce;
+  --px-dim: #8a97a6;
+  --px-dimmer: #5f6d7d;
+  --px-accent: #4fb3a3;
+  --px-on-accent: #0c1116;
+  --px-good: #63b57f;
+  --px-warn: #e1a23c;
+  --px-crit: #d96c5f;
+}
+
+:root[data-theme='light'] {
+  --px-ground: #f1f4f7;
+  --px-card: #ffffff;
+  --px-raised: #ffffff;
+  --px-line: #dfe5eb;
+  --px-line-strong: #c9d3dc;
+  --px-ink: #17202b;
+  --px-body: #46545f;
+  --px-dim: #64737f;
+  --px-dimmer: #8b99a5;
+  --px-accent: #1f8577;
+  --px-on-accent: #ffffff;
+  --px-good: #2b8f54;
+  --px-warn: #a8720e;
+  --px-crit: #bc4a3c;
+}

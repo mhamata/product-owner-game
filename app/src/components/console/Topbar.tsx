@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { CapIcon, UsersIcon } from './Icon';
+import { CapIcon, LayersIcon, UsersIcon } from './Icon';
 import { ReviewNavLink } from './review/ReviewNavLink';
+import { ThemeToggle } from './ThemeToggle';
 import { AccountNavLink } from '@/components/auth/AccountNavLink';
 
 /**
@@ -38,26 +39,38 @@ export function Topbar({
             v0 · {context}
           </span>
         </Link>
-        {right ?? (
-          <nav className="flex items-center gap-2">
-            <Link
-              href="/interview"
-              className="mono inline-flex items-center gap-1.5 rounded-console border border-line bg-paper px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
-            >
-              <UsersIcon size={13} />
-              Interview
-            </Link>
-            <ReviewNavLink />
-            <Link
-              href="/progress"
-              className="mono inline-flex items-center gap-1.5 rounded-console border border-line bg-paper px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
-            >
-              <CapIcon size={13} />
-              Progress
-            </Link>
-            <AccountNavLink />
-          </nav>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Always visible regardless of `right`, so every screen (not just
+              the ones using the default nav) can flip the palette. */}
+          <ThemeToggle />
+          {right ?? (
+            <nav className="flex items-center gap-2">
+              <Link
+                href="/standup"
+                className="mono inline-flex items-center gap-1.5 rounded-console border border-line bg-paper px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
+              >
+                <LayersIcon size={13} />
+                Standup
+              </Link>
+              <Link
+                href="/interview"
+                className="mono inline-flex items-center gap-1.5 rounded-console border border-line bg-paper px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
+              >
+                <UsersIcon size={13} />
+                Interview
+              </Link>
+              <ReviewNavLink />
+              <Link
+                href="/progress"
+                className="mono inline-flex items-center gap-1.5 rounded-console border border-line bg-paper px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
+              >
+                <CapIcon size={13} />
+                Progress
+              </Link>
+              <AccountNavLink />
+            </nav>
+          )}
+        </div>
       </div>
     </header>
   );
