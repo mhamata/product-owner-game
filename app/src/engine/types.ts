@@ -59,6 +59,47 @@ export interface StakeholderState {
   lastInteraction: number;
 }
 
+// ---------------------------------------------------------------------------
+// People roster (Sim 2.0 W1-A, design-sim-2.0.md §2.1). Net-new per-entity
+// state, deliberately NOT merged into StakeholderState: `stakeholders` is a
+// scenario-authored, variable-cardinality (1-3 entries), scenario-specific-id
+// cast (e.g. `hq`/`ciro`) that carries a 0-10 trust scale for narrative
+// stakeholder beats. The People roster is a *generic, always-5-role* cast
+// (eng lead / design / data / sales & CS / CEO-board) that must exist
+// identically across all 5 scenarios x 5 industries, on a 0-100 trust scale,
+// with mood/agenda/memory the stakeholder shape has no room for. Cloning the
+// Record<id, State> + trust pattern (as the design doc's own "engine reality"
+// note directs) rather than extending StakeholderState avoids bolting a
+// second, incompatible scale and an inconsistent id/role vocabulary onto an
+// existing type that other engine code and every scenario file already
+// depends on.
+// ---------------------------------------------------------------------------
+
+/** The five canonical People roster roles (design doc §2.1's named list). */
+export type PersonRole = 'eng-lead' | 'design' | 'data' | 'sales-cs' | 'exec';
+
+/** Coarse emotional read on a person, driven by recent trust swings. */
+export type PersonMood = 'steady' | 'strained' | 'energized';
+
+/** One remembered beat ("consequence flag"), capped/FIFO — see people.ts. */
+export interface PersonMemoryEntry {
+  sprint: number;
+  note: string;
+}
+
+export interface PersonState {
+  id: string;
+  name: string;
+  role: PersonRole;
+  /** 0-100 (distinct scale from StakeholderState.trust's 0-10). */
+  trust: number;
+  mood: PersonMood;
+  /** One-line display text: what this person currently wants. */
+  agenda: string;
+  /** Capped, oldest-first, FIFO array — see people.ts PERSON_MEMORY_CAP. */
+  memory: PersonMemoryEntry[];
+}
+
 export interface TeamState {
   morale: number;
   headcount: number;
@@ -91,6 +132,11 @@ export interface EventRecord {
   optionId: string | null;
   narrative: string;
   summary: string;
+  // Which roster person "sent" this — card.senderId if authored, else derived
+  // from category via people.ts's deriveSenderIdForEvent. Optional: absent on
+  // event log entries recorded before this field existed, or when no roster
+  // person could be resolved (e.g. `people` missing/empty).
+  personId?: string;
 }
 
 export interface PatternTag {
@@ -117,6 +163,14 @@ export interface GameState {
   team: TeamState;
   tech: TechState;
   economy: EconomyState;
+
+  // Optional so old persisted snapshots (pre Sim-2.0 W1-A) keep loading without
+  // migration: absence means "not generated yet," not "empty roster." step()
+  // lazily backfills it from `generatePeopleRoster(scenario.id, seed)` the
+  // first time it processes any action against a state missing it; any other
+  // reader should treat `undefined` the same way (fall back to `{}` / null
+  // lookups) rather than assume it is always present. See people.ts.
+  people?: Record<string, PersonState>;
 
   eventLog: EventRecord[];
   activePatterns: PatternTag[];
@@ -174,7 +228,12 @@ export type EventEffect =
   | { kind: 'capacity-baseline'; delta: number }
   | { kind: 'headcount'; delta: number }
   | { kind: 'add-pattern'; tag: string }
-  | { kind: 'add-pbi'; pbi: PBI };
+  | { kind: 'add-pbi'; pbi: PBI }
+  // Trust delta attributed to one roster person (0-100 scale — distinct effect
+  // from `trust`, which targets the 0-10-scale `stakeholders` record). Applied
+  // by events.ts's applyEventEffects with clamping; a big enough swing appends
+  // a PersonMemoryEntry (see people.ts PERSON_MEMORY_TRUST_THRESHOLD).
+  | { kind: 'person-trust'; personId: string; delta: number };
 
 export interface EventCard {
   id: string;
@@ -192,6 +251,11 @@ export interface EventCard {
   forcedAtIteration?: number;
   narrative: string;
   options: EventOptionData[];
+  // Optional: names the roster person this card narratively comes "from," for
+  // the W2-D inbox UI. Existing/unauthored cards omit it; people.ts's
+  // deriveSenderIdForEvent falls back to a category → role derivation so every
+  // card still resolves to *a* sender.
+  senderId?: string;
 }
 
 export interface Scenario {

@@ -6,6 +6,7 @@ import type {
   Scenario,
 } from './types';
 import { iterationPRNG } from './prng';
+import { appendMemory, deriveMoodFromDelta, PERSON_MEMORY_TRUST_THRESHOLD } from './people';
 
 export function selectEventsForIteration(state: GameState, scenario: Scenario): EventCard[] {
   const prng = iterationPRNG(state.seed, state.iterationNumber);
@@ -54,6 +55,9 @@ export function applyEventEffects(state: GameState, effects: EventEffect[]): Gam
     economy: { ...state.economy },
     customers: { ...state.customers },
     stakeholders: { ...state.stakeholders },
+    // Optional: only clone if present. See types.ts GameState.people for why
+    // this stays undefined-safe (old snapshots may not have a roster yet).
+    people: state.people ? { ...state.people } : state.people,
     activePatterns: [...state.activePatterns],
     methodTags: [...state.methodTags],
   };
@@ -74,6 +78,27 @@ export function applyEventEffects(state: GameState, effects: EventEffect[]): Gam
             trust: clamp(s.trust + eff.delta, 0, 10),
             lastInteraction: next.iterationNumber,
           };
+        }
+        break;
+      }
+      case 'person-trust': {
+        const people = next.people;
+        const p = people?.[eff.personId];
+        if (people && p) {
+          const before = p.trust;
+          const trust = clamp(p.trust + eff.delta, 0, 100);
+          const bigSwing = Math.abs(trust - before) >= PERSON_MEMORY_TRUST_THRESHOLD;
+          const mood = deriveMoodFromDelta(p.mood, eff.delta);
+          const memory = bigSwing
+            ? appendMemory(p.memory, {
+                sprint: next.iterationNumber,
+                note:
+                  trust > before
+                    ? `Trust rose after iteration ${next.iterationNumber}.`
+                    : `Trust dropped after iteration ${next.iterationNumber}.`,
+              })
+            : p.memory;
+          next.people = { ...people, [eff.personId]: { ...p, trust, mood, memory } };
         }
         break;
       }

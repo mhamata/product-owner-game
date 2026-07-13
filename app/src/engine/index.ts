@@ -4,6 +4,7 @@ export * from './capacity';
 export * from './customers';
 export * from './techDebt';
 export * from './events';
+export * from './people';
 export * from './discovery';
 export * from './execution';
 export * from './score';

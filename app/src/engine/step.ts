@@ -2,8 +2,13 @@ import type { Action, GameState, PBI, Scenario } from './types';
 import { resolveIteration } from './execution';
 import { applyEventEffects, findOption } from './events';
 import { runDiscovery } from './discovery';
+import { deriveSenderIdForEvent, generatePeopleRoster } from './people';
 
-export function createGame(scenario: Scenario, seed: string): GameState {
+// `industry` is an optional plain string (not the UI's `IndustryId`) so the
+// engine stays dependency-free of `@/curriculum` — see people.ts. Existing
+// 2-arg call sites (e.g. store/gameStore.ts) keep compiling unchanged and get
+// the industry-neutral roster.
+export function createGame(scenario: Scenario, seed: string, industry?: string): GameState {
   const customers: Record<string, GameState['customers'][string]> = {};
   for (const c of scenario.customers) customers[c.id] = { ...c };
   const stakeholders: Record<string, GameState['stakeholders'][string]> = {};
@@ -25,6 +30,7 @@ export function createGame(scenario: Scenario, seed: string): GameState {
     sprintGoal: null,
     customers,
     stakeholders,
+    people: generatePeopleRoster(scenario.id, seed, industry),
     team: { ...scenario.team },
     tech: { ...scenario.tech, investmentsDone: [...scenario.tech.investmentsDone] },
     economy: { ...scenario.economy },
@@ -53,6 +59,15 @@ function collectPriorDoneIds(state: GameState): Set<string> {
 }
 
 export function step(state: GameState, action: Action, scenario: Scenario): GameState {
+  // Backward-compat lazy backfill: a persisted GameState from before W1-A
+  // won't have `people`. Rather than requiring a migration step, every
+  // action self-heals it here before doing anything else, so every case
+  // below (and resolveIteration/applyEventEffects, which receive this same
+  // `state`) always sees a populated roster. Deterministic: re-derives the
+  // exact roster createGame would have produced for this scenario+seed.
+  if (!state.people) {
+    state = { ...state, people: generatePeopleRoster(scenario.id, state.seed) };
+  }
   switch (action.type) {
     case 'add-to-iteration': {
       if (state.phase !== 'planning') return state;
@@ -154,6 +169,7 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
       const option = findOption(card, action.optionId);
       if (!option) return state;
       const afterEffects = applyEventEffects(state, option.effects);
+      const senderId = deriveSenderIdForEvent(card, afterEffects.people);
       const log = [
         ...afterEffects.eventLog,
         {
@@ -162,6 +178,7 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
           optionId: option.id,
           narrative: card.narrative,
           summary: option.visibleConsequence,
+          ...(senderId ? { personId: senderId } : {}),
         },
       ];
       const pending = afterEffects.pendingEvents.filter((id) => id !== card.id);

@@ -20,6 +20,8 @@ import type {
   PBI,
   Scenario,
 } from '@/engine/types';
+import type { PersonRole } from '@/engine/types';
+import { PERSON_ROLES, roleLabel } from '@/engine/people';
 import { calculateCapacityRange } from '@/engine/capacity';
 
 /* ============================================================
@@ -495,7 +497,34 @@ function eventBeat(
     case 'add-pattern':
       // Structural tag, not a scoreboard movement: no beat in the player view.
       return null;
+    case 'person-trust': {
+      const up = eff.delta >= 0;
+      const who = personLabel(eff.personId);
+      return {
+        id: key,
+        glyph: up ? '🤝' : '📉',
+        tone: up ? 'good' : 'bad',
+        effect: `Your ${who}'s trust ${up ? 'rises' : 'falls'}`,
+        delta: `${fmtSigned(eff.delta)} trust`,
+        because: `you chose to ${choice}, and your ${who} ${
+          up ? 'felt backed' : 'took it personally'
+        }.`,
+      };
+    }
   }
+}
+
+/**
+ * Display label for a roster person from their effect id (`person-<role>`).
+ * The beat renders from the effect alone (no GameState here), so the ROLE is
+ * the honest, stable thing to name; the W2-D inbox presentation, which does
+ * hold GameState, names the person properly.
+ */
+function personLabel(personId: string): string {
+  const role = personId.replace(/^person-/, '');
+  return (PERSON_ROLES as string[]).includes(role)
+    ? roleLabel(role as PersonRole)
+    : 'teammate';
 }
 
 function decapitalize(s: string): string {
