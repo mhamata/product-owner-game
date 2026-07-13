@@ -35,11 +35,11 @@ export function StepHeader({
     <header>
       <div className="flex flex-wrap items-center gap-[9px]">
         {!hideStepBadge && (
-          <span className="mono rounded-console-sm border border-accent-100 bg-accent-050 px-2 py-[3px] text-[10.5px] uppercase tracking-[0.12em] text-accent">
+          <span className="mono rounded-console-sm border border-[var(--px-line-strong)] bg-[color-mix(in_srgb,var(--px-accent)_10%,transparent)] px-2 py-[3px] text-[10.5px] uppercase tracking-[0.12em] text-[var(--px-accent)]">
             Step {stepIndex + 1} of {totalSteps} · {name}
           </span>
         )}
-        <span className="eyebrow">{eyebrow}</span>
+        <span className="mono text-[11px] uppercase tracking-[0.16em] text-[var(--px-dim)]">{eyebrow}</span>
       </div>
       {/* tabIndex={-1} makes the heading programmatically focusable so the
           runner can move focus here on each step transition (without adding it
@@ -47,11 +47,11 @@ export function StepHeader({
       <h1
         tabIndex={-1}
         data-step-heading
-        className="mt-3.5 text-[25px] font-extrabold leading-[1.15] tracking-[-0.02em] text-ink outline-none max-[560px]:text-[21px]"
+        className="mt-3.5 text-[25px] font-extrabold leading-[1.15] tracking-[-0.02em] text-[var(--px-ink)] outline-none max-[560px]:text-[21px]"
       >
         {title}
       </h1>
-      <p className="mt-2 max-w-[60ch] text-[14.5px] text-slate">{sub}</p>
+      <p className="mt-2 max-w-[60ch] text-[14.5px] text-[var(--px-body)]">{sub}</p>
     </header>
   );
 }

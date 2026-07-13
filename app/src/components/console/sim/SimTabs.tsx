@@ -126,7 +126,15 @@ export function SimTabs({
   }
 
   return (
-    <div style={{ paddingBottom: `calc(${TAB_BAR_HEIGHT}px + env(safe-area-inset-bottom))` }}>
+    <div
+      // Paints the sim's own ground color across the full viewport height, on
+      // every tab, in both themes. Without this the body's light `--color-*`
+      // background (globals.css) bleeds through underneath (and around) each
+      // tab's content in dark mode, since none of the three tabs' outermost
+      // wrappers are guaranteed to cover the full viewport themselves.
+      className="min-h-[100dvh] bg-[var(--px-ground)]"
+      style={{ paddingBottom: `calc(${TAB_BAR_HEIGHT}px + env(safe-area-inset-bottom))` }}
+    >
       <div className={cn(tab !== 'standup' && 'hidden')}>
         {state.phase === 'complete' ? (
           // Completed run: the Standup tab becomes the classic end-of-run

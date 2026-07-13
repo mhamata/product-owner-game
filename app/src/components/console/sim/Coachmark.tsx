@@ -34,19 +34,19 @@ export function Coachmark({
   return (
     <div
       role="note"
-      className="relative mt-[18px] flex items-start gap-3 rounded-console-lg border border-accent-100 bg-gradient-to-b from-accent-050 to-paper p-[13px_15px]"
+      className="relative mt-[18px] flex items-start gap-3 rounded-console-lg border border-[var(--px-line-strong)] bg-gradient-to-b from-[color-mix(in_srgb,var(--px-accent)_10%,transparent)] to-[var(--px-card)] p-[13px_15px]"
     >
       <span
-        className="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full bg-accent text-white"
+        className="inline-flex h-7 w-7 flex-none items-center justify-center rounded-full bg-[var(--px-accent)] text-[var(--px-on-accent)]"
         aria-hidden="true"
       >
         <LightbulbIcon size={15} />
       </span>
       <div className="min-w-0">
-        <span className="mono text-[10px] font-semibold uppercase tracking-[0.12em] text-accent">
+        <span className="mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--px-accent)]">
           Coachmark · {tag}
         </span>
-        <p className="mt-[3px] text-[13.5px] leading-[1.5] text-ink-2 [&_b]:font-semibold [&_b]:text-ink">
+        <p className="mt-[3px] text-[13.5px] leading-[1.5] text-[var(--px-body)] [&_b]:font-semibold [&_b]:text-[var(--px-ink)]">
           {children}
         </p>
       </div>
@@ -54,7 +54,7 @@ export function Coachmark({
         type="button"
         onClick={() => dismiss(id)}
         aria-label={`Dismiss ${tag} coachmark`}
-        className="-mr-1.5 -my-1 inline-flex h-6 w-6 flex-none items-center justify-center rounded-console-sm bg-transparent text-faint transition-[color,background] duration-150 hover:bg-accent-050 hover:text-slate"
+        className="-mr-1.5 -my-1 inline-flex h-6 w-6 flex-none items-center justify-center rounded-console-sm bg-transparent text-[var(--px-dimmer)] transition-[color,background] duration-150 hover:bg-[color-mix(in_srgb,var(--px-accent)_10%,transparent)] hover:text-[var(--px-dim)]"
       >
         <XIcon size={14} />
       </button>

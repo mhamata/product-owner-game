@@ -69,18 +69,18 @@ export function DebriefStep({
           return (
             <div
               key={key}
-              className="flex flex-col gap-[11px] rounded-console-lg border border-line bg-paper p-[16px_14px]"
+              className="flex flex-col gap-[11px] rounded-console-lg border border-[var(--px-line)] bg-[var(--px-card)] p-[16px_14px]"
             >
               <div className="flex items-center gap-2">
-                <Icon size={16} className="flex-none text-slate" />
-                <span className="mono text-[9.5px] uppercase leading-[1.25] tracking-[0.05em] text-mute">
+                <Icon size={16} className="flex-none text-[var(--px-dim)]" />
+                <span className="mono text-[9.5px] uppercase leading-[1.25] tracking-[0.05em] text-[var(--px-dimmer)]">
                   {label[0]}
                   <br />
                   {label[1]}
                 </span>
               </div>
               <div
-                className="mono tnum flex items-baseline gap-[7px] text-[28px] font-semibold leading-none text-ink"
+                className="mono tnum flex items-baseline gap-[7px] text-[28px] font-semibold leading-none text-[var(--px-ink)]"
                 aria-label={`${flatLabel}: ${value} out of 100${
                   delta !== 0 ? `, ${delta > 0 ? 'up' : 'down'} ${Math.abs(delta)} this sprint` : ', unchanged'
                 }`}
@@ -90,7 +90,7 @@ export function DebriefStep({
                   <span
                     className={cn(
                       'mono inline-flex items-center text-[12px] font-semibold',
-                      delta > 0 ? 'text-good' : 'text-bad',
+                      delta > 0 ? 'text-[var(--px-good)]' : 'text-[var(--px-crit)]',
                     )}
                     aria-hidden="true"
                   >
@@ -99,11 +99,11 @@ export function DebriefStep({
                   </span>
                 )}
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-line">
+              <div className="h-1.5 overflow-hidden rounded-full bg-[var(--px-line)]">
                 <div
                   className={cn(
                     'h-full rounded-full transition-[width] duration-700',
-                    delta < 0 ? 'bg-bad' : 'bg-accent',
+                    delta < 0 ? 'bg-[var(--px-crit)]' : 'bg-[var(--px-accent)]',
                   )}
                   style={{ width: filled ? `${Math.max(0, Math.min(100, value))}%` : '0%' }}
                 />
@@ -118,8 +118,8 @@ export function DebriefStep({
       {eventBeats.length > 0 && (
         <div className="mt-5">
           <div className="mb-2.5 flex items-center gap-2">
-            <AlertTriangleIcon size={15} className="flex-none text-warn" />
-            <span className="mono text-[10px] font-semibold uppercase tracking-[0.12em] text-warn">
+            <AlertTriangleIcon size={15} className="flex-none text-[var(--px-warn)]" />
+            <span className="mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--px-warn)]">
               From your event {eventBeats.length === 1 ? 'call' : 'calls'} this sprint
             </span>
           </div>
@@ -128,15 +128,15 @@ export function DebriefStep({
       )}
 
       {/* one-line takeaway */}
-      <div className="mt-5 flex items-start gap-[13px] rounded-console-lg border border-accent-100 bg-gradient-to-b from-accent-050 to-paper p-[16px_18px]">
-        <span className="inline-flex h-8 w-8 flex-none items-center justify-center rounded-full bg-accent text-white" aria-hidden="true">
+      <div className="mt-5 flex items-start gap-[13px] rounded-console-lg border border-[color-mix(in_srgb,var(--px-accent)_30%,transparent)] bg-gradient-to-b from-[color-mix(in_srgb,var(--px-accent)_10%,transparent)] to-[var(--px-card)] p-[16px_18px]">
+        <span className="inline-flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[var(--px-accent)] text-[var(--px-on-accent)]" aria-hidden="true">
           <CapIcon size={17} />
         </span>
         <div>
-          <span className="mono text-[10px] font-semibold uppercase tracking-[0.12em] text-accent">
+          <span className="mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--px-accent)]">
             What you learned
           </span>
-          <p className="mt-1 text-[14.5px] leading-[1.5] text-ink">{takeaway}</p>
+          <p className="mt-1 text-[14.5px] leading-[1.5] text-[var(--px-ink)]">{takeaway}</p>
         </div>
       </div>
     </section>
