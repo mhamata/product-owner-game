@@ -33,6 +33,16 @@ import type { GameState } from '@/engine/types';
  * `createGame` — it is static scenario config, not a live signal. Its
  * sparkline will always be flat; the Product screen labels it accordingly
  * rather than implying movement that never happens.
+ *
+ * `customerHappiness` (Sim 2.0 W4-G, added after this store first shipped):
+ * a per-customer-id snapshot of `state.customers[id].happiness` (0-10),
+ * feeding the fog-of-war "cohort retention curves" pane
+ * (`src/components/console/sim/cohortCurves.ts`). Same reasoning as every
+ * other field here: the engine only tracks the CURRENT happiness per
+ * customer, no history, so this is a new recording, not a read of data that
+ * secretly already existed. Because this field was added after the store's
+ * first release, snapshots recorded before this slice genuinely lack it —
+ * every reader treats it as optional (`?? {}`), not a guaranteed key.
  */
 
 export interface MetricsSnapshot {
@@ -47,6 +57,12 @@ export interface MetricsSnapshot {
   reliability: number;
   /** 0-100, or null when `state.board` isn't present (very old persisted saves). */
   boardConfidence: number | null;
+  /**
+   * customerId -> happiness (0-10) at this sprint. Optional: absent on any
+   * snapshot recorded before this field shipped (see file header) — always
+   * read with `?? {}`, never assumed present.
+   */
+  customerHappiness?: Record<string, number>;
 }
 
 export type MetricKey = 'revenue' | 'morale' | 'techDebt' | 'reliability' | 'boardConfidence';
@@ -63,6 +79,9 @@ export function deriveMetricSnapshot(state: GameState): MetricsSnapshot {
     techDebt: state.tech.techDebt,
     reliability: state.tech.reliability,
     boardConfidence: state.board?.confidence ?? null,
+    customerHappiness: Object.fromEntries(
+      Object.entries(state.customers).map(([id, c]) => [id, c.happiness]),
+    ),
   };
 }
 

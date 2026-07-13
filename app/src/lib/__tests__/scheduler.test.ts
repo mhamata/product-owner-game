@@ -37,6 +37,23 @@ describe('competencyStrength', () => {
     expect(competencyStrength(coverage(0, 2), 150)).toBeCloseTo(0.5); // (0 + 1) / 2
     expect(competencyStrength(coverage(0, 2), -50)).toBeCloseTo(0); // (0 + 0) / 2
   });
+
+  // W4-H: decay discount, additive, defaults to 1 (no change to any case above).
+  it('defaults decayFactor to 1, reproducing pre-decay behavior exactly', () => {
+    expect(competencyStrength(coverage(1, 4), undefined, 1)).toBe(
+      competencyStrength(coverage(1, 4)),
+    );
+  });
+
+  it('discounts the coverage term when decayFactor < 1', () => {
+    // coverage 0.5 (2/4) * decayFactor 0.6 = 0.3, no sim evidence.
+    expect(competencyStrength(coverage(2, 4), undefined, 0.6)).toBeCloseTo(0.3);
+  });
+
+  it('discounts coverage before blending with sim evidence', () => {
+    // coverage 1.0 (4/4) * decayFactor 0.5 = 0.5; blended with sim 100% -> 0.75
+    expect(competencyStrength(coverage(4, 4), 100, 0.5)).toBeCloseTo(0.75);
+  });
 });
 
 describe('rankCompetencies / pickWeakestCompetency', () => {
@@ -86,6 +103,25 @@ describe('rankCompetencies / pickWeakestCompetency', () => {
     expect(
       pickWeakestCompetency([{ competency: 'ux', coverage: coverage(0, 0) }]),
     ).toBeNull();
+  });
+
+  // W4-H: two equally-covered competencies, one gone rusty, must rank the
+  // rusty one weaker — this is the scheduler-coherence requirement decay
+  // exists to satisfy (a fully-mastered-but-stale competency should resurface
+  // before an equally-mastered, still-fresh one).
+  it('ranks a rusty (decayed) competency weaker than an equally-covered fresh one', () => {
+    const candidates: CompetencyCandidate[] = [
+      { competency: 'ux', coverage: coverage(4, 4), decayFactor: 0.4 }, // fully covered, but rusty
+      { competency: 'delivery', coverage: coverage(4, 4), decayFactor: 1 }, // fully covered, fresh
+    ];
+    const weakest = pickWeakestCompetency(candidates);
+    expect(weakest?.competency).toBe('ux');
+  });
+
+  it('defaults decayFactor to 1 (no discount) when a candidate omits it', () => {
+    const [ranked] = rankCompetencies([{ competency: 'ux', coverage: coverage(2, 4) }]);
+    expect(ranked.decayFactor).toBe(1);
+    expect(ranked.strength).toBeCloseTo(0.5);
   });
 });
 

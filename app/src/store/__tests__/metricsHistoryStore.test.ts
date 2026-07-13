@@ -47,12 +47,23 @@ describe('deriveMetricSnapshot', () => {
       techDebt: 42,
       reliability: 6.5,
       boardConfidence: 55,
+      customerHappiness: {},
     });
   });
 
   it('reads boardConfidence as null when `board` is absent (old persisted saves)', () => {
     const state: GameState = makeState({ board: undefined });
     expect(deriveMetricSnapshot(state).boardConfidence).toBeNull();
+  });
+
+  it('reads customerHappiness straight off state.customers, keyed by customer id (W4-G)', () => {
+    const state: GameState = makeState({
+      customers: {
+        maya: { id: 'maya', name: 'Maya', archetype: 'enterprise', engagementState: 'active', happiness: 7, ltv: 0, lastFullRelease: null, consecutivePartial: 0, consecutiveNothing: 0 },
+        theo: { id: 'theo', name: 'Theo', archetype: 'skeptic', engagementState: 'interested', happiness: 3, ltv: 0, lastFullRelease: null, consecutivePartial: 0, consecutiveNothing: 0 },
+      },
+    });
+    expect(deriveMetricSnapshot(state).customerHappiness).toEqual({ maya: 7, theo: 3 });
   });
 });
 
