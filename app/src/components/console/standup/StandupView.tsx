@@ -10,7 +10,7 @@ import {
   resolveScenario,
 } from '@/curriculum/judgment';
 import { useActiveIndustry } from '@/store/industryStore';
-import { useLearnStore } from '@/store/learnStore';
+import { MASTERY_THRESHOLD, useLearnStore } from '@/store/learnStore';
 import { useReviewStore, todayISO, type ReviewResult } from '@/store/reviewStore';
 import { useSimEvidenceStore } from '@/store/simEvidenceStore';
 import { useGameStore } from '@/store/gameStore';
@@ -44,9 +44,21 @@ export function StandupView() {
   // ---- stores ----
   const learnHydrated = useLearnStore((s) => s.hasHydrated);
   const streak = useLearnStore((s) => s.streak);
-  const masteredIds = useLearnStore((s) => s.masteredIds());
   const isMastered = useLearnStore((s) => s.isMastered);
   const progress = useLearnStore((s) => s.progress);
+  // Never call `s.masteredIds()` inside a zustand selector: it builds a fresh
+  // Set on every store read, so useSyncExternalStore sees a changed snapshot
+  // each render and loops ("getServerSnapshot should be cached" — crashed this
+  // page). Subscribe to the stable `progress` reference and derive instead.
+  const masteredIds = useMemo(
+    () =>
+      new Set(
+        Object.keys(progress).filter(
+          (id) => (progress[id]?.mastery ?? 0) >= MASTERY_THRESHOLD,
+        ),
+      ),
+    [progress],
+  );
 
   const reviewHydrated = useReviewStore((s) => s.hasHydrated);
   const dueToday = useReviewStore((s) => s.dueToday);
