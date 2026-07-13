@@ -250,3 +250,22 @@ select:focus-visible,
   --px-warn: #a8720e;
   --px-crit: #bc4a3c;
 }
+
+/* ============================================================
+   DRILL/REVIEW verdict stamp (W4-I, praxis-learn-mockup.html's `.stamp`):
+   the "Sharp call" / "Miss" badge that pops in after a card is answered.
+   Gated behind Tailwind's `motion-safe:` variant at each call site, so a
+   `prefers-reduced-motion: reduce` learner never gets this animation and
+   sees the badge fully in place immediately — no separate override needed
+   here, matching the mockup's own reduced-motion rule.
+   ============================================================ */
+@keyframes stampIn {
+  0% {
+    transform: rotate(6deg) scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: rotate(-4deg) scale(1);
+    opacity: 1;
+  }
+}

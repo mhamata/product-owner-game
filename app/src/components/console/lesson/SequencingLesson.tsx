@@ -65,6 +65,7 @@ export function SequencingLesson({
     return {
       correct: allCorrect,
       score,
+      tally: { correct, total },
       headline: allCorrect
         ? 'Surface to root. Nailed it!'
         : `${correct} / ${total} in place`,
@@ -79,10 +80,10 @@ export function SequencingLesson({
         <ol className="grid gap-1.5">
           {drill.steps.map((s, i) => (
             <li key={s.id}>
-              <b className="font-semibold text-ink">
+              <b className="font-semibold text-[var(--px-ink)]">
                 Why #{i + 1}: {s.text}
               </b>
-              <span className="block text-slate">{s.layer}</span>
+              <span className="block text-[var(--px-dim)]">{s.layer}</span>
             </li>
           ))}
         </ol>
@@ -103,11 +104,11 @@ export function SequencingLesson({
         return (
           <>
             {/* symptom callout */}
-            <div className="mt-[18px] rounded-console-lg border border-bad-line bg-bad-050 p-[14px_16px]">
-              <div className="mono text-[10.5px] uppercase tracking-[0.12em] text-bad">
+            <div className="mt-[18px] rounded-[14px] border border-[var(--px-crit)] bg-[color-mix(in_srgb,var(--px-crit)_10%,transparent)] p-[14px_16px]">
+              <div className="mono text-[10.5px] uppercase tracking-[0.12em] text-[var(--px-crit)]">
                 Symptom to investigate
               </div>
-              <p className="mt-1.5 text-[14px] leading-[1.5] text-ink">
+              <p className="mt-1.5 text-[14px] leading-[1.5] text-[var(--px-ink)]">
                 {drill.symptom}
               </p>
             </div>
@@ -127,17 +128,17 @@ export function SequencingLesson({
                     key={id}
                     role="listitem"
                     className={[
-                      'rounded-console border bg-paper p-[13px_15px] transition-[border-color,box-shadow] duration-150',
+                      'rounded-[14px] border bg-[var(--px-card)] p-[13px_15px] transition-[border-color,box-shadow] duration-150',
                       inPlace
-                        ? 'border-good shadow-[0_0_0_1px_var(--color-good)_inset]'
+                        ? 'border-[var(--px-good)] shadow-[0_0_0_1px_var(--px-good)_inset]'
                         : outOfPlace
-                          ? 'border-bad shadow-[0_0_0_1px_var(--color-bad)_inset]'
-                          : 'border-line',
+                          ? 'border-[var(--px-crit)] shadow-[0_0_0_1px_var(--px-crit)_inset]'
+                          : 'border-[var(--px-line)]',
                     ].join(' ')}
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex flex-none flex-col items-center gap-1">
-                        <span className="mono whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.06em] text-faint">
+                        <span className="mono whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--px-dimmer)]">
                           Why {i + 1}
                         </span>
                         {!locked && (
@@ -147,7 +148,7 @@ export function SequencingLesson({
                               aria-label={`Move cause up`}
                               disabled={i === 0}
                               onClick={() => move(i, -1)}
-                              className="inline-flex h-6 w-6 items-center justify-center rounded-console-sm border border-line bg-panel text-slate transition-colors hover:border-faint hover:text-ink disabled:cursor-not-allowed disabled:opacity-35"
+                              className="inline-flex h-6 w-6 items-center justify-center rounded-[8px] border border-[var(--px-line)] bg-[var(--px-raised)] text-[var(--px-dim)] transition-colors hover:border-[var(--px-line-strong)] hover:text-[var(--px-ink)] disabled:cursor-not-allowed disabled:opacity-35"
                             >
                               <TriangleUpIcon size={13} />
                             </button>
@@ -156,7 +157,7 @@ export function SequencingLesson({
                               aria-label={`Move cause down`}
                               disabled={i === order.length - 1}
                               onClick={() => move(i, 1)}
-                              className="inline-flex h-6 w-6 items-center justify-center rounded-console-sm border border-line bg-panel text-slate transition-colors hover:border-faint hover:text-ink disabled:cursor-not-allowed disabled:opacity-35"
+                              className="inline-flex h-6 w-6 items-center justify-center rounded-[8px] border border-[var(--px-line)] bg-[var(--px-raised)] text-[var(--px-dim)] transition-colors hover:border-[var(--px-line-strong)] hover:text-[var(--px-ink)] disabled:cursor-not-allowed disabled:opacity-35"
                             >
                               <TriangleDownIcon size={13} />
                             </button>
@@ -164,18 +165,28 @@ export function SequencingLesson({
                         )}
                         {locked &&
                           (inPlace ? (
-                            <CheckIcon size={15} className="text-good" />
+                            <span
+                              role="status"
+                              className="motion-safe:animate-[stampIn_180ms_cubic-bezier(0.2,1.4,0.4,1)_forwards] inline-flex h-5 w-5 items-center justify-center rounded-full border border-[var(--px-good)] text-[var(--px-good)]"
+                            >
+                              <CheckIcon size={12} />
+                            </span>
                           ) : (
-                            <XIcon size={15} className="text-bad" />
+                            <span
+                              role="status"
+                              className="motion-safe:animate-[stampIn_180ms_cubic-bezier(0.2,1.4,0.4,1)_forwards] inline-flex h-5 w-5 items-center justify-center rounded-full border border-[var(--px-crit)] text-[var(--px-crit)]"
+                            >
+                              <XIcon size={12} />
+                            </span>
                           ))}
                       </div>
 
                       <div className="min-w-0 flex-auto">
-                        <p className="text-[14px] leading-[1.5] text-ink">
+                        <p className="text-[14px] leading-[1.5] text-[var(--px-ink)]">
                           {step.text}
                         </p>
                         {locked && (
-                          <p className="mono mt-1.5 text-[11.5px] text-mute">
+                          <p className="mono mt-1.5 text-[11.5px] text-[var(--px-dimmer)]">
                             {step.layer}
                           </p>
                         )}
