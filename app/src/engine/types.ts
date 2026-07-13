@@ -107,6 +107,16 @@ export interface PersonState {
 }
 
 // ---------------------------------------------------------------------------
+// Release-prep quality (Sim 2.0 W5-J, design-sim-2.0.md §2.4). Not persisted
+// state — a transient classification, banded client-side from the
+// `/api/grade-artifact` v2 route's `overallScore` and carried ONLY as the
+// `set-release-prep` action's payload (see engine/releasePrep.ts for the
+// bands + the exact, bounded effect table it applies to `tech`).
+// ---------------------------------------------------------------------------
+
+export type ReleasePrepQuality = 'strong' | 'mixed' | 'weak';
+
+// ---------------------------------------------------------------------------
 // Board confidence + season structure (Sim 2.0 W2-C, design-sim-2.0.md §2.3).
 // Net-new, optional state — see GameState.board below for the backward-compat
 // contract. Lives alongside people.ts's roster as the run's other new
@@ -328,4 +338,9 @@ export type Action =
   | { type: 'commit-iteration'; methodId?: string }
   | { type: 'execute-iteration' }
   | { type: 'advance-iteration' }
-  | { type: 'respond-to-event'; eventId: string; optionId: string; methodId?: string };
+  | { type: 'respond-to-event'; eventId: string; optionId: string; methodId?: string }
+  // Sim 2.0 W5-J: the optional in-sim "write the launch PRD" moment's result,
+  // dispatched (during 'planning', before commit) after the client grades the
+  // PRD against the existing /api/grade-artifact v2 route. See
+  // engine/releasePrep.ts for the quality bands + the bounded effect table.
+  | { type: 'set-release-prep'; quality: ReleasePrepQuality };

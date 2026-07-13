@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
-import type { GameState, PersonState, Scenario } from '@/engine/types';
+import { useMemo, useState } from 'react';
+import type { BoardState, GameState, PersonState, Scenario } from '@/engine/types';
 import {
   deriveJobMarketOffers,
   deriveSeasonSummary,
@@ -12,9 +12,15 @@ import {
 } from '@/engine/board';
 import { ensurePeopleRoster, PERSON_ROLES, roleLabel } from '@/engine/people';
 import { cn } from '@/lib/cn';
-import { ArrowRightIcon, BuildingIcon, LockIcon } from '../Icon';
+import { ArrowRightIcon, BuildingIcon, LockIcon, MessageIcon, SparkleIcon } from '../Icon';
 import { DIMENSIONS } from './dimensions';
-import { useDecisionLogStore, runIdFor, selectEntriesForRun } from '@/store/decisionLogStore';
+import {
+  useDecisionLogStore,
+  runIdFor,
+  selectEntriesForRun,
+  type DecisionLogEntry,
+  type QBRMeetingRecord,
+} from '@/store/decisionLogStore';
 import {
   careerFileSummary,
   deriveJobMarketVisibility,
@@ -23,6 +29,8 @@ import {
   verdictCopy,
   type TimelineSprint,
 } from './season';
+import { buildQBRRoster, buildQBRSeasonInput } from './qbr';
+import { useQBR } from './useQBR';
 
 /**
  * SeasonScreen: the Sim 2.0 "Season" tab (design-sim-2.0.md §2.3, mocked in
@@ -48,8 +56,11 @@ export function SeasonScreen({
   // zustand's useSyncExternalStore.
   const allEntries = useDecisionLogStore((s) => s.entries);
   const interviewStories = useDecisionLogStore((s) => s.interviewStories);
+  const qbrMeetings = useDecisionLogStore((s) => s.qbrMeetings);
+  const setQbrMeeting = useDecisionLogStore((s) => s.setQbrMeeting);
   const entries = useMemo(() => selectEntriesForRun(allEntries, runId), [allEntries, runId]);
   const stories = interviewStories[runId] ?? [];
+  const qbrMeeting = qbrMeetings[runId] ?? null;
 
   const board = ensureBoard(state.board, scenario);
   const roster = ensurePeopleRoster(state.people, state.scenarioId, state.seed, industry ?? undefined);
@@ -66,7 +77,18 @@ export function SeasonScreen({
       {/* QBR moment: only once the season is actually over on the final
           sprint. See summary.verdict / summary.score — both W2-C
           derivations, never recomputed here. */}
-      {state.phase === 'complete' && <QBRCard summary={summary} />}
+      {state.phase === 'complete' && (
+        <QBRCard
+          summary={summary}
+          runId={runId}
+          scenarioName={scenario.name}
+          roster={roster}
+          board={board}
+          entries={entries}
+          meeting={qbrMeeting}
+          onMeetingDrafted={(m) => setQbrMeeting(runId, m)}
+        />
+      )}
 
       <p className="mono mb-2 mt-1 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[var(--px-dimmer)]">
         {scenario.name} · Sprint {state.iterationNumber} of {state.totalIterations}
@@ -112,8 +134,45 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
    phase === 'complete'.
    ============================================================ */
 
-function QBRCard({ summary }: { summary: ReturnType<typeof deriveSeasonSummary> }) {
+function QBRCard({
+  summary,
+  runId,
+  scenarioName,
+  roster,
+  board,
+  entries,
+  meeting,
+  onMeetingDrafted,
+}: {
+  summary: ReturnType<typeof deriveSeasonSummary>;
+  runId: string;
+  scenarioName: string;
+  roster: Record<string, PersonState>;
+  board: BoardState;
+  entries: DecisionLogEntry[];
+  meeting: QBRMeetingRecord | null;
+  onMeetingDrafted: (meeting: QBRMeetingRecord) => void;
+}) {
   const copy = verdictCopy(summary.verdict);
+  const { convening, convene } = useQBR();
+  const [unavailable, setUnavailable] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleConvene() {
+    setUnavailable(null);
+    setError(null);
+    const qbrRoster = buildQBRRoster(roster, roleLabel);
+    const season = buildQBRSeasonInput(board.confidence, board.expectations, summary.score, entries);
+    const result = await convene(runId, scenarioName, qbrRoster, season);
+    if (result.kind === 'meeting') {
+      onMeetingDrafted({ ...result.meeting, draftedAt: new Date().toISOString() });
+    } else if (result.kind === 'unavailable') {
+      setUnavailable(result.message);
+    } else {
+      setError(result.message);
+    }
+  }
+
   return (
     <div className="mb-4 rounded-[16px] border border-[var(--px-accent)]/35 bg-gradient-to-br from-[var(--px-accent)]/10 to-[var(--px-card)] p-[16px_16px]">
       <span className="mono text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--px-accent)]">
@@ -140,10 +199,72 @@ function QBRCard({ summary }: { summary: ReturnType<typeof deriveSeasonSummary> 
         ))}
       </div>
 
-      {/* TODO(W5-J): the AI multi-party QBR meeting (design-sim-2.0.md's
-          guardrail-stacked route) slots in right here — a live board
-          conversation grounded in this same score/verdict, instead of this
-          static summary. Not this slice's scope. */}
+      {/* W5-J: the AI multi-party QBR meeting — three of the player's own
+          roster people (exec chair, eng lead, sales/CS) discussing this same
+          score/verdict, grounded strictly in the submitted season record.
+          Per design doc §4: garnish only, never recomputes the score/verdict
+          above — it is read AFTER the season's numbers are already final. */}
+      <div className="mt-3.5 border-t border-dashed border-[var(--px-line)] pt-3.5">
+        {meeting ? (
+          <QBRMeetingView meeting={meeting} roster={roster} />
+        ) : (
+          <button
+            type="button"
+            onClick={handleConvene}
+            disabled={convening}
+            className="mono flex w-full items-center justify-center gap-1.5 rounded-[10px] border border-[var(--px-line-strong)] bg-transparent px-4 py-2.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-[var(--px-accent)] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <MessageIcon size={13} />
+            {convening ? 'Convening…' : 'Convene the QBR'}
+          </button>
+        )}
+
+        {unavailable && (
+          <p className="mt-2.5 text-[11.5px] leading-[1.5] text-[var(--px-dim)]">
+            {unavailable} Your score and verdict above are unaffected.
+          </p>
+        )}
+        {error && (
+          <p className="mt-2.5 text-[11.5px] leading-[1.5] text-[var(--px-crit)]">
+            {error}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function QBRMeetingView({
+  meeting,
+  roster,
+}: {
+  meeting: QBRMeetingRecord;
+  roster: Record<string, PersonState>;
+}) {
+  return (
+    <div>
+      <div className="mono mb-2.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.12em] text-[var(--px-dimmer)]">
+        <SparkleIcon size={12} />
+        The board meeting
+      </div>
+      <div className="grid gap-2">
+        {meeting.turns.map((turn, i) => {
+          const speaker = roster[turn.speakerId];
+          return (
+            <div key={i} className="rounded-[10px] bg-[var(--px-card)]/70 p-[9px_11px]">
+              <span className="mono text-[9.5px] font-bold uppercase tracking-[0.08em] text-[var(--px-accent)]">
+                {speaker ? `${speaker.name} · ${roleLabel(speaker.role)}` : turn.speakerId}
+              </span>
+              <p className="mt-1 text-[12.5px] leading-[1.5] text-[var(--px-body)]">{turn.text}</p>
+            </div>
+          );
+        })}
+      </div>
+      {meeting.closingLine && (
+        <p className="mt-3 border-t border-dashed border-[var(--px-line)] pt-2.5 text-[12.5px] font-semibold italic leading-[1.5] text-[var(--px-ink)]">
+          &ldquo;{meeting.closingLine}&rdquo;
+        </p>
+      )}
     </div>
   );
 }

@@ -184,6 +184,49 @@ describe('InboxTurn', () => {
     expect(screen.getByText(/CEO \/ Board Rep/i)).toBeInTheDocument();
   });
 
+  it('does not offer the launch-PRD moment when no release card is placed this sprint', () => {
+    render(<Harness scenario={testScenario()} />);
+    planTheOneItem();
+    fireEvent.click(screen.getByRole('button', { name: /Commit Sprint 1/i }));
+    const sheet = screen.getByRole('dialog', { name: 'Commit Sprint 1' });
+    expect(within(sheet).queryByText(/Write the launch PRD/i)).not.toBeInTheDocument();
+  });
+
+  it('offers the optional launch-PRD moment when a release card is placed, and skipping it commits normally', () => {
+    render(<Harness scenario={testScenario()} />);
+
+    // Plan: add the one item AND place the release card (Sim 2.0 W5-J's gate
+    // — engine/types.ts's `releaseCardPosition !== null`).
+    fireEvent.click(screen.getByText('Decision'));
+    fireEvent.click(screen.getByText('Ship the widget'));
+    fireEvent.click(screen.getByRole('button', { name: /Ship a Release/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Done planning/i }));
+
+    fireEvent.click(screen.getByRole('button', { name: /Commit Sprint 1/i }));
+    const commitSheet = screen.getByRole('dialog', { name: 'Commit Sprint 1' });
+    const prdButton = within(commitSheet).getByRole('button', { name: /Write the launch PRD/i });
+    fireEvent.click(prdButton);
+
+    // The launch-PRD sheet takes over (the commit sheet closes underneath it).
+    const prdSheet = screen.getByRole('dialog', { name: 'Write the launch PRD' });
+    expect(prdSheet).toBeInTheDocument();
+
+    // Skip the moment: control returns to the commit sheet, unchanged.
+    fireEvent.click(within(prdSheet).getByRole('button', { name: /Skip this moment/i }));
+    const reopenedCommitSheet = screen.getByRole('dialog', { name: 'Commit Sprint 1' });
+    expect(
+      within(reopenedCommitSheet).getByRole('button', { name: /Write the launch PRD/i }),
+    ).toBeInTheDocument();
+
+    // Committing without grading logs no artifactGrade — identical to a run
+    // that never places a release card at all.
+    fireEvent.click(within(reopenedCommitSheet).getByRole('button', { name: 'Commit Sprint 1' }));
+    const runId = runIdFor('test-scenario', 'seed-1');
+    const entries = useDecisionLogStore.getState().entriesForRun(runId);
+    expect(entries[0].artifactGrade).toBeUndefined();
+    expect(entries[0].releaseCard).toBe('Release 🚀');
+  });
+
   it('choosing an event option dispatches respond-to-event, logs the response, then shows the cliffhanger', () => {
     render(<Harness scenario={testScenario()} />);
 

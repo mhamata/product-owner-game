@@ -4,6 +4,7 @@ import { applyEventEffects, findOption } from './events';
 import { runDiscovery } from './discovery';
 import { deriveSenderIdForEvent, generatePeopleRoster } from './people';
 import { ensureBoard, FIRING_FLOOR } from './board';
+import { applyReleasePrep } from './releasePrep';
 
 // `industry` is an optional plain string (not the UI's `IndustryId`) so the
 // engine stays dependency-free of `@/curriculum` — see people.ts. Existing
@@ -225,6 +226,13 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
         newlyDiscoveredIds: [...state.newlyDiscoveredIds, ...addedIds],
         methodTags,
       };
+    }
+    case 'set-release-prep': {
+      // Only meaningful before commit — the whole point is to modulate THIS
+      // sprint's capacity roll (capacity.ts reads `tech` at execute-iteration
+      // time). See engine/releasePrep.ts for the bounded effect table.
+      if (state.phase !== 'planning') return state;
+      return { ...state, tech: applyReleasePrep(state.tech, action.quality) };
     }
   }
   return state;

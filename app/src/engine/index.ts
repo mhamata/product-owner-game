@@ -6,6 +6,7 @@ export * from './techDebt';
 export * from './events';
 export * from './people';
 export * from './board';
+export * from './releasePrep';
 export * from './discovery';
 export * from './execution';
 export * from './score';

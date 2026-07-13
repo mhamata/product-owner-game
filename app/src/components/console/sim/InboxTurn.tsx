@@ -9,6 +9,7 @@ import type {
   GameState,
   IterationOutcome,
   PersonState,
+  ReleasePrepQuality,
   Scenario,
 } from '@/engine/types';
 import type { GameScore } from '@/engine/score';
@@ -37,6 +38,7 @@ import { deriveSenderIdForEvent, deriveSenderIdForPBI, roleLabel } from '@/engin
 import { judgmentCardIdsForEventCategory } from './competency';
 import { useReviewStore } from '@/store/reviewStore';
 import { useDecisionLogStore, runIdFor, deriveOutcomeSummary } from '@/store/decisionLogStore';
+import { ReleasePrepSheet } from './ReleasePrepSheet';
 
 /**
  * InboxTurn: the Sim 2.0 "Standup" presentation (design-sim-2.0.md §3, mocked
@@ -96,6 +98,15 @@ export function InboxTurn({
   const [peeked, setPeeked] = useState(false);
   const [reviewSubStep, setReviewSubStep] = useState<'outcome' | 'debrief'>('outcome');
   const [justChosen, setJustChosen] = useState<{ card: EventCard; option: EventOptionData } | null>(null);
+  // Sim 2.0 W5-J: the optional "write the launch PRD" moment. Rendered as its
+  // own full-screen sheet (not nested inside the commit sheet) so it never
+  // stacks two bottom sheets — opening it closes the commit sheet, and every
+  // exit path (close/skip/lock-in) reopens the commit sheet. `releasePrepScore`
+  // is the locked-in grade (if any), included in this sprint's decision-log
+  // entry at commit time; the engine-side nudge (set-release-prep) is
+  // dispatched the moment grading is locked in, not deferred to commit.
+  const [releasePrepOpen, setReleasePrepOpen] = useState(false);
+  const [releasePrepScore, setReleasePrepScore] = useState<number | null>(null);
 
   // Reset every piece of per-turn UI state (adjust-state-during-render, same
   // pattern the old SimRunner used) the moment a fresh planning phase begins —
@@ -111,6 +122,8 @@ export function InboxTurn({
     setPeeked(false);
     setReviewSubStep('outcome');
     setJustChosen(null);
+    setReleasePrepOpen(false);
+    setReleasePrepScore(null);
   }
 
   const people = state.people;
@@ -142,11 +155,31 @@ export function InboxTurn({
           ? (state.iterationBacklog.find((p) => p.kind === 'release-card')?.title ?? 'Release')
           : null,
       rationale: rationale.trim() || null,
+      // Sim 2.0 W5-J: the locked-in launch-PRD grade for this sprint, if the
+      // player wrote and graded one. Absent (undefined) when the moment was
+      // never offered (no release this sprint) or was skipped.
+      artifactGrade: releasePrepScore ?? undefined,
     });
     dispatch({ type: 'commit-iteration' });
     setJustCommitted(true);
     setRationale('');
+    setReleasePrepScore(null);
     closeSheet();
+  }
+
+  /** Locked in from ReleasePrepSheet: dispatch the bounded engine nudge NOW
+   *  (still 'planning' — see engine/releasePrep.ts's phase gate) and remember
+   *  the score for this sprint's decision-log entry at commit time. */
+  function handleReleasePrepGraded(score: number, quality: ReleasePrepQuality) {
+    dispatch({ type: 'set-release-prep', quality });
+    setReleasePrepScore(score);
+    setReleasePrepOpen(false);
+    setOpenSheet({ kind: 'commit' });
+  }
+
+  function closeReleasePrepSheet() {
+    setReleasePrepOpen(false);
+    setOpenSheet({ kind: 'commit' });
   }
 
   function chooseEventOption(card: EventCard, option: EventOptionData) {
@@ -308,6 +341,31 @@ export function InboxTurn({
             className="mono mt-2 w-full rounded-[10px] border border-[var(--px-line)] bg-[var(--px-ground)] px-3 py-2.5 text-[13px] text-[var(--px-ink)] placeholder:text-[var(--px-dimmer)] focus:border-[var(--px-accent)] focus:outline-none"
           />
         </div>
+
+        {/* Sim 2.0 W5-J: optional artifact moment, offered ONLY when this
+            sprint's plan includes a placed release card (design-sim-2.0.md
+            §2.4). Skipping it leaves everything identical to today. */}
+        {state.releaseCardPosition !== null && (
+          <div className="mt-3.5 border-t border-dashed border-[var(--px-line)] pt-3.5">
+            {releasePrepScore !== null ? (
+              <p className="text-[12px] leading-[1.5] text-[var(--px-dim)]">
+                Launch PRD graded: <span className="mono font-bold text-[var(--px-ink)]">{releasePrepScore}/100</span> — locked in for this sprint.
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpenSheet(null);
+                  setReleasePrepOpen(true);
+                }}
+                className="mono flex w-full items-center justify-center gap-1.5 rounded-[10px] border border-[var(--px-line-strong)] bg-transparent px-3 py-2.5 text-[11.5px] font-semibold uppercase tracking-[0.05em] text-[var(--px-accent)]"
+              >
+                Write the launch PRD (optional)
+              </button>
+            )}
+          </div>
+        )}
+
         <button
           type="button"
           onClick={handleCommit}
@@ -316,6 +374,14 @@ export function InboxTurn({
           Commit Sprint {state.iterationNumber}
         </button>
       </Sheet>
+
+      <ReleasePrepSheet
+        open={releasePrepOpen}
+        onClose={closeReleasePrepSheet}
+        onSkip={closeReleasePrepSheet}
+        onGraded={handleReleasePrepGraded}
+        industry={industry}
+      />
 
       {state.phase === 'review' &&
         state.pendingEvents.map((eventId) => {
@@ -780,7 +846,10 @@ function ReviewFlow({
    Bottom sheet
    ============================================================ */
 
-function Sheet({
+// Exported so ReleasePrepSheet.tsx (Sim 2.0 W5-J) can reuse the exact same
+// bottom-sheet chrome for the optional "Write the launch PRD" moment instead
+// of forking a second copy — additive export, zero behavior change here.
+export function Sheet({
   open,
   onClose,
   title,
