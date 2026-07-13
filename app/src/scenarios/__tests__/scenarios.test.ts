@@ -72,7 +72,12 @@ function assertComplete(s: Scenario, ctx: string) {
 function playToCompletion(scenario: Scenario): GameState {
   let s = createGame(scenario, 'smoke-seed');
   let guard = 0;
-  while (s.phase !== 'complete' && guard < 80) {
+  // 'fired' (Sim 2.0 W2-C) is also a valid terminal phase: this harness plays
+  // deliberately naively (first 2 backlog items, first event option, every
+  // sprint), so tanking board confidence into a firing on a scenario themed
+  // around already-shaky footing (e.g. "The Turnaround") is an intended,
+  // correct outcome, not a bug — see board.ts / design-sim-2.0.md §2.3.
+  while (s.phase !== 'complete' && s.phase !== 'fired' && guard < 80) {
     guard++;
     if (s.phase === 'planning') {
       for (const id of s.productBacklog.slice(0, 2).map((p) => p.id)) {
@@ -140,7 +145,7 @@ describe('scenario engine smoke', () => {
       expect(scenario, `${id} resolves`).toBeTruthy();
       if (!scenario) continue;
       const end = playToCompletion(scenario);
-      expect(end.phase, `${id} reaches complete`).toBe('complete');
+      expect(['complete', 'fired'], `${id} reaches a terminal phase`).toContain(end.phase);
       const score = calculateScore(end, scenario);
       for (const [k, v] of Object.entries(score)) {
         if (typeof v === 'number') {

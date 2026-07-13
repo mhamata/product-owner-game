@@ -4,6 +4,7 @@ import { iterationPRNG } from './prng';
 import { updateCustomerStates } from './customers';
 import { updateTechDebt } from './techDebt';
 import { selectEventsForIteration } from './events';
+import { advanceBoard, ensureBoard, type BoardConfidenceInputs } from './board';
 
 // Reveal true effort for uncertain items (e.g. "5?").
 export function revealEffort(
@@ -152,6 +153,23 @@ export function resolveIteration(
 
   const fired = selectEventsForIteration(nextState, scenario);
   nextState.pendingEvents = fired.map((e) => e.id);
+
+  // Board confidence: a small, bounded, deterministic delta from this
+  // sprint's outcome (see board.ts's deriveConfidenceDelta rule table), plus
+  // a fresh read on the 3 season expectations. Never sets firedAtSprint here
+  // — that's step.ts's 'advance-iteration' concern, so 'fired' stays
+  // reachable only from the review phase this resolves into.
+  const boardInputs: BoardConfidenceInputs = {
+    commitRatio,
+    releasedAnyProduct: releasedProducts.length > 0,
+    revenueAfter: economy.revenue,
+    targetRevenue: scenario.targetRevenue,
+    sprintsCompleted: state.iterationNumber,
+    totalIterations: state.totalIterations,
+    techDebtBefore: state.tech.techDebt,
+    techDebtAfter: tech.techDebt,
+  };
+  nextState.board = advanceBoard(ensureBoard(state.board, scenario), nextState, scenario, boardInputs);
 
   const outcome: IterationOutcome = {
     iteration: state.iterationNumber,

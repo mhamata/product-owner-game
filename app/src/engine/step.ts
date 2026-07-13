@@ -3,6 +3,7 @@ import { resolveIteration } from './execution';
 import { applyEventEffects, findOption } from './events';
 import { runDiscovery } from './discovery';
 import { deriveSenderIdForEvent, generatePeopleRoster } from './people';
+import { ensureBoard, FIRING_FLOOR } from './board';
 
 // `industry` is an optional plain string (not the UI's `IndustryId`) so the
 // engine stays dependency-free of `@/curriculum` — see people.ts. Existing
@@ -31,6 +32,7 @@ export function createGame(scenario: Scenario, seed: string, industry?: string):
     customers,
     stakeholders,
     people: generatePeopleRoster(scenario.id, seed, industry),
+    board: ensureBoard(undefined, scenario),
     team: { ...scenario.team },
     tech: { ...scenario.tech, investmentsDone: [...scenario.tech.investmentsDone] },
     economy: { ...scenario.economy },
@@ -68,6 +70,14 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
   if (!state.people) {
     state = { ...state, people: generatePeopleRoster(scenario.id, state.seed) };
   }
+  // Same lazy-backfill contract as `people` above, for a pre-W2-C snapshot
+  // that has no `board` yet. See types.ts's GameState.board comment.
+  if (!state.board) {
+    state = { ...state, board: ensureBoard(undefined, scenario) };
+  }
+  // 'fired' is terminal, same as 'complete': every action is a no-op once a
+  // run has been fired. See types.ts's Phase comment.
+  if (state.phase === 'fired') return state;
   switch (action.type) {
     case 'add-to-iteration': {
       if (state.phase !== 'planning') return state;
@@ -143,6 +153,18 @@ export function step(state: GameState, action: Action, scenario: Scenario): Game
     }
     case 'advance-iteration': {
       if (state.phase !== 'review') return state;
+      // Fail state (design-sim-2.0.md §2.3): a review that lands below the
+      // firing floor ends the run right here, even on the season's final
+      // sprint (fired takes priority over 'complete'). This is the ONLY
+      // place `phase` becomes 'fired' — reachable exclusively from 'review'.
+      // A story beat, not a punishment: the engine just records the fact.
+      if (state.board && state.board.confidence < FIRING_FLOOR) {
+        return {
+          ...state,
+          phase: 'fired',
+          board: { ...state.board, firedAtSprint: state.iterationNumber },
+        };
+      }
       const next = state.iterationNumber + 1;
       if (next > state.totalIterations) {
         return { ...state, phase: 'complete' };

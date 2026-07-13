@@ -1,6 +1,12 @@
 // PRAXIS engine types. Serializable (no Set/Map).
 
-export type Phase = 'planning' | 'committed' | 'executing' | 'review' | 'complete';
+// 'fired' (Sim 2.0 W2-C, design-sim-2.0.md §2.3) is the season's fail state.
+// It is additive: every pre-existing phase is untouched, and 'fired' is
+// reachable from exactly one place — step.ts's 'advance-iteration' case,
+// gated on `state.phase === 'review'` (same gate 'complete' already uses).
+// Once a game reaches 'fired' it is terminal: step() no-ops on it, mirroring
+// 'complete'. See board.ts for the confidence/firing-floor logic.
+export type Phase = 'planning' | 'committed' | 'executing' | 'review' | 'complete' | 'fired';
 
 export type PBIKind = 'customer' | 'tech' | 'regulatory' | 'release-card';
 
@@ -100,6 +106,30 @@ export interface PersonState {
   memory: PersonMemoryEntry[];
 }
 
+// ---------------------------------------------------------------------------
+// Board confidence + season structure (Sim 2.0 W2-C, design-sim-2.0.md §2.3).
+// Net-new, optional state — see GameState.board below for the backward-compat
+// contract. Lives alongside people.ts's roster as the run's other new
+// "always exists, deterministic from scenario+seed" per-run construct.
+// ---------------------------------------------------------------------------
+
+export type BoardExpectationStatus = 'on-track' | 'at-risk' | 'off-track';
+
+/** One of the 3 deterministic season expectations — see board.ts. */
+export interface BoardExpectation {
+  id: string;
+  label: string;
+  status: BoardExpectationStatus;
+}
+
+export interface BoardState {
+  /** 0-100, clamped. See board.ts's deriveConfidenceDelta for the rule table. */
+  confidence: number;
+  expectations: BoardExpectation[];
+  /** Set only once, the sprint the run was fired at (board.ts's FIRING_FLOOR). */
+  firedAtSprint?: number;
+}
+
 export interface TeamState {
   morale: number;
   headcount: number;
@@ -172,6 +202,13 @@ export interface GameState {
   // lookups) rather than assume it is always present. See people.ts.
   people?: Record<string, PersonState>;
 
+  // Optional so old persisted snapshots (pre Sim-2.0 W2-C) keep loading without
+  // migration: absence means "not generated yet." step()/board.ts's
+  // ensureBoard lazily backfill it the same way people.ts's roster is
+  // backfilled — same-scenario+seed always reproduces the same starting
+  // confidence/expectations. See board.ts.
+  board?: BoardState;
+
   eventLog: EventRecord[];
   activePatterns: PatternTag[];
 
@@ -233,7 +270,12 @@ export type EventEffect =
   // from `trust`, which targets the 0-10-scale `stakeholders` record). Applied
   // by events.ts's applyEventEffects with clamping; a big enough swing appends
   // a PersonMemoryEntry (see people.ts PERSON_MEMORY_TRUST_THRESHOLD).
-  | { kind: 'person-trust'; personId: string; delta: number };
+  | { kind: 'person-trust'; personId: string; delta: number }
+  // Direct board-confidence move from a scenario event (on top of the
+  // per-sprint rule table in board.ts's deriveConfidenceDelta). Applied by
+  // events.ts's applyEventEffects with clamping; a no-op if `state.board`
+  // isn't present (mirrors `person-trust`'s undefined-safe handling).
+  | { kind: 'board-confidence'; delta: number };
 
 export interface EventCard {
   id: string;

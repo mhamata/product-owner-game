@@ -58,6 +58,9 @@ export function applyEventEffects(state: GameState, effects: EventEffect[]): Gam
     // Optional: only clone if present. See types.ts GameState.people for why
     // this stays undefined-safe (old snapshots may not have a roster yet).
     people: state.people ? { ...state.people } : state.people,
+    // Optional: only clone if present. Same undefined-safe contract as
+    // `people` above — see types.ts GameState.board.
+    board: state.board ? { ...state.board, expectations: [...state.board.expectations] } : state.board,
     activePatterns: [...state.activePatterns],
     methodTags: [...state.methodTags],
   };
@@ -99,6 +102,15 @@ export function applyEventEffects(state: GameState, effects: EventEffect[]): Gam
               })
             : p.memory;
           next.people = { ...people, [eff.personId]: { ...p, trust, mood, memory } };
+        }
+        break;
+      }
+      case 'board-confidence': {
+        if (next.board) {
+          next.board = {
+            ...next.board,
+            confidence: clamp(next.board.confidence + eff.delta, 0, 100),
+          };
         }
         break;
       }
