@@ -23,6 +23,7 @@ import {
 import { authMode, getUserFromRequest } from '@/lib/supabase/server';
 import { actualCallCents, estimateCallCents, logUsage, reserveBudget, settleBudget } from '@/lib/budget';
 import { reconcileBudgetOnLapse } from '@/lib/entitlements';
+import { isProviderAuthError } from '@/lib/providerAuthError';
 
 /**
  * AI-graded artifact endpoint: the differentiator of the knowledge center.
@@ -140,7 +141,10 @@ export async function POST(request: Request) {
     return Response.json({
       unavailable: true,
       message:
-        'Live grading is off in this environment. Your draft is saved below. Set ANTHROPIC_API_KEY to get rubric feedback from Claude.',
+        // Surface-neutral: this message renders in ArtifactLesson (where the
+        // draft persists below it) AND in the sim's ReleasePrepSheet (where it
+        // doesn't) — so no claim about where the draft lives.
+        'Live grading is off in this environment. Set ANTHROPIC_API_KEY to get rubric feedback from Claude.',
     });
   }
 
@@ -222,6 +226,17 @@ export async function POST(request: Request) {
         // Settlement is best-effort on the failure path; the monthly rollover
         // self-heals any leaked reservation at the period boundary.
       }
+    }
+    // A rejected key is an operator problem, not a player problem: degrade to
+    // the same calm shape the no-key path uses instead of leaking provider
+    // JSON into the UI. See lib/providerAuthError.ts.
+    if (isProviderAuthError(e)) {
+      return Response.json({
+        unavailable: true,
+        reason: 'misconfigured',
+        message:
+          'Live grading is unavailable right now (the AI key was rejected). Your draft is unaffected — please try again later.',
+      });
     }
     const msg = e instanceof Error ? e.message : 'Unknown error';
     return Response.json({ error: `Grading failed: ${msg}` }, { status: 500 });

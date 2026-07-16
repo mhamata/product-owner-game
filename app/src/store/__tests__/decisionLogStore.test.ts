@@ -210,6 +210,14 @@ describe('deriveOutcomeSummary', () => {
     expect(deriveOutcomeSummary(o)).toBe('1 item shipped, 1 slipped');
   });
 
+  it('excludes the release-card PBI from the slipped count, same as shipped', () => {
+    const o = outcome({
+      done: [pbi('a', 'Item A')],
+      notDone: [pbi('b', 'Item B'), pbi('release-card', 'Release 🚀', 'release-card')],
+    });
+    expect(deriveOutcomeSummary(o)).toBe('1 item shipped, 1 slipped');
+  });
+
   it('includes revenue and released-product counts only when non-zero', () => {
     const o = outcome({
       done: [pbi('a', 'Item A')],

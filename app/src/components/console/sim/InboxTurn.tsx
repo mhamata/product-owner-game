@@ -231,7 +231,13 @@ export function InboxTurn({
       <div className="mx-auto max-w-[480px] px-4 pt-4">
         <AppHead scenario={scenario} state={state} />
 
-        {state.lastOutcome && <RecapCard scenario={scenario} outcome={state.lastOutcome} />}
+        {/* "Previously on" is only true during planning, when lastOutcome is
+            the PREVIOUS sprint. During review it is the sprint the cliffhanger
+            below is deliberately withholding — rendering it here would spoil
+            the reveal the peek button owns. */}
+        {state.phase === 'planning' && state.lastOutcome && (
+          <RecapCard scenario={scenario} outcome={state.lastOutcome} />
+        )}
 
         {justChosen && (
           <EventChoiceToast

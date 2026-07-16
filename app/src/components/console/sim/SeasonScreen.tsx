@@ -207,6 +207,14 @@ function QBRCard({
       <div className="mt-3.5 border-t border-dashed border-[var(--px-line)] pt-3.5">
         {meeting ? (
           <QBRMeetingView meeting={meeting} roster={roster} />
+        ) : entries.length === 0 ? (
+          // No decision-log entries (a run from before the log existed, or a
+          // cleared log): the route would reject an empty sprint-facts payload
+          // with a raw validation error, so don't offer the button at all.
+          <p className="text-[11.5px] leading-[1.5] text-[var(--px-dim)]">
+            This run has no sprint record for the board to discuss — the QBR meeting needs the
+            decision log a played-through run builds. Your score and verdict above stand on their own.
+          </p>
         ) : (
           <button
             type="button"
@@ -219,10 +227,10 @@ function QBRCard({
           </button>
         )}
 
+        {/* The route's calm message already says the record is unaffected —
+            don't stack a second near-identical reassurance after it. */}
         {unavailable && (
-          <p className="mt-2.5 text-[11.5px] leading-[1.5] text-[var(--px-dim)]">
-            {unavailable} Your score and verdict above are unaffected.
-          </p>
+          <p className="mt-2.5 text-[11.5px] leading-[1.5] text-[var(--px-dim)]">{unavailable}</p>
         )}
         {error && (
           <p className="mt-2.5 text-[11.5px] leading-[1.5] text-[var(--px-crit)]">

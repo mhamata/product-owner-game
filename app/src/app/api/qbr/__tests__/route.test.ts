@@ -246,6 +246,17 @@ describe('qbr route: graceful degradation', () => {
     expect(res.status).toBe(500);
     expect(settleBudgetSpy).toHaveBeenCalledWith('user-1', 1, 0);
   });
+
+  it('returns a calm 200 unavailable (not raw provider JSON) when the key is rejected with 401, after settling to zero', async () => {
+    createSpy.mockRejectedValueOnce(Object.assign(new Error('invalid x-api-key'), { status: 401 }));
+    const res = await POST(qbrRequest());
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { unavailable?: boolean; reason?: string; error?: string };
+    expect(body.unavailable).toBe(true);
+    expect(body.reason).toBe('misconfigured');
+    expect(body.error).toBeUndefined();
+    expect(settleBudgetSpy).toHaveBeenCalledWith('user-1', 1, 0);
+  });
 });
 
 describe('qbr route: normalization', () => {

@@ -21,6 +21,7 @@ import {
 import { authMode, getUserFromRequest } from '@/lib/supabase/server';
 import { actualCallCents, estimateCallCents, logUsage, reserveBudget, settleBudget } from '@/lib/budget';
 import { reconcileBudgetOnLapse } from '@/lib/entitlements';
+import { isProviderAuthError } from '@/lib/providerAuthError';
 
 /**
  * AI mock-interview endpoint: the acquisition-wedge modality.
@@ -413,6 +414,16 @@ export async function POST(request: Request) {
           // Best-effort on the failure path; monthly rollover self-heals.
         }
       }
+      // Rejected key -> calm unavailable, never raw provider JSON in the UI.
+      // See lib/providerAuthError.ts.
+      if (isProviderAuthError(e)) {
+        return Response.json({
+          unavailable: true,
+          reason: 'misconfigured',
+          message:
+            'The interviewer is unavailable right now (the AI key was rejected). Your transcript is saved — please try again later.',
+        });
+      }
       const msg = e instanceof Error ? e.message : 'Unknown error';
       return Response.json({ error: `Interview reply failed: ${msg}` }, { status: 500 });
     }
@@ -503,6 +514,16 @@ export async function POST(request: Request) {
       } catch {
         // Best-effort on the failure path; monthly rollover self-heals.
       }
+    }
+    // Rejected key -> calm unavailable, never raw provider JSON in the UI.
+    // See lib/providerAuthError.ts.
+    if (isProviderAuthError(e)) {
+      return Response.json({
+        unavailable: true,
+        reason: 'misconfigured',
+        message:
+          'Scoring is unavailable right now (the AI key was rejected). Your transcript is saved — please try again later.',
+      });
     }
     const msg = e instanceof Error ? e.message : 'Unknown error';
     return Response.json({ error: `Interview scoring failed: ${msg}` }, { status: 500 });

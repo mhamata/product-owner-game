@@ -89,24 +89,24 @@ export function OutcomeStep({
       />
 
       {/* shipped / didn't-fit summary */}
-      <div className="mt-5 flex flex-wrap items-center gap-x-3.5 gap-y-2.5 rounded-console-lg border border-line bg-panel p-[14px_16px]">
+      <div className="mt-5 flex flex-wrap items-center gap-x-3.5 gap-y-2.5 rounded-console-lg border border-[var(--px-line)] bg-[var(--px-ground)] p-[14px_16px]">
         {outcome.done.filter((p) => p.kind !== 'release-card').length === 0 &&
         outcome.notDone.length === 0 ? (
-          <span className="mono text-[12px] text-mute">An empty sprint. Nothing was committed.</span>
+          <span className="mono text-[12px] text-[var(--px-dimmer)]">An empty sprint. Nothing was committed.</span>
         ) : (
           <>
             {outcome.done
               .filter((p) => p.kind !== 'release-card')
               .map((p) => (
-                <span key={p.id} className="mono inline-flex items-center gap-[7px] text-[12px] text-ink-2">
-                  <CheckIcon size={14} className="flex-none text-good" />
-                  <b className="font-semibold text-ink">{p.title}</b>
+                <span key={p.id} className="mono inline-flex items-center gap-[7px] text-[12px] text-[var(--px-body)]">
+                  <CheckIcon size={14} className="flex-none text-[var(--px-good)]" />
+                  <b className="font-semibold text-[var(--px-ink)]">{p.title}</b>
                 </span>
               ))}
             {outcome.notDone.map((p) => (
-              <span key={p.id} className="mono inline-flex items-center gap-[7px] text-[12px] text-ink-2">
-                <XIcon size={14} className="flex-none text-bad" />
-                Didn&apos;t fit: <b className="font-semibold text-ink">{p.title}</b>
+              <span key={p.id} className="mono inline-flex items-center gap-[7px] text-[12px] text-[var(--px-body)]">
+                <XIcon size={14} className="flex-none text-[var(--px-crit)]" />
+                Didn&apos;t fit: <b className="font-semibold text-[var(--px-ink)]">{p.title}</b>
               </span>
             ))}
           </>
@@ -118,29 +118,31 @@ export function OutcomeStep({
         <div
           className={cn(
             'mt-3 flex items-center gap-3 rounded-console-lg border p-[13px_16px]',
-            call.predicted === call.actual ? 'border-good-line bg-good-050' : 'border-bad-line bg-bad-050',
+            call.predicted === call.actual
+              ? 'border-[var(--px-good)] bg-[color-mix(in_srgb,var(--px-good)_10%,transparent)]'
+              : 'border-[var(--px-crit)] bg-[color-mix(in_srgb,var(--px-crit)_10%,transparent)]',
           )}
         >
           <span
             className={cn(
-              'inline-flex h-7 w-7 flex-none items-center justify-center rounded-full text-white',
-              call.predicted === call.actual ? 'bg-good' : 'bg-bad',
+              'inline-flex h-7 w-7 flex-none items-center justify-center rounded-full text-[var(--px-on-accent)]',
+              call.predicted === call.actual ? 'bg-[var(--px-good)]' : 'bg-[var(--px-crit)]',
             )}
             aria-hidden="true"
           >
             {call.predicted === call.actual ? <CheckIcon size={15} /> : <XIcon size={15} />}
           </span>
-          <span className="text-[13.5px] leading-snug text-ink-2">
+          <span className="text-[13.5px] leading-snug text-[var(--px-body)]">
             You called{' '}
-            <b className="font-semibold text-ink">
+            <b className="font-semibold text-[var(--px-ink)]">
               {call.predicted ? 'all of it ships' : 'some would slip'}
             </b>
             , and {call.actual ? 'it all shipped' : 'some slipped'}.{' '}
             {call.predicted === call.actual ? 'Good read.' : 'Off this time.'}
           </span>
           {calAccuracy !== null && (
-            <span className="mono ml-auto whitespace-nowrap text-[12px] text-slate">
-              Calibration <b className="font-semibold text-ink">{calAccuracy}%</b>
+            <span className="mono ml-auto whitespace-nowrap text-[12px] text-[var(--px-dim)]">
+              Calibration <b className="font-semibold text-[var(--px-ink)]">{calAccuracy}%</b>
             </span>
           )}
         </div>
@@ -149,7 +151,7 @@ export function OutcomeStep({
       {/* beats */}
       <div className="mt-[18px] grid gap-3">
         {beats.length === 0 ? (
-          <p className="text-[13px] text-mute">
+          <p className="text-[13px] text-[var(--px-dimmer)]">
             No measurable changes this sprint, a quiet one. Keep an eye on revenue: it only moves
             when you release finished work.
           </p>
@@ -162,19 +164,19 @@ export function OutcomeStep({
       {revenueDelta > 0 && (
         <div
           className={cn(
-            'mt-4 flex items-center gap-3 rounded-console-lg border border-good-line bg-good-050 p-[15px_16px] transition-[opacity,transform] duration-300',
+            'mt-4 flex items-center gap-3 rounded-console-lg border border-[var(--px-good)] bg-[color-mix(in_srgb,var(--px-good)_10%,transparent)] p-[15px_16px] transition-[opacity,transform] duration-300',
             shown > beats.length ? 'translate-y-0 opacity-100' : 'translate-y-2.5 opacity-0',
           )}
         >
-          <span className="inline-flex h-8 w-8 flex-none items-center justify-center rounded-full bg-good text-white" aria-hidden="true">
+          <span className="inline-flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[var(--px-good)] text-[var(--px-on-accent)]" aria-hidden="true">
             <DollarIcon size={17} />
           </span>
-          <span className="text-[14px] text-ink-2">
+          <span className="text-[14px] text-[var(--px-body)]">
             Revenue this sprint:{' '}
-            <b className="mono tnum font-bold text-ink">${revenueBefore.toLocaleString()}</b> →{' '}
-            <b className="mono tnum font-bold text-ink">${revenueAfter.toLocaleString()}</b>
+            <b className="mono tnum font-bold text-[var(--px-ink)]">${revenueBefore.toLocaleString()}</b> →{' '}
+            <b className="mono tnum font-bold text-[var(--px-ink)]">${revenueAfter.toLocaleString()}</b>
           </span>
-          <span className="mono tnum ml-auto whitespace-nowrap text-[18px] font-semibold text-good">
+          <span className="mono tnum ml-auto whitespace-nowrap text-[18px] font-semibold text-[var(--px-good)]">
             +${revenueDelta.toLocaleString()}
           </span>
         </div>
@@ -187,7 +189,7 @@ function Beat({ beat, visible }: { beat: OutcomeBeat; visible: boolean }) {
   return (
     <div
       className={cn(
-        'flex items-start gap-[13px] rounded-console-lg border border-line bg-paper p-[15px_16px] transition-[opacity,transform] duration-300',
+        'flex items-start gap-[13px] rounded-console-lg border border-[var(--px-line)] bg-[var(--px-card)] p-[15px_16px] transition-[opacity,transform] duration-300',
         visible ? 'translate-y-0 opacity-100' : 'translate-y-2.5 opacity-0',
       )}
     >
@@ -195,35 +197,35 @@ function Beat({ beat, visible }: { beat: OutcomeBeat; visible: boolean }) {
         className={cn(
           'inline-flex h-8 w-8 flex-none items-center justify-center rounded-full text-base',
           beat.tone === 'good'
-            ? 'border border-good-line bg-good-050'
+            ? 'border border-[var(--px-good)] bg-[color-mix(in_srgb,var(--px-good)_10%,transparent)]'
             : beat.tone === 'bad'
-              ? 'border border-bad-line bg-bad-050'
-              : 'border border-line bg-panel',
+              ? 'border border-[var(--px-crit)] bg-[color-mix(in_srgb,var(--px-crit)_10%,transparent)]'
+              : 'border border-[var(--px-line)] bg-[var(--px-ground)]',
         )}
         aria-hidden="true"
       >
         {beat.glyph}
       </span>
       <div className="min-w-0 flex-auto">
-        <span className="flex flex-wrap items-baseline gap-2 text-[14.5px] font-semibold leading-[1.35] text-ink">
+        <span className="flex flex-wrap items-baseline gap-2 text-[14.5px] font-semibold leading-[1.35] text-[var(--px-ink)]">
           {beat.effect}
           {beat.delta && (
             <span
               className={cn(
                 'mono whitespace-nowrap rounded-full border px-2 py-0.5 text-[12px] font-semibold',
                 beat.tone === 'good'
-                  ? 'border-good-line bg-good-050 text-good'
+                  ? 'border-[var(--px-good)] bg-[color-mix(in_srgb,var(--px-good)_10%,transparent)] text-[var(--px-good)]'
                   : beat.tone === 'bad'
-                    ? 'border-bad-line bg-bad-050 text-bad'
-                    : 'border-line bg-panel text-slate',
+                    ? 'border-[var(--px-crit)] bg-[color-mix(in_srgb,var(--px-crit)_10%,transparent)] text-[var(--px-crit)]'
+                    : 'border-[var(--px-line)] bg-[var(--px-ground)] text-[var(--px-dim)]',
               )}
             >
               {beat.delta}
             </span>
           )}
         </span>
-        <p className="mt-1.5 text-[13px] leading-[1.5] text-slate">
-          <span className="mono mr-1.5 text-[10px] uppercase tracking-[0.12em] text-mute">Because</span>
+        <p className="mt-1.5 text-[13px] leading-[1.5] text-[var(--px-dim)]">
+          <span className="mono mr-1.5 text-[10px] uppercase tracking-[0.12em] text-[var(--px-dimmer)]">Because</span>
           {beat.because}
         </p>
       </div>

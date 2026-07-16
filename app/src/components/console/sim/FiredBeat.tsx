@@ -42,7 +42,7 @@ export function FiredBeat({
         </h1>
         <p className="mt-3 max-w-[38ch] text-[13.5px] leading-[1.6] text-[var(--px-body)]">{proofLine}</p>
         <p className="mono mt-2 max-w-[36ch] text-[11px] leading-[1.5] text-[var(--px-dimmer)]">
-          Getting fired and rebuilding somewhere smaller is a good story too. Both make a story.
+          Getting fired and rebuilding somewhere smaller is a good story too.
         </p>
 
         <div className="mt-8 flex w-full max-w-[280px] flex-col gap-2.5">
