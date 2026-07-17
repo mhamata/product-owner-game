@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "calibrate": "tsx scripts/calibrate.ts",
     "panel:workbook": "tsx scripts/export-panel-workbook.ts",
-    "panel:import": "tsx scripts/panel-import.ts"
+    "panel:import": "tsx scripts/panel-import.ts",
+    "smoke:ai": "tsx scripts/smoke-ai.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",
