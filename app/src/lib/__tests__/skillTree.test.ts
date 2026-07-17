@@ -17,9 +17,17 @@ describe('deriveNodeState', () => {
     expect(deriveNodeState(firstSkillId, new Set(), undefined, NOW)).toBe('next');
   });
 
-  it('is "locked" for a not-yet-reached skill', () => {
+  it('is "open" for a ready, unmastered skill that is not the active suggestion (2026-07-16 self-study ruling: not locked)', () => {
     const laterId = masterableSkills[5].id;
-    expect(deriveNodeState(laterId, new Set(), undefined, NOW)).toBe('locked');
+    expect(deriveNodeState(laterId, new Set(), undefined, NOW)).toBe('open');
+  });
+
+  it('is "locked" only for a content gate, never a progression one', () => {
+    // The curriculum currently ships zero coming-soon skills (every seed skill
+    // is 'ready'), so we exercise deriveSkillState's OTHER 'locked' branch —
+    // an unresolvable skill id — which deriveNodeState maps identically,
+    // since it only cares that deriveSkillState said 'locked', not why.
+    expect(deriveNodeState('does-not-exist', new Set(), undefined, NOW)).toBe('locked');
   });
 
   it('is "done" for a mastered, fresh skill', () => {
@@ -67,6 +75,14 @@ describe('deriveSkillNode', () => {
     const skill = masterableSkills[0];
     const node = deriveSkillNode(skill, new Set(), undefined, NOW);
     expect(node.unlock.text.length).toBeGreaterThan(0);
+  });
+
+  it('has a null strength for an "open" node too', () => {
+    const skill = masterableSkills[5];
+    const node = deriveSkillNode(skill, new Set(), undefined, NOW);
+    expect(node.state).toBe('open');
+    expect(node.strengthPct).toBeNull();
+    expect(node.offersRefresh).toBe(false);
   });
 });
 

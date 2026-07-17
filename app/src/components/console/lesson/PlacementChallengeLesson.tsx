@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PLACEMENT_PASS_RATIO, type PlacementChallenge } from '@/curriculum/placement';
-import { isLevelUnlocked, levels } from '@/curriculum/data';
+import { levels } from '@/curriculum/data';
 import { INDUSTRIES, INDUSTRY_NOUNS, type IndustryId } from '@/curriculum/industries';
 import {
   type IndustryContext,
@@ -38,9 +38,9 @@ function industryContext(id: IndustryId): IndustryContext {
  *  - intro:  what this is, the honesty contract, and the pass bar. One CTA begins.
  *  - answer: all questions at once; GRADE stays disabled until each is answered.
  *  - result: pass or fail. A PASS records the level's skills mastered and offers
- *            a return to the map (now certified, next level unlocked). A FAIL
- *            records nothing, says so plainly, and routes the learner to learn
- *            the level normally.
+ *            a return to the map (now certified — every level was already open,
+ *            see the self-study ruling). A FAIL records nothing, says so
+ *            plainly, and routes the learner to learn the level normally.
  */
 type Phase = 'intro' | 'answer' | 'result';
 
@@ -50,9 +50,9 @@ type Phase = 'intro' | 'answer' | 'result';
  * It reuses the lesson chrome (Topbar, progress rail, the shared CheckQuestionCard,
  * the fixed dock) rather than inventing a parallel styling, and grades with the
  * exact predicate the concept-lesson check uses. Passing (>= 80 percent) is
- * demonstrated competence, so it records the level's ready skills as mastered via
- * learnStore, which certifies the level and unlocks the next. A fail records
- * nothing.
+ * demonstrated competence, so it records the level's ready skills as mastered
+ * via learnStore, which certifies the level — a badge, not a key (self-study
+ * ruling, 2026-07-16: every level was already open). A fail records nothing.
  */
 export function PlacementChallengeLesson({
   challenge,
@@ -134,12 +134,12 @@ export function PlacementChallengeLesson({
   return (
     <>
       <Topbar
-        context="test-out"
+        context="certify"
         right={
           <button
             type="button"
             onClick={goHome}
-            aria-label="Leave the test-out and return to the path"
+            aria-label="Leave certification and return to the path"
             className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-console border border-line bg-paper text-slate transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
           >
             <XIcon size={16} />
@@ -168,7 +168,7 @@ export function PlacementChallengeLesson({
             {/* eyebrow + title */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="mono rounded-console-sm border border-accent-100 bg-accent-050 px-2 py-0.5 text-[10.5px] uppercase tracking-[0.12em] text-accent">
-                Test out · {challenge.levelLabel}
+                Certify · {challenge.levelLabel}
               </span>
               <span className="mono inline-flex items-center gap-1.5 rounded-console-sm border border-line bg-panel-2 px-2 py-0.5 text-[10.5px] uppercase tracking-[0.12em] text-mute">
                 <CapIcon size={12} />
@@ -187,8 +187,9 @@ export function PlacementChallengeLesson({
                   Answer {total} questions drawn from this level. Score{' '}
                   <b className="font-semibold text-ink">{PASS_PCT}% or higher</b> and
                   every skill in {challenge.levelLabel} is marked mastered: the level
-                  is certified and the next one unlocks. This is the same standard the
-                  lessons hold you to, so passing is real demonstrated competence.
+                  is certified. This is the same standard the lessons hold you to, so
+                  passing is real demonstrated competence — nothing here was locked
+                  either way.
                 </p>
                 <div className="rounded-console-lg border border-line bg-panel p-[16px_18px]">
                   <div className="mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
@@ -337,9 +338,9 @@ export function PlacementChallengeLesson({
 /**
  * Terminal overlay, mirroring the lesson CompletionOverlay's modal pattern (focus
  * trapped to one action, ESC + backdrop dismiss). A PASS celebrates certification
- * and routes home (the map shows the new "Certified" badge + unlocked next
- * level); a FAIL states plainly that nothing was recorded and offers to start
- * learning the level.
+ * and routes home (the map shows the new "Certified" badge — every level was
+ * already open, see the self-study ruling); a FAIL states plainly that nothing
+ * was recorded and offers to start learning the level.
  */
 function PlacementResultOverlay({
   levelId,
@@ -361,18 +362,17 @@ function PlacementResultOverlay({
   const router = useRouter();
   const actionRef = useRef<HTMLButtonElement>(null);
 
-  // The next level that just unlocked, for the pass message.
-  const masteredIds = useLearnStore((s) => s.masteredIds);
+  // "Up next" is a curriculum-order SUGGESTION, not a gate that just opened —
+  // every level was already open (self-study ruling, 2026-07-16). No mastery
+  // lookup needed: it is purely the next core level by order.
   const nextLevelLabel = useMemo(() => {
     if (!passed) return null;
-    const ids = masteredIds();
     const order = levels.find((l) => l.id === levelId)?.order ?? 0;
     const next = levels
       .filter((l) => l.order > order && l.branch === 'core')
-      .sort((a, b) => a.order - b.order)
-      .find((l) => isLevelUnlocked(l.id, ids));
+      .sort((a, b) => a.order - b.order)[0];
     return next?.label ?? null;
-  }, [passed, levelId, masteredIds]);
+  }, [passed, levelId]);
 
   useEffect(() => {
     actionRef.current?.focus();
@@ -444,8 +444,7 @@ function PlacementResultOverlay({
               {nextLevelLabel ? (
                 <>
                   {' '}
-                  and <b className="font-semibold text-ink">{nextLevelLabel}</b> is now
-                  unlocked.
+                  — up next: <b className="font-semibold text-ink">{nextLevelLabel}</b>.
                 </>
               ) : (
                 '.'

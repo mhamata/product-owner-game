@@ -8,7 +8,6 @@ import {
   TOTAL_SKILLS,
   isLevelCertified,
   isLevelCurrent,
-  isLevelUnlocked,
   dimensionCoverage,
   allCompetencyCoverage,
   type CoverageStat,
@@ -33,7 +32,6 @@ import {
   ClockIcon,
   FileIcon,
   FlameIcon,
-  LockIcon,
 } from './Icon';
 
 const padIndex = (n: number) => String(n).padStart(2, '0');
@@ -49,6 +47,10 @@ const DIMENSION_ORDER: CompetencyGroup[] = [
 
 /* ------------------------------------------------------------------
    LEVEL CERTIFICATION ROW.
+
+   SELF-STUDY RULING (2026-07-16, Mike): every level is available from a cold
+   start — there is no locked state anymore. Certification is progress
+   FEEDBACK, never a key.
    ------------------------------------------------------------------ */
 function LevelRow({
   level,
@@ -60,7 +62,6 @@ function LevelRow({
   const readyIds = readySkillIdsOfLevel(level.id);
   const certified = isLevelCertified(level.id, masteredIds);
   const current = isLevelCurrent(level.id, masteredIds);
-  const unlocked = isLevelUnlocked(level.id, masteredIds);
   const masteredHere = readyIds.filter((id) => masteredIds.has(id)).length;
   const frac = readyIds.length === 0 ? 0 : masteredHere / readyIds.length;
 
@@ -68,11 +69,9 @@ function LevelRow({
     ? { cls: 'border-good-line bg-good-050 text-good', icon: <CheckIcon size={13} />, label: `Level ${padIndex(level.order)} certified` }
     : current
       ? { cls: 'border-accent-100 bg-accent-050 text-accent', icon: <CircleDotIcon size={13} />, label: 'In progress' }
-      : unlocked
-        ? { cls: 'border-line bg-panel-2 text-slate', icon: <ClockIcon size={13} />, label: 'Available' }
-        : { cls: 'border-line bg-panel-2 text-mute', icon: <LockIcon size={13} />, label: 'Locked' };
+      : { cls: 'border-line bg-panel-2 text-slate', icon: <ClockIcon size={13} />, label: 'Available' };
 
-  const testable = !certified && (unlocked || isNextLocked(level, masteredIds)) && canTestOut(level.id);
+  const testable = !certified && canTestOut(level.id);
 
   return (
     <div
@@ -109,10 +108,11 @@ function LevelRow({
         {testable && (
           <Link
             href={`/learn/testout/${level.id}`}
+            aria-label={`Certify ${level.label}`}
             className="mono inline-flex items-center gap-1.5 rounded-full border border-line bg-paper px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
           >
             <CapIcon size={12} />
-            Test out
+            Certify
           </Link>
         )}
         <span
@@ -124,19 +124,6 @@ function LevelRow({
       </div>
     </div>
   );
-}
-
-/**
- * True when this level is the immediate next CORE level to unlock: locked now,
- * but the level just before it (by order) is certified. That is the one locked
- * level it is fair to test out of (skip-ahead for an experienced learner).
- */
-function isNextLocked(level: Level, masteredIds: ReadonlySet<string>): boolean {
-  if (isLevelUnlocked(level.id, masteredIds)) return false;
-  if (level.branch !== 'core') return false;
-  const prev = levels.find((l) => l.branch === 'core' && l.order === level.order - 1);
-  if (!prev) return false;
-  return isLevelCertified(prev.id, masteredIds);
 }
 
 /* ------------------------------------------------------------------

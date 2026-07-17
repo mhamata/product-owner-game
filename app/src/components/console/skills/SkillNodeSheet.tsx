@@ -11,7 +11,7 @@ import { useActiveIndustry } from '@/store/industryStore';
 import { useLearnStore } from '@/store/learnStore';
 import { useReviewStore, type ReviewResult } from '@/store/reviewStore';
 import { RefreshCard } from './RefreshCard';
-import { XIcon, RestartIcon, ChevronRightIcon, LockIcon } from '../Icon';
+import { XIcon, RestartIcon, ChevronRightIcon, ClockIcon } from '../Icon';
 
 /** Context line under the node title, per state. */
 function contextLine(node: SkillNodeView): string {
@@ -21,11 +21,13 @@ function contextLine(node: SkillNodeView): string {
     case 'rusty':
       return `Going stale — strength has decayed to ${node.strengthPct}%. It never re-locks; it just rusts.`;
     case 'next':
-      return "Up next — this is the single active skill on your ladder right now.";
+      return 'Up next — our recommendation, not a requirement. Practice in any order.';
+    case 'open':
+      return 'Available now — self-study means every skill is open, in any order.';
     case 'locked':
-      return node.skill.status === 'coming-soon'
-        ? 'Planned — not buildable yet.'
-        : 'Locked — reach the active skill first to open this one.';
+      // Self-study ruling (2026-07-16): 'locked' is a CONTENT gate only —
+      // no lesson has been authored for this skill yet.
+      return 'Planned — not buildable yet.';
     default:
       return '';
   }
@@ -132,15 +134,17 @@ function SkillNodeSheetBody({ node, onClose }: { node: SkillNodeView; onClose: (
   const barWidth = node.strengthPct ?? (state === 'next' ? 8 : 4);
   const competencyLabel = COMPETENCIES[skill.competency].label;
 
-  const canPractice = state === 'done' || state === 'rusty' || state === 'next';
+  const canPractice = state === 'done' || state === 'rusty' || state === 'next' || state === 'open';
   const ctaLabel =
     state === 'done' || state === 'rusty'
       ? 'Practice again (keeps it warm)'
       : state === 'next'
         ? 'Start now'
-        : skill.status === 'coming-soon'
-          ? 'Coming soon'
-          : 'Locked — reach the active skill first';
+        : state === 'open'
+          ? 'Start'
+          // Self-study ruling (2026-07-16): the only remaining disabled CTA
+          // is the coming-soon content gate — nothing else stays locked.
+          : 'Coming soon';
 
   return (
     <>
@@ -160,11 +164,11 @@ function SkillNodeSheetBody({ node, onClose }: { node: SkillNodeView; onClose: (
       <ul className="mt-3.5 flex flex-col gap-1.5 pl-0">
         <li className="flex items-start gap-1.5 text-[12.5px] leading-[1.5] text-[var(--px-body)]">
           <span aria-hidden="true" className="mt-[3px] flex-none" style={{ color: 'var(--px-accent)' }}>
-            {node.unlock.kind === 'sim' ? '🔓' : '·'}
+            ·
           </span>
           <span>
             <b className="text-[var(--px-ink)]">
-              {node.unlock.kind === 'sim' ? 'Unlocks: ' : ''}
+              {node.unlock.kind === 'sim' ? 'In the sim: ' : ''}
             </b>
             {node.unlock.text}
           </span>
@@ -190,7 +194,9 @@ function SkillNodeSheetBody({ node, onClose }: { node: SkillNodeView; onClose: (
               disabled
               className="mono mt-4 inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-[10px] border border-[var(--px-line)] px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-[var(--px-dimmer)]"
             >
-              <LockIcon size={12} />
+              {/* Coming-soon is a content gate (nothing authored yet), not a
+                  lock — a clock, not a padlock (self-study ruling, 2026-07-16). */}
+              <ClockIcon size={12} />
               {ctaLabel}
             </button>
           )}

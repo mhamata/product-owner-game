@@ -384,7 +384,8 @@ const LEVEL_UNITS: LevelUnitSeeds = {
 };
 
 /* ==================================================================
-   SPECIALIZATION TRACKS: off-ladder depth (conceptually unlock at senior+).
+   SPECIALIZATION TRACKS: off-ladder depth. Always open (self-study ruling,
+   2026-07-16) — no longer gated behind Senior certification.
    Each track skill ships a concept lesson (status 'ready', 'lesson' modality)
    and is surfaced in its own Practice Map section. Tracks stay off-ladder, so
    they never count toward the core mastery denominator (see masterableSkills).
@@ -545,16 +546,15 @@ export const everySkill: Skill[] = [...allSkills, ...allTrackSkills];
 /**
  * Total skills that count toward mastery = the `ready` ladder skills.
  *
- * GATING RULE (documented once, used everywhere):
- *  - `coming-soon` skills are placeholders. They never count toward the mastery
- *    denominator and never block progression. Otherwise the map would feel
- *    permanently stuck at a tiny percentage and every level past the first
- *    would be unreachable. So "mastery" is measured against the *playable*
- *    curriculum only.
- *  - A LEVEL is unlocked once every `ready` skill in all PRIOR core levels is
- *    mastered (see `isLevelUnlocked`). Post-senior branches (staff/director)
- *    unlock off Senior. Levels with zero `ready` skills are treated as already
- *    satisfied for gating purposes so they don't wall off the ladder.
+ * SELF-STUDY RULING (2026-07-16, Mike): PRAXIS is a fully open self-study
+ * course — nothing is ever locked behind progression. Every `ready` skill,
+ * every level, every specialization track is playable from a cold start, in
+ * any order. Mastery/streaks/decay/review/certification all survive, but
+ * strictly as progress FEEDBACK (badges, %, "certified"), never as keys.
+ * The one gate that remains is `coming-soon`: a CONTENT gate (no lesson has
+ * been authored yet), not a progression gate. Coming-soon skills never count
+ * toward the mastery denominator and never render as interactive — otherwise
+ * the map would offer skills with nothing behind them.
  */
 export const masterableSkills: Skill[] = allSkills.filter((s) => s.status === 'ready');
 
@@ -606,8 +606,10 @@ export function getNextSkill(id: string): Skill | undefined {
    ================================================================== */
 
 /**
- * The `ready` skills a level requires for the NEXT level to unlock.
- * Empty array ⇒ nothing to require (the level is "free" for gating).
+ * The `ready` skills a level needs, in order to CERTIFY. Certification is
+ * feedback, not a gate (see the self-study ruling above) — this powers
+ * `isLevelCertified`/`readySkillIdsOfLevel` only. Empty array ⇒ the level has
+ * nothing to demonstrate yet (see `isLevelCertified`).
  */
 function readySkillsOfLevel(levelId: LevelId): Skill[] {
   return allSkills.filter((s) => s.level === levelId && s.status === 'ready');
@@ -623,51 +625,23 @@ export function readySkillIdsOfLevel(levelId: LevelId): string[] {
 }
 
 /**
- * Is this level unlocked given the mastered set?
- *
- *  - `foundations` is always unlocked (the entry point).
- *  - A `core` level unlocks once every `ready` skill in all earlier core levels
- *    is mastered. Earlier levels with no `ready` skills impose no requirement.
- *  - The post-senior branches (`ic` = staff, `management` = director) unlock
- *    off the same bar as the level immediately after Senior: once Senior's
- *    `ready` skills (and everything before) are mastered.
- */
-export function isLevelUnlocked(
-  levelId: LevelId,
-  masteredIds: ReadonlySet<string>,
-): boolean {
-  const level = getLevel(levelId);
-  if (!level) return false;
-  if (levelId === 'foundations') return true;
-
-  // The "spine" prerequisite for any level is: all core levels strictly before
-  // Senior+ that precede this one in `order`. For branch levels, the gate is
-  // the core spine up to and including Senior.
-  const senior = getLevel('senior');
-  const prereqCeilingOrder =
-    level.branch === 'core' ? level.order : (senior?.order ?? level.order) + 1;
-
-  const requiredLevels = levels.filter(
-    (l) => l.branch === 'core' && l.order < prereqCeilingOrder,
-  );
-
-  return requiredLevels.every((l) =>
-    readySkillsOfLevel(l.id).every((s) => masteredIds.has(s.id)),
-  );
-}
-
-/**
  * Derive a skill's display state from persisted mastery.
  *
- * Rules (Duolingo-style linear unlock over the *playable* curriculum):
- *  - A `coming-soon` skill is always `locked` (it isn't playable yet, but it is
- *    rendered with a distinct "coming soon" treatment; see SkillCard).
+ * SELF-STUDY RULING (2026-07-16, Mike): PRAXIS has no progression gating.
+ * `isLevelUnlocked` (and the level-gating branch it fed here) was DELETED —
+ * every level, every skill is open from a cold start. This function now only
+ * distinguishes a CONTENT gate (coming-soon: no lesson authored yet) from a
+ * purely cosmetic recommendation (active: the "up next" suggestion):
+ *  - A `coming-soon` skill is always `locked` — content isn't authored yet,
+ *    so the UI must not offer it as playable; rendered with a distinct
+ *    "coming soon" treatment (see SkillNodeSheet).
  *  - A skill the learner has mastered → `mastered`.
- *  - In a LOCKED level, every skill is `locked`.
- *  - In an UNLOCKED level, the first un-mastered `ready` skill *of the whole
- *    ladder* is the single `active` node; earlier-in-order ready skills that
- *    aren't mastered can't exist (they'd have been the active one), and later
- *    ready skills are `locked` to keep the path scannable.
+ *  - The first un-mastered `ready` skill of the whole ladder, in curriculum
+ *    order, is the single `active` node — a visual "up next" SUGGESTION
+ *    only, not a requirement. It advances automatically as skills master.
+ *  - Every other `ready`, unmastered skill (ladder or specialization track)
+ *    is `available`: fully playable today, just not the recommended next
+ *    step.
  */
 export function deriveSkillState(
   skillId: string,
@@ -678,14 +652,13 @@ export function deriveSkillState(
   if (skill.status === 'coming-soon') return 'locked';
   if (masteredIds.has(skillId)) return 'mastered';
 
-  // Level gating: a ready skill in a locked level stays locked.
-  if (skill.level && !isLevelUnlocked(skill.level, masteredIds)) return 'locked';
-
-  // The single active node is the first un-mastered *ready* ladder skill.
+  // The single active node is the first un-mastered *ready* ladder skill —
+  // a recommendation, not a gate. Track skills are never the "up next" node
+  // (they aren't part of the linear ladder) but are fully playable below.
   const firstPlayable = masterableSkills.find((s) => !masteredIds.has(s.id));
   if (firstPlayable && firstPlayable.id === skillId) return 'active';
 
-  return 'locked';
+  return 'available';
 }
 
 /**

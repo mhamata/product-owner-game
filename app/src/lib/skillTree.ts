@@ -5,31 +5,32 @@ import { unlockLineFor, type UnlockLine } from './skillUnlocks';
 
 /**
  * TECH-TREE NODE DERIVATION (praxis-learn-mockup.html's Skills tab):
- * level-grouped node cards with 4 states — done / rusty / next / locked.
+ * level-grouped node cards with 5 states — done / rusty / next / open / locked.
  *
  * Pure, presentation-agnostic: takes the same `masteredIds` set + a per-skill
  * decay record `deriveSkillState`/`masteryDecay` already use, and produces a
  * small view-model the tree component renders. No React here, so node-state
  * derivation is unit-testable without mounting anything.
  *
- * STATE MAPPING — `SkillState` (curriculum/data.ts) has exactly 3 REACHABLE
- * values today (`deriveSkillState` never returns `'available'` despite the
- * type allowing it — see that function's own comment): `mastered`, `active`,
- * `locked`. This maps 1:1 onto the mockup's 4-state vocabulary, decay adding
- * the done/rusty split within `mastered`:
+ * SELF-STUDY RULING (2026-07-16): `SkillState` (curriculum/data.ts) has 4
+ * values — `mastered`, `active`, `available`, `locked` — and after the
+ * ungating change ALL of them are reachable (`'available'` used to be dead;
+ * see git history). This maps 1:1 onto the tree's 5-state vocabulary, decay
+ * adding the done/rusty split within `mastered`:
  *
  *   deriveSkillState  + decay          -> NodeState
  *   ----------------    -----             ---------
  *   'mastered'          strength >= 70   -> 'done'
  *   'mastered'          strength <  70   -> 'rusty'
- *   'active'             (n/a)           -> 'next'
- *   'locked'             (n/a)           -> 'locked'   (includes coming-soon)
+ *   'active'             (n/a)           -> 'next'      (up-next SUGGESTION, not a gate)
+ *   'available'          (n/a)           -> 'open'       (fully playable, not the suggestion)
+ *   'locked'             (n/a)           -> 'locked'     (coming-soon ONLY — content gate)
  *
  * This NEVER writes to mastery — `deriveSkillState` is called exactly as
- * every other gated surface calls it, decay only picks between 'done'/'rusty'
+ * every other surface calls it, decay only picks between 'done'/'rusty'
  * within the 'mastered' branch (design ruling: decay never re-locks).
  */
-export type NodeState = 'done' | 'rusty' | 'next' | 'locked';
+export type NodeState = 'done' | 'rusty' | 'next' | 'open' | 'locked';
 
 export interface SkillNodeView {
   skill: Skill;
@@ -51,6 +52,7 @@ export function deriveNodeState(
   const state = deriveSkillState(skillId, masteredIds);
   if (state === 'mastered') return isRusty(decay, now) ? 'rusty' : 'done';
   if (state === 'active') return 'next';
+  if (state === 'available') return 'open';
   return 'locked';
 }
 

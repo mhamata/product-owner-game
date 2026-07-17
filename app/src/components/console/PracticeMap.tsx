@@ -5,14 +5,11 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   levels,
   tracks,
-  getLevel,
   getSkill,
-  getUnitsForLevel,
   TOTAL_SKILLS,
   TOTAL_LADDER_SKILLS,
   isLevelCertified,
   isLevelCurrent,
-  isLevelUnlocked,
 } from '@/curriculum/data';
 import { canTestOut } from '@/curriculum/placement';
 import type { Level } from '@/curriculum/types';
@@ -25,7 +22,7 @@ import { ProgressRing } from './ProgressRing';
 import { ModalityIcons } from './skillMeta';
 import { SkillTree } from './skills/SkillTree';
 import { SkillNodeSheet } from './skills/SkillNodeSheet';
-import { SIM_LADDER, isRungUnlocked, gateLevelLabel } from '@/scenarios/ladder';
+import { SIM_LADDER, pairedLevelLabel } from '@/scenarios/ladder';
 import {
   ArrowRightIcon,
   BuildingIcon,
@@ -38,7 +35,6 @@ import {
   FlameIcon,
   FlaskIcon,
   LayersIcon,
-  LockIcon,
   XIcon,
 } from './Icon';
 
@@ -54,29 +50,25 @@ const BRANCH_NOTE: Record<Level['branch'], string | null> = {
 };
 
 /**
- * One LEVEL on the Practice Map: a labelled header (locked / available / in
- * progress / certified), then its units, each a sub-header over a grid of skill
- * cards. Locked levels collapse to a one-line "locknote" listing their units so
- * the map stays scannable, exactly the pattern the old per-unit map used, lifted
- * up a tier.
+ * One LEVEL on the Practice Map: a labelled header (available / in progress /
+ * certified), then its units, each a sub-header over a grid of skill cards.
  *
- * `isNextCore` is true for the single locked level that sits immediately after
- * the last certified one: the one it is fair to skip-ahead into via test-out.
+ * SELF-STUDY RULING (2026-07-16, Mike): every level renders fully expanded
+ * from a cold start — there is no locked/collapsed state anymore. Mastery,
+ * streaks, decay, and certification all survive as progress FEEDBACK, never
+ * as keys.
  */
 function LevelSection({
   level,
   masteredIds,
   progress,
-  isNextCore,
   onSelectSkill,
 }: {
   level: Level;
   masteredIds: ReadonlySet<string>;
   progress: Record<string, SkillProgress>;
-  isNextCore: boolean;
   onSelectSkill: (skillId: string) => void;
 }) {
-  const units = getUnitsForLevel(level.id);
   // W4-H: the tech-tree node list for this level — flattened across units in
   // curriculum order, per the mockup's level-grouped (not unit-grouped) tree
   // (praxis-learn-mockup.html's #scr-skills renders one flat <div class="tree">
@@ -87,28 +79,21 @@ function LevelSection({
     [level.id, masteredIds, progress],
   );
   const masteredNodeCount = levelMasteredCount(nodes);
-  const unlocked = isLevelUnlocked(level.id, masteredIds);
   const certified = isLevelCertified(level.id, masteredIds);
   const current = isLevelCurrent(level.id, masteredIds);
-  // "Locked" = not yet reachable. An unlocked level that isn't current/certified
-  // is still shown open (it's the next thing, or all coming-soon) so learners can
-  // see what's ahead; only truly gated levels collapse.
-  const collapsed = !unlocked;
   const branchNote = BRANCH_NOTE[level.branch];
 
-  // Test out is offered where skip-ahead is meaningful: an unlocked level you
-  // have not certified (prove it instead of grinding), or the single next locked
-  // core level (true skip-ahead for an experienced PM). Only when a challenge can
-  // actually be assembled for the level.
-  const testable = !certified && (unlocked || isNextCore) && canTestOut(level.id);
+  // Certify-early is offered for any not-yet-certified level (prove it instead
+  // of grinding), as long as a placement challenge can actually be assembled
+  // for it — some levels may simply never have enough authored check-questions
+  // (see canTestOut / MIN_QUESTIONS in curriculum/placement.ts).
+  const testable = !certified && canTestOut(level.id);
 
   const statusPill = certified
     ? { cls: 'border-good-line bg-good-050 text-good', icon: <CapIcon size={13} />, label: 'Certified' }
     : current
       ? { cls: 'border-accent-100 bg-accent-050 text-accent', icon: <CircleDotIcon size={13} />, label: 'In progress' }
-      : unlocked
-        ? { cls: 'border-line bg-panel-2 text-slate', icon: <ClockIcon size={13} />, label: 'Available' }
-        : { cls: 'border-line bg-panel-2 text-mute', icon: <LockIcon size={13} />, label: 'Locked' };
+      : { cls: 'border-line bg-panel-2 text-slate', icon: <ClockIcon size={13} />, label: 'Available' };
 
   return (
     <section className="mt-11 first:mt-6">
@@ -126,12 +111,7 @@ function LevelSection({
         >
           Level {padIndex(level.order)}
         </span>
-        <span
-          className={[
-            'text-[19px] font-extrabold tracking-[-0.02em]',
-            collapsed ? 'text-mute' : 'text-ink',
-          ].join(' ')}
-        >
+        <span className="text-[19px] font-extrabold tracking-[-0.02em] text-ink">
           {level.label}
         </span>
         {branchNote && (
@@ -143,11 +123,11 @@ function LevelSection({
           {testable && (
             <Link
               href={`/learn/testout/${level.id}`}
-              aria-label={`Test out of ${level.label}`}
+              aria-label={`Certify ${level.label}`}
               className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-paper px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
             >
               <CapIcon size={12} />
-              Test out
+              Certify this level
             </Link>
           )}
           <span
@@ -167,49 +147,24 @@ function LevelSection({
           <span className="text-slate">· every ready skill mastered</span>
         </div>
       )}
-      <p className={['mt-3 max-w-[64ch] text-[14px]', collapsed ? 'text-mute' : 'text-slate'].join(' ')}>
-        {level.summary}
-      </p>
+      <p className="mt-3 max-w-[64ch] text-[14px] text-slate">{level.summary}</p>
 
-      {collapsed ? (
-        <div className="mt-3 flex flex-col gap-3">
-          <div className="flex items-start gap-2.5 text-[13px] text-mute">
-            <LockIcon size={15} className="mt-0.5 flex-none text-faint" />
-            <span>
-              Unlocks as you master earlier levels ·{' '}
-              <span className="mono text-[11.5px] tracking-[0.02em] text-faint">
-                {units.map((u) => u.title).join(' · ')}
-              </span>
-            </span>
-          </div>
-          {testable && (
-            <Link
-              href={`/learn/testout/${level.id}`}
-              className="mono inline-flex w-fit items-center gap-1.5 rounded-console border border-line bg-paper px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate no-underline transition-[border-color,color] duration-150 hover:border-faint hover:text-ink"
-            >
-              <CapIcon size={13} />
-              Test out of {level.label}
-              <ArrowRightIcon size={13} />
-            </Link>
-          )}
+      <div className="mt-5">
+        {/* W4-H: the tech tree — level-grouped node cards with a connector
+            rail, per praxis-learn-mockup.html's Skills tab. Replaces the
+            old per-unit skill-card grid; unit context is folded into each
+            node's competency eyebrow in the detail sheet instead. Every level
+            renders this fully expanded — see the self-study ruling above. */}
+        <div className="mb-3 flex items-baseline justify-between gap-2">
+          <span className="mono text-[10.5px] uppercase tracking-[0.14em] text-faint">
+            Tech tree
+          </span>
+          <span className="mono text-[11px] text-faint">
+            {masteredNodeCount} / {nodes.length} mastered
+          </span>
         </div>
-      ) : (
-        <div className="mt-5">
-          {/* W4-H: the tech tree — level-grouped node cards with a connector
-              rail, per praxis-learn-mockup.html's Skills tab. Replaces the
-              old per-unit skill-card grid; unit context is folded into each
-              node's competency eyebrow in the detail sheet instead. */}
-          <div className="mb-3 flex items-baseline justify-between gap-2">
-            <span className="mono text-[10.5px] uppercase tracking-[0.14em] text-faint">
-              Tech tree
-            </span>
-            <span className="mono text-[11px] text-faint">
-              {masteredNodeCount} / {nodes.length} mastered
-            </span>
-          </div>
-          <SkillTree nodes={nodes} onSelectSkill={onSelectSkill} />
-        </div>
-      )}
+        <SkillTree nodes={nodes} onSelectSkill={onSelectSkill} />
+      </div>
     </section>
   );
 }
@@ -218,10 +173,12 @@ const HINT_DISMISS_KEY = 'praxis-testout-hint-dismissed';
 
 /**
  * First-run self-placement nudge: a subtle, dismissible one-liner pointing an
- * experienced PM at the test-out flow so they can skip ahead instead of starting
- * at skill one. Shown only before any progress exists; dismissal is remembered
- * (localStorage) so it never nags. SSR-safe: hidden on the server + first paint,
- * revealed after we read the dismiss flag, so there is no hydration flash.
+ * experienced PM at the certification flow so they can place themselves
+ * instead of starting at skill one — a suggestion, never a requirement
+ * (nothing is locked either way). Shown only before any progress exists;
+ * dismissal is remembered (localStorage) so it never nags. SSR-safe: hidden
+ * on the server + first paint, revealed after we read the dismiss flag, so
+ * there is no hydration flash.
  */
 function TestOutHint({ targetLevelId }: { targetLevelId: string }) {
   const [show, setShow] = useState(false);
@@ -262,14 +219,14 @@ function TestOutHint({ targetLevelId }: { targetLevelId: string }) {
           href={`/learn/testout/${targetLevelId}`}
           className="font-semibold text-accent underline underline-offset-2 hover:text-accent-700"
         >
-          test out of a level
+          certify a level
         </Link>{' '}
-        to place yourself.
+        to place yourself — or just start anywhere, nothing here is locked.
       </p>
       <button
         type="button"
         onClick={dismiss}
-        aria-label="Dismiss the test-out tip"
+        aria-label="Dismiss the certify tip"
         className="ml-auto inline-flex h-7 w-7 flex-none items-center justify-center rounded-console border border-line bg-paper text-faint transition-[border-color,color] duration-150 hover:border-faint hover:text-slate"
       >
         <XIcon size={14} />
@@ -282,8 +239,10 @@ function TestOutHint({ targetLevelId }: { targetLevelId: string }) {
  * The Console "Practice Map" home: topbar, a status bar (consistency streak +
  * mastery ring + home-industry chip), a curriculum header with an overall
  * progress meter, then the six career LEVELS rendered as labelled sections of
- * units → skill cards. Below the ladder sit the Capstone simulation entry and a
- * specialization-tracks section (off-ladder depth, coming soon).
+ * units → skill cards. Below the ladder sit the Decision Simulations ladder
+ * and a specialization-tracks section (off-ladder depth). Self-study ruling
+ * (2026-07-16): every level, every sim rung, every track renders fully open
+ * from a cold start — nothing here is a gate.
  */
 export function PracticeMap() {
   const progress = useLearnStore((s) => s.progress);
@@ -310,31 +269,8 @@ export function PracticeMap() {
   );
 
   const masteredCount = masteredIds.size;
-  const unlockedSimCount = useMemo(
-    () => SIM_LADDER.filter((r) => isRungUnlocked(r, masteredIds)).length,
-    [masteredIds],
-  );
-  // Specialization tracks open as one bundle once Senior is certified, the same
-  // certify-to-unlock gate the sim rungs use. They are off-ladder depth, so they
-  // unlock together rather than one prerequisite at a time.
-  const tracksUnlocked = useMemo(
-    () => isLevelCertified('senior', masteredIds),
-    [masteredIds],
-  );
-  const seniorLabel = getLevel('senior')?.label ?? 'Senior';
   const overall = TOTAL_SKILLS > 0 ? masteredCount / TOTAL_SKILLS : 0;
   const overallPct = Math.round(overall * 100);
-
-  // The single locked CORE level it is fair to skip-ahead into: the lowest-order
-  // core level that is still locked. (Its predecessor must be certified for it to
-  // be the *next* one; the lowest locked core level always satisfies that.) Used
-  // to surface a "Test out" affordance on the next rung, not on every far level.
-  const nextCoreLevelId = useMemo(() => {
-    const lockedCore = levels
-      .filter((l) => l.branch === 'core' && !isLevelUnlocked(l.id, masteredIds))
-      .sort((a, b) => a.order - b.order);
-    return lockedCore[0]?.id ?? null;
-  }, [masteredIds]);
 
   // W4-H: the tech-tree node detail sheet. Tracks only the tapped skill id;
   // the node view-model is re-derived on each render straight from live
@@ -472,7 +408,6 @@ export function PracticeMap() {
                 level={level}
                 masteredIds={masteredIds}
                 progress={progress}
-                isNextCore={level.id === nextCoreLevelId}
                 onSelectSkill={setOpenSkillId}
               />
             ))}
@@ -480,9 +415,10 @@ export function PracticeMap() {
 
           <SkillNodeSheet node={openNode} onClose={() => setOpenSkillId(null)} />
 
-          {/* Simulations: the gated scenario ladder. First Sprint is the
-              always-open tutorial; each higher rung opens when its gate level is
-              certified, then stays freely replayable (the free-play sandbox). */}
+          {/* Simulations: the open scenario ladder. First Sprint is the
+              tutorial; every rung is open and freely replayable from a cold
+              start (self-study ruling, 2026-07-16) — "paired with" a level is
+              a display hint only, never a requirement. */}
           <section className="mt-11">
             <div className="flex items-center gap-3 border-b-2 border-line pb-3">
               <span className="mono inline-flex items-center gap-1.5 whitespace-nowrap rounded-console-sm border border-line bg-panel-2 px-[10px] py-1 text-[11px] uppercase tracking-[0.14em] text-mute">
@@ -493,66 +429,50 @@ export function PracticeMap() {
                 Decision Simulations
               </span>
               <span className="mono ml-auto inline-flex items-center gap-1.5 whitespace-nowrap text-[11px] uppercase tracking-[0.1em] text-mute">
-                {hasHydrated ? `${unlockedSimCount} / ${SIM_LADDER.length} open` : `${SIM_LADDER.length} rungs`}
+                {SIM_LADDER.length} rungs · all open
               </span>
             </div>
             <p className="mt-3 max-w-[64ch] text-[14px] text-slate">
               Run a full product cycle under pressure. Each rung retunes the same
-              engine for a higher altitude and opens when you certify the level
-              below it. Replay any open rung as often as you like.
+              engine for a higher altitude. Every rung is open from the start —
+              replay any of them as often as you like.
             </p>
 
             <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(248px,1fr))] gap-3.5 max-[560px]:grid-cols-1">
               {SIM_LADDER.map((rung) => {
-                if (isRungUnlocked(rung, masteredIds)) {
-                  return (
-                    <Link
-                      key={rung.scenarioId}
-                      href={`/play/${rung.scenarioId}`}
-                      className="group flex flex-col gap-2.5 rounded-console-lg border border-line bg-paper p-4 no-underline transition-[border-color,box-shadow] hover:border-faint hover:shadow-console-sm"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="text-[15px] font-semibold tracking-[-0.01em] text-ink">
-                          {rung.title}
-                        </span>
-                        <span className="mono flex-none rounded-console-sm border border-line bg-panel px-2 py-0.5 text-[10px] uppercase tracking-[0.1em] text-mute">
-                          {rung.altitude}
-                        </span>
-                      </div>
-                      <p className="text-[12.5px] leading-snug text-slate">{rung.tagline}</p>
-                      <span className="mono mt-1 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-accent">
-                        {rung.unlockOnCertified === null ? 'Start here' : 'Play'}
-                        <ArrowRightIcon size={12} />
-                      </span>
-                    </Link>
-                  );
-                }
+                const pairing = pairedLevelLabel(rung);
                 return (
-                  <div
+                  <Link
                     key={rung.scenarioId}
-                    aria-disabled="true"
-                    className="flex flex-col gap-2.5 rounded-console-lg border border-dashed border-line bg-panel/60 p-4"
+                    href={`/play/${rung.scenarioId}`}
+                    className="group flex flex-col gap-2.5 rounded-console-lg border border-line bg-paper p-4 no-underline transition-[border-color,box-shadow] hover:border-faint hover:shadow-console-sm"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <span className="text-[15px] font-semibold tracking-[-0.01em] text-mute">
+                      <span className="text-[15px] font-semibold tracking-[-0.01em] text-ink">
                         {rung.title}
                       </span>
-                      <LockIcon size={14} className="flex-none text-faint" />
+                      <span className="mono flex-none rounded-console-sm border border-line bg-panel px-2 py-0.5 text-[10px] uppercase tracking-[0.1em] text-mute">
+                        {rung.altitude}
+                      </span>
                     </div>
-                    <p className="text-[12.5px] leading-snug text-faint">{rung.tagline}</p>
-                    <span className="mono mt-1 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.06em] text-faint">
-                      Certify {gateLevelLabel(rung)} to unlock
+                    <p className="text-[12.5px] leading-snug text-slate">{rung.tagline}</p>
+                    {pairing && (
+                      <span className="mono text-[10.5px] uppercase tracking-[0.08em] text-faint">
+                        Paired with {pairing}
+                      </span>
+                    )}
+                    <span className="mono mt-1 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-accent">
+                      {pairing === null ? 'Start here' : 'Play'}
+                      <ArrowRightIcon size={12} />
                     </span>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
           </section>
 
-          {/* Specialization tracks: off-ladder depth, gated behind Senior
-              certification (the same certify-to-unlock gate the sim rungs use).
-              This is built, test-covered content, not a placeholder: each card
-              opens into its skills once the gate clears. */}
+          {/* Specialization tracks: off-ladder depth. Always open (self-study
+              ruling, 2026-07-16) — each card links straight into its skills. */}
           <section className="mt-11 pb-16">
             <div className="flex flex-wrap items-center gap-3 border-b-2 border-line pb-3">
               <span className="mono inline-flex items-center gap-1.5 whitespace-nowrap rounded-console-sm border border-line bg-panel-2 px-[10px] py-1 text-[11px] uppercase tracking-[0.14em] text-mute">
@@ -563,22 +483,13 @@ export function PracticeMap() {
                 Specializations
               </span>
               <span className="mono ml-auto inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-panel-2 px-2.5 py-1 text-[11px] uppercase tracking-[0.1em] text-mute">
-                {hasHydrated && tracksUnlocked ? (
-                  <>
-                    <LayersIcon size={13} />
-                    Open
-                  </>
-                ) : (
-                  <>
-                    <LockIcon size={13} />
-                    Unlocks at {seniorLabel}
-                  </>
-                )}
+                <LayersIcon size={13} />
+                Open
               </span>
             </div>
             <p className="mt-3 max-w-[64ch] text-[14px] text-slate">
-              Go deep on a domain once you certify {seniorLabel}. These run beside
-              the ladder, not on it.
+              Go deep on a domain, any time — these run beside the ladder, not on
+              it.
             </p>
 
             <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(248px,1fr))] gap-3.5 max-[560px]:grid-cols-1">
@@ -587,42 +498,9 @@ export function PracticeMap() {
                   new Set(track.skills.flatMap((s) => s.modalities)),
                 );
 
-                // Locked: the dashed, certify-to-unlock treatment the sim rungs
-                // use. Pre-hydration we always render locked so the server and
-                // the first client paint agree; the store fills in after mount.
-                if (!hasHydrated || !tracksUnlocked) {
-                  return (
-                    <div
-                      key={track.id}
-                      aria-disabled="true"
-                      className="flex flex-col gap-2.5 rounded-console-lg border border-dashed border-line bg-panel/60 p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="text-[15px] font-semibold tracking-[-0.01em] text-mute">
-                          {track.label}
-                        </span>
-                        <LayersIcon size={15} className="flex-none text-faint" />
-                      </div>
-                      <p className="text-[12.5px] leading-snug text-slate">
-                        {track.summary}
-                      </p>
-                      <div className="mt-1 flex items-center justify-between gap-2">
-                        <span className="mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
-                          {track.skills.length} skills
-                        </span>
-                        <ModalityIcons modalities={modalities} />
-                      </div>
-                      <span className="mono mt-1 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.06em] text-faint">
-                        <LockIcon size={12} />
-                        Certify {seniorLabel} to unlock
-                      </span>
-                    </div>
-                  );
-                }
-
-                // Unlocked: a live card whose skills each link straight into the
-                // lesson, so a learner picks within the domain rather than being
-                // walked across track boundaries by the linear "next" helper.
+                // A live card whose skills each link straight into the lesson,
+                // so a learner picks within the domain rather than being walked
+                // across track boundaries by the linear "next" helper.
                 return (
                   <div
                     key={track.id}
@@ -637,6 +515,12 @@ export function PracticeMap() {
                     <p className="text-[12.5px] leading-snug text-slate">
                       {track.summary}
                     </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
+                        {track.skills.length} skills
+                      </span>
+                      <ModalityIcons modalities={modalities} />
+                    </div>
                     <div className="mt-1 flex flex-col gap-1.5">
                       {track.skills.map((s) => {
                         const mastered = masteredIds.has(s.id);

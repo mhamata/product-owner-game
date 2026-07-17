@@ -10,7 +10,7 @@ import {
   isPlacementPass,
   PLACEMENT_PASS_RATIO,
 } from '../placement';
-import { readySkillIdsOfLevel, isLevelCertified, isLevelUnlocked } from '../data';
+import { readySkillIdsOfLevel, isLevelCertified } from '../data';
 import { getLessonContent } from '../lessons';
 import { useLearnStore } from '@/store/learnStore';
 import type { LevelId } from '../types';
@@ -96,7 +96,7 @@ describe('isPlacementPass', () => {
   });
 });
 
-describe('test-out recording: a pass certifies the level and unlocks the next', () => {
+describe('test-out recording: a pass certifies the level (certification is feedback, not a gate)', () => {
   beforeEach(() => {
     useLearnStore.getState().resetProgress();
   });
@@ -116,9 +116,9 @@ describe('test-out recording: a pass certifies the level and unlocks the next', 
     for (const id of challenge.coveredSkillIds) {
       expect(after.has(id)).toBe(true);
     }
-    // The level is now certified and the next core level (Associate) unlocks.
+    // The level is now certified — a badge, not a key: Associate was already
+    // open before this pass (self-study ruling, 2026-07-16).
     expect(isLevelCertified('foundations', after)).toBe(true);
-    expect(isLevelUnlocked('associate', after)).toBe(true);
   });
 
   it('extends the consistency streak once for the whole batch, not once per skill', () => {

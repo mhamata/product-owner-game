@@ -3,32 +3,35 @@ import { COMPETENCIES, type Skill } from '@/curriculum/types';
 import { FOG_GATE_LIST } from './fogOfWar';
 
 /**
- * TECH-TREE UNLOCK LINES (design-sim-2.0.md §2.5: "skills unlock capabilities,
- * not checkmarks... locked ≠ hidden: the learner can always read the power
- * they're missing").
+ * TECH-TREE SKILL LINES. SELF-STUDY RULING (2026-07-16, Mike, see the dated
+ * amendment in design-sim-2.0.md §2.5): "skills unlock capabilities, not
+ * checkmarks" is superseded by "skills sharpen reads" — nothing here is a
+ * gate anymore, so this copy names what mastering a skill DEEPENS, not what
+ * it unblocks.
  *
- * Every skill node on the tech tree names what mastering it grants. Two kinds:
+ * Every skill node on the tech tree names what mastering it sharpens. Two
+ * kinds:
  *
- *  - `sim`: a REAL in-app power, honestly sourced from something that actually
- *    exists in the codebase today. We do not invent unlocks that don't exist
- *    yet — see SIM_UNLOCKS below, built straight from W4-G's fog-of-war gate
- *    registry (`@/lib/fogOfWar`), the real source of truth for which skill
- *    unlocks which Product-screen pane.
- *  - `pedagogical`: no real in-sim gate exists for this skill yet, so the line
- *    names what studying it actually opens NEXT in the curriculum — the
- *    closest honest analogue to "unlocks" the ladder can support today (the
- *    ladder has no per-skill prerequisite graph; `deriveSkillState` is
- *    strictly linear across the whole curriculum — see curriculum/data.ts).
+ *  - `sim`: a REAL in-app payoff, honestly sourced from something that
+ *    actually exists in the codebase today. We do not invent payoffs that
+ *    don't exist yet — see SIM_UNLOCKS below, built straight from W4-G's
+ *    Product-screen "sharpen" registry (`@/lib/fogOfWar`), the real source of
+ *    truth for which skill sharpens which Product-screen pane.
+ *  - `pedagogical`: no real in-sim payoff exists for this skill yet, so the
+ *    line names what studying it actually opens NEXT in the curriculum — the
+ *    closest honest analogue the ladder can support today (the ladder has no
+ *    per-skill prerequisite graph; `deriveSkillState` orders skills linearly
+ *    for the "up next" suggestion only — see curriculum/data.ts).
  *
  * SOURCING SIM_UNLOCKS: built from `FOG_GATE_LIST` (`@/lib/fogOfWar`), each
  * gate's `unlockSkillOrCompetency` mapped to a fresh, tree-flavoured sentence
- * naming the pane it grants. We deliberately compose our own copy from
+ * naming the pane it sharpens. We deliberately compose our own copy from
  * `gate.label` rather than string-surgery on `gate.unlockHint` (that hint is
- * authored for the Product screen's own locked-panel copy, a different
- * surface with a different voice) — this keeps the two call sites decoupled
- * from each other's exact wording while both stay honestly sourced from the
- * same one registry, so there is exactly one place a gate can be added,
- * renamed, or retired.
+ * authored for the Product screen's own hint-chip copy, a different surface
+ * with a different voice) — this keeps the two call sites decoupled from
+ * each other's exact wording while both stay honestly sourced from the same
+ * one registry, so there is exactly one place a gate can be added, renamed,
+ * or retired.
  */
 export type UnlockKind = 'sim' | 'pedagogical';
 
@@ -37,15 +40,15 @@ export interface UnlockLine {
   text: string;
 }
 
-/** skillId -> honest, sourced in-sim unlock copy, built from the fog-of-war gate registry. */
+/** skillId -> honest, sourced in-sim payoff copy, built from the Product-screen "sharpen" registry. */
 const SIM_UNLOCKS: Record<string, string> = Object.fromEntries(
   FOG_GATE_LIST.map((gate) => [
     gate.unlockSkillOrCompetency,
-    `Unlocks ${gate.label} on the Product screen — the fog lifts on every future run, permanently.`,
+    `Powers ${gate.label} on the sim's Product screen.`,
   ]),
 );
 
-/** The real, sourced in-sim unlock for a skill, or null if none exists yet. */
+/** The real, sourced in-sim payoff for a skill, or null if none exists yet. */
 export function realUnlockLine(skillId: string): UnlockLine | null {
   const text = SIM_UNLOCKS[skillId];
   return text ? { kind: 'sim', text } : null;
