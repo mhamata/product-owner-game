@@ -33,6 +33,26 @@ Every run compiles a **Career File** automatically: the decision log (with the o
 - **Modalities go diegetic:** critique = a colleague's flawed PRD in your inbox; dataread = your own dashboard acting weird; incident = a live sim event; teardown = "the board wants your read on Qwikster."
 - **Mastery decays (FSRS, already ruled), never re-locks:** stale skills show as *rust* with a 90-second refresh in a different industry skin. Diegetic frame: staying sharp for next season.
 
+> **Amendment (2026-07-16, Mike, SS-1 "self-study ungate"):** the paragraphs
+> above describe the ORIGINAL design; they are kept for history, not
+> superseded in substance except where noted here. Praxis is now a fully
+> open self-study course — nothing is ever locked behind progression, app-
+> wide: no level locks, no linear skill gating, no fog-of-war gating, no
+> standup act locks, no sim-ladder locks, no specialization-track lock.
+> Concretely: "skills unlock capabilities" is superseded by **"skills
+> sharpen reads"** — the fog-of-war dashboard panes (cohort curves,
+> decision-annotation history) render their real content unconditionally,
+> with a small "sharpen this" hint chip while the mapped skill is
+> unmastered, never a blur/lock treatment. Test-out is reframed as
+> **certification**: any level can be certified early via the placement
+> challenge, worded as proof of competence, not a key that unlocks the next
+> rung (which was already open). Mastery/streaks/decay/review/certification
+> all survive exactly as before, but strictly as progress FEEDBACK — never
+> as gates. The one exception is `coming-soon` content, which stays
+> disabled: that is a CONTENT gate (no lesson authored yet), not a
+> progression gate. See `docs/PHASE2.md`'s SS-1 row for the full rationale
+> and build detail.
+
 ## 3. The approved UI direction
 
 **Hybrid:** inbox-of-people as the turn spine · living product map as the second screen · season/QBR wrapper. Tone: **calm professional game** — Linear-meets-FM, coach not theme park (master-plan risk #7: career fiction must not read cringe to senior users). One-handed portrait, 60–90s turns, per the Standup spec.
