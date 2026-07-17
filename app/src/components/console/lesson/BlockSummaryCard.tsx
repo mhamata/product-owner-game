@@ -129,7 +129,7 @@ export function BlockSummaryCard({
               <SparkleIcon size={16} className="mt-0.5 flex-none text-[var(--px-good)]" />
               <span>
                 {closerLine.kind === 'sim' ? (
-                  <b className="font-semibold text-[var(--px-good)]">Unlocked: </b>
+                  <b className="font-semibold text-[var(--px-good)]">In the sim: </b>
                 ) : (
                   <b className="font-semibold text-[var(--px-accent)]">1 block closer — </b>
                 )}

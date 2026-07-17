@@ -12,14 +12,19 @@ import { RestartIcon } from '../Icon';
  * /standup + sim screens use — see globals.css's "SIM 2.0 THEME TOKENS"
  * block), so both themes come for free via `data-theme`/OS preference.
  *
- * "Locked ≠ hidden": a locked node still renders its title and unlock line,
- * just dimmed — never blank, never a mystery box.
+ * SELF-STUDY RULING (2026-07-16): `locked` is now a CONTENT gate ONLY
+ * (coming-soon — no lesson authored yet), never a progression gate. "Locked
+ * ≠ hidden" still holds for that case: a locked node still renders its title
+ * and unlock line, just dimmed — never blank, never a mystery box. The new
+ * `open` state (ready, unmastered, not the "up next" suggestion) renders
+ * full-contrast and tappable, same as `next`/`done`/`rusty`.
  */
 
 const STATE_ACCENT: Record<NodeState, string> = {
   done: 'var(--px-good)',
   rusty: 'var(--px-warn)',
   next: 'var(--px-accent)',
+  open: 'var(--px-line-strong)',
   locked: 'var(--px-line-strong)',
 };
 
@@ -31,8 +36,10 @@ function statusLabel(node: SkillNodeView): string {
       return `${node.strengthPct}% · going stale`;
     case 'next':
       return 'up next';
+    case 'open':
+      return 'available';
     case 'locked':
-      return node.skill.status === 'coming-soon' ? 'coming soon' : 'locked';
+      return 'coming soon';
     default:
       return '';
   }
@@ -81,7 +88,7 @@ function SkillNode({ node, onSelect }: { node: SkillNodeView; onSelect: () => vo
       </span>
 
       <p className="text-[11px] leading-[1.5] text-[var(--px-dim)]">
-        <span aria-hidden="true">{earned ? '✓ ' : '🔓 '}</span>
+        <span aria-hidden="true">{earned ? '✓ ' : ''}</span>
         {node.unlock.text}
       </p>
 

@@ -91,7 +91,8 @@ describe('SimTabs', () => {
     expect(screen.getByText('Reliability')).toBeInTheDocument();
     // The one PBI in this scenario becomes its own district.
     expect(screen.getByText('Ship the widget')).toBeInTheDocument();
-    // The locked fog-of-war panel.
+    // The analyst-view pane renders unconditionally now (self-study ruling,
+    // 2026-07-16) — no fog/lock treatment left, just a smoke check it's there.
     expect(screen.getByText('Cohort retention curves')).toBeInTheDocument();
   });
 

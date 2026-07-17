@@ -1,15 +1,18 @@
 import type { Competency, LevelId } from '@/curriculum/types';
-import { isLevelCertified, getLevel } from '@/curriculum/data';
+import { getLevel } from '@/curriculum/data';
 
 /**
  * One rung of the simulation ladder.
  *
  * The sim climbs the same competency ladder the curriculum teaches. Every rung
  * reuses the one engine but retunes it so a different competency dominates and
- * the squeeze tightens as you climb. A rung unlocks when its gate level is
- * CERTIFIED (every ready skill in that level mastered), except the tutorial rung
- * which is always open. Once unlocked, a rung is freely replayable: that is the
- * free-play sandbox sitting on top of the gated progression.
+ * the squeeze tightens as you climb.
+ *
+ * SELF-STUDY RULING (2026-07-16, Mike): `isRungUnlocked` was DELETED. Every
+ * rung is open and freely replayable from a cold start — nothing here gates
+ * on certification anymore. `pairedWithLevel` survives purely as a display
+ * pairing: which curriculum level's competency profile this rung was tuned
+ * to match, surfaced as a "Paired with {level}" hint, never as a requirement.
  */
 export interface LadderRung {
   /** Route id and scenario-registry key (see ./index). */
@@ -21,11 +24,11 @@ export interface LadderRung {
   /** Career altitude this rung trains, for display. */
   altitude: string;
   /**
-   * The level whose CERTIFICATION unlocks this rung, or null for the always-open
-   * tutorial. Gating runs through isLevelCertified, so a rung opens only once
-   * every ready skill in the gate level is mastered.
+   * The curriculum level whose competency profile this rung is tuned to
+   * match, or null for the tutorial rung (no particular pairing). Display
+   * hint only — see the self-study ruling above.
    */
-  unlockOnCertified: LevelId | null;
+  pairedWithLevel: LevelId | null;
   /** Competencies this rung leans on hardest. Drives the competency debrief. */
   dominantCompetencies: Competency[];
 }
@@ -37,7 +40,7 @@ export const SIM_LADDER: readonly LadderRung[] = [
     title: 'First Sprint',
     tagline: 'Learn the loop with slack in the system and a forgiving deck.',
     altitude: 'Foundations',
-    unlockOnCertified: null,
+    pairedWithLevel: null,
     dominantCompetencies: ['delivery', 'feature-spec'],
   },
   {
@@ -45,7 +48,7 @@ export const SIM_LADDER: readonly LadderRung[] = [
     title: 'The Turnaround',
     tagline: 'Inherit a mess: high tech debt, low morale, two customers at the door.',
     altitude: 'Associate',
-    unlockOnCertified: 'foundations',
+    pairedWithLevel: 'foundations',
     dominantCompetencies: ['quality', 'stakeholder-mgmt', 'delivery'],
   },
   {
@@ -53,7 +56,7 @@ export const SIM_LADDER: readonly LadderRung[] = [
     title: 'Zero to One',
     tagline: 'No revenue yet and effort mostly hidden. Find signal before you scale.',
     altitude: 'PM',
-    unlockOnCertified: 'associate',
+    pairedWithLevel: 'associate',
     dominantCompetencies: ['voice-of-customer', 'data-fluency', 'business-outcome'],
   },
   {
@@ -61,7 +64,7 @@ export const SIM_LADDER: readonly LadderRung[] = [
     title: 'The Scaling Crunch',
     tagline: 'Demand outruns the team. Sequence a dependency web and say no well.',
     altitude: 'Senior',
-    unlockOnCertified: 'pm',
+    pairedWithLevel: 'pm',
     dominantCompetencies: ['vision-roadmap', 'technical', 'managing-up'],
   },
   {
@@ -69,7 +72,7 @@ export const SIM_LADDER: readonly LadderRung[] = [
     title: 'The Regulated Launch',
     tagline: 'A regulator in the room and a hard date. Trade speed against scrutiny.',
     altitude: 'Staff',
-    unlockOnCertified: 'senior',
+    pairedWithLevel: 'senior',
     dominantCompetencies: ['strategic-impact', 'ethics', 'stakeholder-mgmt'],
   },
 ];
@@ -79,16 +82,11 @@ export function rungForScenario(scenarioId: string): LadderRung | undefined {
   return SIM_LADDER.find((r) => r.scenarioId === scenarioId);
 }
 
-/** True if a rung is unlocked given the player's set of mastered skill ids. */
-export function isRungUnlocked(rung: LadderRung, masteredIds: ReadonlySet<string>): boolean {
-  if (rung.unlockOnCertified === null) return true;
-  return isLevelCertified(rung.unlockOnCertified, masteredIds);
-}
-
 /**
- * Display label of the level whose certification unlocks this rung, for the
- * "Certify X to unlock" affordance. Null for the always-open tutorial rung.
+ * Display label of the level this rung is paired with, for the "Paired with
+ * X" hint (never a requirement — see the self-study ruling above). Null for
+ * the tutorial rung, which has no particular pairing.
  */
-export function gateLevelLabel(rung: LadderRung): string | null {
-  return rung.unlockOnCertified ? getLevel(rung.unlockOnCertified)?.label ?? null : null;
+export function pairedLevelLabel(rung: LadderRung): string | null {
+  return rung.pairedWithLevel ? getLevel(rung.pairedWithLevel)?.label ?? null : null;
 }

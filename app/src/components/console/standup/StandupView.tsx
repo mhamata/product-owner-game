@@ -25,7 +25,7 @@ import { averageCompetencyDecay } from '@/lib/masteryDecay';
 import { SIM_LADDER } from '@/scenarios/ladder';
 import { Topbar } from '../Topbar';
 import { JudgmentCard } from '../review/JudgmentCard';
-import { CheckIcon, ChevronRightIcon, LockIcon } from '../Icon';
+import { CheckIcon, ChevronRightIcon } from '../Icon';
 
 /** How many due judgment cards Act 1 pulls in, per the design-doc mockup. */
 const WARMUP_SIZE = 2;
@@ -33,8 +33,10 @@ const WARMUP_SIZE = 2;
 /**
  * The Standup home: the daily three-act loop (Warm-up -> Workload -> Standup)
  * described in design-sim-2.0.md §3 and mocked in praxis-learn-mockup.html.
- * Acts unlock strictly in sequence; the whole screen styles itself off the
- * `--px-*` Sim 2.0 tokens (see globals.css) rather than the Console's
+ * SELF-STUDY RULING (2026-07-16, Mike): all three acts are always fully
+ * actionable — 'now' just highlights the recommended next one (the rail's
+ * suggestion), it is never a requirement. The whole screen styles itself off
+ * the `--px-*` Sim 2.0 tokens (see globals.css) rather than the Console's
  * `--color-*` scale, since this is the first surface to opt into the new
  * theme layer.
  */
@@ -287,7 +289,7 @@ export function StandupView() {
           <ActEyebrow>Act 1 · Warm-up</ActEyebrow>
           {warmupQueue === null ? null : warmupQueue.length === 0 ? (
             <CalmLine>
-              Deck&apos;s clear — nothing due right now. Act 2 is unlocked.
+              Deck&apos;s clear — nothing due right now.
             </CalmLine>
           ) : warmupComplete ? (
             <CalmLine>
@@ -367,33 +369,24 @@ function WorkloadCard({
   block: WorkloadBlock | null | undefined;
   mastered: boolean;
 }) {
-  if (status === 'locked') {
-    return (
-      <div className="rounded-[14px] border border-[var(--px-line)] bg-[var(--px-card)] p-[14px] opacity-50">
-        <span className="mono flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--px-dimmer)]">
-          <LockIcon size={12} />
-          Chosen by your scheduler
-        </span>
-        <p className="mt-3 text-[11px] text-[var(--px-dimmer)]">
-          Finish the warm-up to unlock
-        </p>
-      </div>
-    );
-  }
-
   if (block === undefined) return null;
 
   if (block === null) {
     return (
       <CalmLine>
         You&apos;ve mastered every live competency — nothing to assign
-        today. Act 3 is unlocked.
+        today.
       </CalmLine>
     );
   }
 
   return (
-    <div className="rounded-[14px] border border-[var(--px-line)] bg-[var(--px-card)] p-[14px]">
+    <div
+      className={[
+        'rounded-[14px] border bg-[var(--px-card)] p-[14px]',
+        status === 'now' ? 'border-[var(--px-accent)]' : 'border-[var(--px-line)]',
+      ].join(' ')}
+    >
       <span className="mono text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--px-accent)]">
         Chosen by your scheduler
       </span>
@@ -436,26 +429,17 @@ function StandupCard({
   href: string;
   onOpen: () => void;
 }) {
-  if (status === 'locked') {
-    return (
-      <div className="rounded-[14px] border border-[var(--px-line)] bg-[var(--px-card)] p-[14px] opacity-50">
-        <span className="mono flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--px-dimmer)]">
-          <LockIcon size={12} />
-          Your ongoing run
-        </span>
-        <p className="mt-3 text-[11px] text-[var(--px-dimmer)]">
-          Finish today&apos;s block first — the story is the reward
-        </p>
-      </div>
-    );
-  }
-
   const title = runMidFlight
     ? `Sprint ${sprintNumber} — results waiting`
     : 'Start your first run';
 
   return (
-    <div className="rounded-[14px] border border-[var(--px-line)] bg-[var(--px-card)] p-[14px]">
+    <div
+      className={[
+        'rounded-[14px] border bg-[var(--px-card)] p-[14px]',
+        status === 'now' ? 'border-[var(--px-accent)]' : 'border-[var(--px-line)]',
+      ].join(' ')}
+    >
       <span className="mono text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--px-accent)]">
         Relay · your simulation
       </span>

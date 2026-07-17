@@ -13,18 +13,17 @@ import {
   getUnitForSkill,
   getUnitsForLevel,
   deriveSkillState,
-  isLevelUnlocked,
-  isLevelComplete,
   isUnitComplete,
 } from '../data';
 import { COMPETENCIES, MODALITIES, type LevelId } from '../types';
 
 /**
- * These tests pin the *shape* of the leveled curriculum and the gating rule the
- * Practice Map relies on. They are deliberately structural: they don't assert a
- * specific skill count (that will grow as content lands), but they DO guarantee
- * the invariants: six levels, preserved drills, valid tags, and a gating rule
- * where coming-soon skills never wall off the ladder.
+ * These tests pin the *shape* of the leveled curriculum and the self-study
+ * open-access rule (2026-07-16, Mike) the Practice Map relies on. They are
+ * deliberately structural: they don't assert a specific skill count (that
+ * will grow as content lands), but they DO guarantee the invariants: six
+ * levels, preserved drills, valid tags, and that nothing is ever locked
+ * behind progression — coming-soon is the one exception (a content gate).
  */
 
 const ALL_LEVEL_IDS: LevelId[] = [
@@ -183,59 +182,54 @@ describe('coming-soon skills never break the map', () => {
   });
 });
 
-describe('gating rule', () => {
-  it('always unlocks Foundations from a cold start', () => {
-    expect(isLevelUnlocked('foundations', new Set())).toBe(true);
+describe('self-study open access (2026-07-16 ruling: nothing is ever locked behind progression)', () => {
+  it('never returns locked for a ready skill, under any mastery input', () => {
+    const scenarios: Set<string>[] = [
+      new Set(), // cold start
+      masterAll(), // fully mastered
+      new Set([masterableSkills[masterableSkills.length - 1].id]), // only the LAST skill mastered, everything before it untouched
+      new Set([masterableSkills[Math.floor(masterableSkills.length / 2)].id]), // an arbitrary mid-ladder skill
+    ];
+    for (const masteredIds of scenarios) {
+      for (const s of masterableSkills) {
+        expect(deriveSkillState(s.id, masteredIds)).not.toBe('locked');
+      }
+      // Specialization tracks are equally open — never gated behind Senior.
+      for (const s of allTrackSkills) {
+        expect(deriveSkillState(s.id, masteredIds)).not.toBe('locked');
+      }
+    }
   });
 
-  it('puts the single active node on the first ready skill from a cold start', () => {
+  it('keeps exactly one active node at a time — a suggestion, not a gate — and it advances as skills master', () => {
     const cold = new Set<string>();
-    const actives = everySkill.filter(
-      (s) => deriveSkillState(s.id, cold) === 'active',
+    const activesCold = everySkill.filter((s) => deriveSkillState(s.id, cold) === 'active');
+    expect(activesCold).toHaveLength(1);
+    expect(activesCold[0].id).toBe(masterableSkills[0].id);
+
+    // Mastering the first skill moves the suggestion to the second.
+    const afterFirst = new Set([masterableSkills[0].id]);
+    const activesAfterFirst = everySkill.filter(
+      (s) => deriveSkillState(s.id, afterFirst) === 'active',
     );
-    expect(actives).toHaveLength(1);
-    expect(actives[0].id).toBe(masterableSkills[0].id);
+    expect(activesAfterFirst).toHaveLength(1);
+    expect(activesAfterFirst[0].id).toBe(masterableSkills[1].id);
+
+    // Nothing left to suggest once everything is mastered.
+    const all = masterAll();
+    expect(everySkill.filter((s) => deriveSkillState(s.id, all) === 'active')).toHaveLength(0);
   });
 
-  it('locks the PM level until the ready skills before it are mastered', () => {
-    // Foundations and Associate now both carry ready skills (concept lessons +
-    // the estimation drill). PM unlocks only once EVERY ready skill in those two
-    // earlier core levels is mastered. Derive that prerequisite set from the data
-    // so the test stays correct as content is added.
+  it('marks every other ready, unmastered skill available — far-ahead levels and specialization tracks included', () => {
     const cold = new Set<string>();
-    expect(isLevelUnlocked('pm', cold)).toBe(false);
-
-    const prereq = allSkills
-      .filter((s) => (s.level === 'foundations' || s.level === 'associate') && s.status === 'ready')
-      .map((s) => s.id);
-    expect(prereq.length).toBeGreaterThan(0);
-
-    // Mastering all but one prerequisite is not enough; the full set unlocks PM.
-    const allButOne = new Set(prereq.slice(0, -1));
-    expect(isLevelUnlocked('pm', allButOne)).toBe(false);
-
-    const afterPrereqs = new Set(prereq);
-    expect(isLevelUnlocked('pm', afterPrereqs)).toBe(true);
-  });
-
-  it('unlocks the post-senior branches (staff, director) off the senior bar', () => {
-    const all = masterAll();
-    expect(isLevelUnlocked('staff', all)).toBe(true);
-    expect(isLevelUnlocked('director', all)).toBe(true);
-    // Both branch levels gate on the same core spine, so with no progress they
-    // are locked together.
-    expect(isLevelUnlocked('staff', new Set())).toBe(false);
-    expect(isLevelUnlocked('director', new Set())).toBe(false);
-  });
-
-  it('marks all core levels complete when every ready skill is mastered', () => {
-    const all = masterAll();
-    for (const id of ALL_LEVEL_IDS) {
-      // Levels that actually hold ready skills should report complete.
-      const hasReady = getUnitsForLevel(id)
-        .flatMap((u) => u.skills)
-        .some((s) => s.status === 'ready');
-      if (hasReady) expect(isLevelComplete(id, all)).toBe(true);
+    // Every masterable skill except the first (the 'active' suggestion) is
+    // 'available' from a cold start — including levels far ahead on the
+    // ladder, which the old gating rule would have locked.
+    for (const s of masterableSkills.slice(1)) {
+      expect(deriveSkillState(s.id, cold)).toBe('available');
+    }
+    for (const s of allTrackSkills) {
+      expect(deriveSkillState(s.id, cold)).toBe('available');
     }
   });
 });

@@ -1,13 +1,18 @@
 /**
- * PURE act-gating logic for the /standup daily loop: three acts (Warm-up →
- * Workload → Standup) that unlock strictly in sequence, per the design-doc
- * mockup. Kept separate from `scheduler.ts` (which decides WHAT Act 2 is)
- * because this module only decides WHICH acts are interactive right now —
- * two different questions, two small pure modules, each trivially testable.
+ * PURE act-sequencing logic for the /standup daily loop: three acts (Warm-up
+ * → Workload → Standup). Kept separate from `scheduler.ts` (which decides
+ * WHAT Act 2 is) because this module only decides which act is the
+ * recommended "now" one — two different questions, two small pure modules,
+ * each trivially testable.
+ *
+ * SELF-STUDY RULING (2026-07-16, Mike): no act is ever locked. All three
+ * acts are always fully actionable — Workload and Standup no longer require
+ * finishing an earlier act first. `'now'` is a visual SUGGESTION only (the
+ * first incomplete act in order); every other incomplete act is `'open'`.
  */
 
 /** One act's display/interaction state. */
-export type ActStatus = 'done' | 'now' | 'locked';
+export type ActStatus = 'done' | 'now' | 'open';
 
 export interface StandupActsState {
   warmup: ActStatus;
@@ -33,39 +38,32 @@ export interface StandupActsInput {
 
 /**
  * Derive the three acts' statuses. Rules:
- *  - Warm-up is 'now' until complete, then 'done'. It is never locked — it is
- *    always the day's entry point.
- *  - Workload is 'locked' until warm-up is done, then 'now' until it is
- *    itself complete, then 'done'.
- *  - Standup is 'locked' until warm-up AND workload are both done, then 'now'
- *    until complete, then 'done'.
- *
- * Gating chains strictly: an act's OWN completion flag can only promote it to
- * 'now'/'done' once every act before it is done, regardless of what that
- * act's own flag says. Without this, a later act's independently-derived
- * completion signal (e.g. Workload completes via `learnStore.isMastered`,
- * which has no idea whether today's Warm-up ran) could read as 'done' while
- * an earlier act is still pending — defeating the whole point of "acts
- * unlock in order". Exactly one act is 'now' at a time (or none, once all
- * three are 'done').
+ *  - A complete act is always 'done', regardless of order.
+ *  - The FIRST incomplete act in order (Warm-up, then Workload, then
+ *    Standup) is 'now' — the rail's highlighted suggestion for what to do
+ *    next. Every other incomplete act is 'open': fully actionable today,
+ *    just not the suggestion.
+ *  - Nothing is ever 'locked'. Exactly one act is 'now' at a time, or none
+ *    once all three are 'done'.
  */
 export function deriveActsState(input: StandupActsInput): StandupActsState {
-  const warmup: ActStatus = input.warmupComplete ? 'done' : 'now';
+  const order: [keyof StandupActsState, boolean][] = [
+    ['warmup', input.warmupComplete],
+    ['workload', input.workloadComplete],
+    ['standup', input.standupComplete],
+  ];
+  const nowIndex = order.findIndex(([, complete]) => !complete);
 
-  const workload: ActStatus = !input.warmupComplete
-    ? 'locked'
-    : input.workloadComplete
-      ? 'done'
-      : 'now';
+  const statusFor = (index: number, complete: boolean): ActStatus => {
+    if (complete) return 'done';
+    return index === nowIndex ? 'now' : 'open';
+  };
 
-  const standup: ActStatus =
-    !input.warmupComplete || !input.workloadComplete
-      ? 'locked'
-      : input.standupComplete
-        ? 'done'
-        : 'now';
-
-  return { warmup, workload, standup };
+  return {
+    warmup: statusFor(0, input.warmupComplete),
+    workload: statusFor(1, input.workloadComplete),
+    standup: statusFor(2, input.standupComplete),
+  };
 }
 
 /** Today's persisted act-progress record (see `store/standupStore.ts`). */

@@ -68,7 +68,7 @@ describe('deriveBlockSummary', () => {
     expect(summary.closerLine).not.toBeNull();
     expect(summary.closerLine!.kind).toBe('sim');
     expect(summary.closerLine!.text).toBe(
-      `Unlocks ${FOG_GATE_LIST[0].label} on the Product screen — the fog lifts on every future run, permanently.`,
+      `Powers ${FOG_GATE_LIST[0].label} on the sim's Product screen.`,
     );
   });
 

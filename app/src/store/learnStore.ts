@@ -210,8 +210,9 @@ export const useLearnStore = create<LearnStore>()(
         (get().progress[skillId]?.mastery ?? 0) >= MASTERY_THRESHOLD,
 
       // Only `ready` (masterable) skills can be mastered. `coming-soon` skills
-      // carry no progress and never enter this set, so the curriculum gating
-      // (deriveSkillState / isLevelUnlocked) is driven purely by playable work.
+      // carry no progress and never enter this set, so `deriveSkillState`'s
+      // one remaining content gate (coming-soon) is driven purely by playable
+      // work — mastery itself is feedback, never a progression key.
       masteredIds: () => {
         const { progress } = get();
         return new Set(

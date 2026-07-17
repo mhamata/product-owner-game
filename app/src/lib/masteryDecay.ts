@@ -5,8 +5,10 @@
  * CRITICAL RULING (design-sim-2.0.md §2.5, "mastery decays, never re-locks"):
  * decay is DISPLAY-ONLY. It never un-masters a skill, never removes it from
  * `masteredIds()`, and never re-locks anything gated on mastery
- * (`deriveSkillState`, `isLevelUnlocked`, `isLevelCertified`, fog-of-war
- * gates, etc. all keep reading the boolean unchanged). Decay only drives:
+ * (`deriveSkillState`, `isLevelCertified`, etc. all keep reading the boolean
+ * unchanged — self-study ruling, 2026-07-16: progression gating is gone
+ * app-wide, so this invariant now matters only for feedback, never a key).
+ * Decay only drives:
  *   1. the strength % shown on a mastered skill's tech-tree node, and
  *   2. whether that node is flagged "rusty" (offering a 90-second refresh),
  *   3. the Standup scheduler's competency ranking (see scheduler.ts).

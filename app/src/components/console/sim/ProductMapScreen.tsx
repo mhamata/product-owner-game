@@ -6,8 +6,8 @@ import type { GameState, Scenario } from '@/engine/types';
 import { computeExpectationStatus } from '@/engine/board';
 import { cn } from '@/lib/cn';
 import { useLearnStore } from '@/store/learnStore';
-import { FOG_GATES, isFogGateUnlocked, type FogGate } from '@/lib/fogOfWar';
-import { LockIcon, XIcon } from '../Icon';
+import { FOG_GATES, type FogGate } from '@/lib/fogOfWar';
+import { XIcon } from '../Icon';
 import { useDecisionLogStore, runIdFor, selectEntriesForRun } from '@/store/decisionLogStore';
 import {
   useMetricsHistoryStore,
@@ -67,13 +67,14 @@ export function ProductMapScreen({
   const annotations = deriveDecisionAnnotations(entries);
   const districts = deriveDistricts(state, scenario);
 
-  // Fog of war (W4-G, @/lib/fogOfWar.ts): read live mastery straight off
-  // learnStore. `isMastered` is monotonic (see fogOfWar.ts's file header),
-  // so this is already the permanent "unlocked forever once earned" signal
-  // the design doc calls for — no separate bookkeeping needed here.
+  // SELF-STUDY RULING (2026-07-16): both panes below render unconditionally.
+  // `isMastered` only drives whether the "sharpen this" hint chip shows —
+  // see fogOfWar.ts's file header — never whether the pane itself renders.
   const isMastered = useLearnStore((s) => s.isMastered);
-  const cohortUnlocked = isFogGateUnlocked(FOG_GATES['cohort-curves'], isMastered);
-  const annotationHistoryUnlocked = isFogGateUnlocked(FOG_GATES['decision-annotations-history'], isMastered);
+  const cohortMastered = isMastered(FOG_GATES['cohort-curves'].unlockSkillOrCompetency);
+  const annotationHistoryMastered = isMastered(
+    FOG_GATES['decision-annotations-history'].unlockSkillOrCompetency,
+  );
 
   const [openDistrict, setOpenDistrict] = useState<District | null>(null);
   const [openAnnotation, setOpenAnnotation] = useState<{ sprint: number; rationale: string } | null>(null);
@@ -136,11 +137,11 @@ export function ProductMapScreen({
         Red hatching marks visible tech debt · dim tiles are backlog items no one has started.
       </p>
 
-      <SectionLabel>Locked until earned</SectionLabel>
-      <FogGatePanel gate={FOG_GATES['cohort-curves']} unlocked={cohortUnlocked}>
+      <SectionLabel>Analyst views</SectionLabel>
+      <FogGatePanel gate={FOG_GATES['cohort-curves']} mastered={cohortMastered}>
         <CohortCurvesContent history={history} scenario={scenario} />
       </FogGatePanel>
-      <FogGatePanel gate={FOG_GATES['decision-annotations-history']} unlocked={annotationHistoryUnlocked}>
+      <FogGatePanel gate={FOG_GATES['decision-annotations-history']} mastered={annotationHistoryMastered}>
         <DecisionAnnotationHistoryContent annotations={annotations} onAnnotationTap={setOpenAnnotation} />
       </FogGatePanel>
 
@@ -348,66 +349,50 @@ function statusMeta(d: District): string {
 }
 
 /* ============================================================
-   Fog-of-war panels (W4-G, @/lib/fogOfWar.ts).
+   Analyst-view panels (W4-G, @/lib/fogOfWar.ts).
 
-   FogGatePanel is the one visual treatment: locked renders the mockup's fog
-   (blurred lines + lock + unlock hint linking to the unlocking skill's learn
-   route), unlocked renders whatever real content the caller passes as
-   children. See fogOfWar.ts for gate selection/permanence, cohortCurves.ts
-   for what CohortCurvesContent actually shows.
+   SELF-STUDY RULING (2026-07-16): FogGatePanel always renders `children` —
+   this pane was never a progression gate to begin with. While the mapped
+   skill isn't mastered yet, a small "Sharpen this" hint chip links to it;
+   once mastered, the chip goes away and the panel is otherwise identical.
+   See fogOfWar.ts for the skill mapping, cohortCurves.ts for what
+   CohortCurvesContent actually shows.
    ============================================================ */
 
 function FogGatePanel({
   gate,
-  unlocked,
+  mastered,
   children,
 }: {
   gate: FogGate;
-  unlocked: boolean;
+  mastered: boolean;
   children: React.ReactNode;
 }) {
-  if (!unlocked) {
-    return (
-      <div className="relative mt-2.5 overflow-hidden rounded-[12px] border border-dashed border-[var(--px-line-strong)] bg-[var(--px-raised)]/60 p-[12px_14px]">
-        <div className="flex items-center justify-between">
-          <span className="text-[12.5px] font-semibold text-[var(--px-dim)]">{gate.label}</span>
-          <LockIcon size={14} className="text-[var(--px-dim)]" />
-        </div>
-        <div aria-hidden="true" className="mt-2 space-y-1.5">
-          <div className="h-[7px] w-full rounded-[4px] bg-[var(--px-line)] opacity-70 blur-[2px]" />
-          <div className="h-[7px] w-[82%] rounded-[4px] bg-[var(--px-line)] opacity-70 blur-[2px]" />
-          <div className="h-[7px] w-[64%] rounded-[4px] bg-[var(--px-line)] opacity-70 blur-[2px]" />
-        </div>
-        <Link
-          href={`/learn/${gate.unlockSkillOrCompetency}`}
-          className="mt-2 block text-[10.5px] font-semibold text-[var(--px-warn)] underline decoration-dotted underline-offset-2"
-        >
-          {gate.unlockHint}
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="relative mt-2.5 rounded-[12px] border border-[var(--px-line)] bg-[var(--px-card)] p-[12px_14px]">
       <div className="flex items-center justify-between">
         <span className="text-[12.5px] font-semibold text-[var(--px-ink)]">{gate.label}</span>
-        <span className="mono text-[9px] font-bold uppercase tracking-[0.08em] text-[var(--px-good)]">
-          Unlocked
-        </span>
+        {!mastered && (
+          <Link
+            href={`/learn/${gate.unlockSkillOrCompetency}`}
+            className="mono text-[9.5px] font-semibold text-[var(--px-warn)] underline decoration-dotted underline-offset-2"
+          >
+            {gate.unlockHint}
+          </Link>
+        )}
       </div>
       <div className="mt-2">{children}</div>
     </div>
   );
 }
 
-/** Unlocked content for the `cohort-curves` gate — see cohortCurves.ts's file header for exactly what this derives and what it does NOT claim to be. */
+/** Content for the `cohort-curves` pane — see cohortCurves.ts's file header for exactly what this derives and what it does NOT claim to be. */
 function CohortCurvesContent({ history, scenario }: { history: MetricsSnapshot[]; scenario: Scenario }) {
   const segments = deriveCohortSegments(history, scenario);
   if (!hasCohortTrend(segments)) {
     return (
       <p className="text-[11.5px] leading-[1.5] text-[var(--px-dim)]">
-        Not enough sprints recorded yet this run to draw a trend — this fills in as you play (history is only recorded from the moment this pane unlocked).
+        Not enough sprints recorded yet this run to draw a trend — this fills in as you play.
       </p>
     );
   }
@@ -463,7 +448,7 @@ function CohortCurvesContent({ history, scenario }: { history: MetricsSnapshot[]
   );
 }
 
-/** Unlocked content for the `decision-annotations-history` gate: every logged sprint rationale, in one place, tap to reread — reuses the same derived `annotations` the metric tiles' amber dots already surface one sprint at a time. */
+/** Content for the `decision-annotations-history` pane: every logged sprint rationale, in one place, tap to reread — reuses the same derived `annotations` the metric tiles' amber dots already surface one sprint at a time. */
 function DecisionAnnotationHistoryContent({
   annotations,
   onAnnotationTap,
